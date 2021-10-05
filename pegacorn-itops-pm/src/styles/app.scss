@@ -1,0 +1,21 @@
+@import "variables";
+
+// libraries
+@import "~bootstrap/scss/bootstrap.scss";
+@import "~react-infinite-calendar/styles";
+
+// base
+@import "base";
+@import "overrides";
+@import "extends";
+@import "animations";
+@import "utils/utils";
+
+// components
+@import "components/header";
+@import "components/sidebar";
+@import "components/content";
+@import "components/search-input";
+
+// themes
+@import "themes/colors";

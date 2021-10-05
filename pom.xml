@@ -19,7 +19,7 @@
     </properties>
     
     <modules>
-        <module>../pegacorn-itops-im</module>
-        <module>../pegacorn-itops-pm</module>
+        <module>pegacorn-itops-im</module>
+        <module>pegacorn-itops-pm</module>
     </modules>
 </project>
