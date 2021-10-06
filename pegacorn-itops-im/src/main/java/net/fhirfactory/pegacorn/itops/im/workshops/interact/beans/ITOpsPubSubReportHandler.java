@@ -27,6 +27,7 @@ import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisati
 import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWidePubSubMapDM;
 import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
 import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.ProcessingPlantSubscriptionSummary;
+import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.PublisherSubscriptionSummary;
 import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.WorkUnitProcessorSubscriptionSummary;
 import org.apache.camel.Header;
 import org.slf4j.Logger;
@@ -62,6 +63,14 @@ public class ITOpsPubSubReportHandler {
         LOG.debug(".retrieveWorkUnitProcessorPubSubReport(): Entry, componentId->{}", componentId);
         WorkUnitProcessorSubscriptionSummary wupPubSubReport = pubSubMapDM.getWorkUnitProcessorPubSubReport(componentId);
         LOG.debug(".retrieveWorkUnitProcessorPubSubReport(): Exit");
+        return(wupPubSubReport);
+    }
+    
+    public PublisherSubscriptionSummary retrieveEndpointPubSubReport(@Header("componentId")String componentId){
+        LOG.debug(".retrieveEndpointPubSubReport(): Entry, componentId->{}", componentId);
+        //TODO fix this up so it is right
+        PublisherSubscriptionSummary wupPubSubReport = pubSubMapDM.getWorkUnitProcessorPubSubReport(componentId);
+        LOG.debug(".retrieveEndpointPubSubReport(): Exit");
         return(wupPubSubReport);
     }
 }

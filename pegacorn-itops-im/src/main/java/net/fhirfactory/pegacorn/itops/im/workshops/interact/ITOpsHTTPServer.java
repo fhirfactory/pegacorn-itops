@@ -173,6 +173,14 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                 .log(LoggingLevel.INFO, "GET Metrics Request")
                 .bean(metricsHandler, "retrieveMetrics");
 
+        rest("/Endpoint")
+                .get("/{componentId}/ITOpsMetrics").outType(ITOpsMetricsSet.class)
+                .to("direct:EndpointMetricsGET");
+
+        from("direct:EndpointMetricsGET")
+                .log(LoggingLevel.INFO, "GET Metrics Request")
+                .bean(metricsHandler, "retrieveMetrics");
+
         //
         // PubSub Report
         //
@@ -192,6 +200,17 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         from("direct:WUPPubSubReportGET")
                 .log(LoggingLevel.INFO, "GET PubSub Report Request")
                 .bean(pubSubReportHandler, "retrieveWorkUnitProcessorPubSubReport");
+        
+        rest("/Endpoint")
+                .get("/{componentId}/PublishSubscribeReport").outType(ITOpsMetricsSet.class)
+                .to("direct:EndpointPubSubReportGET");
+        
+        from("direct:EndpointPubSubReportGET")
+                .log(LoggingLevel.INFO, "GET PubSub Report Request")
+                .bean(pubSubReportHandler, "retrieveEndpointPubSubReport");
+
+
+
     }
 
     @Override
