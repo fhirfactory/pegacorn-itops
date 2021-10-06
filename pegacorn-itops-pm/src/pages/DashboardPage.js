@@ -78,6 +78,8 @@ class DashboardPage extends React.Component {
         suffix = 'ProcessingPlant/';
       } else if(type === 'ITOPS_MONITORED_WORK_UNIT_PROCESSOR') {
         suffix = 'WorkUnitProcessor/';
+      } else if(type === 'ITOPS_MONITORED_ENDPOINT') {
+        suffix = 'Endpoint/';
       }
     if(componentID !== undefined ) {
       const prefix = 'http://localhost:18002/pegacorn/internal/itops/r1/';
