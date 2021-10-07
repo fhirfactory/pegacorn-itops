@@ -78,6 +78,8 @@ class DashboardPage extends React.Component {
         suffix = 'ProcessingPlant/';
       } else if(type === 'ITOPS_MONITORED_WORK_UNIT_PROCESSOR') {
         suffix = 'WorkUnitProcessor/';
+      } else if(type === 'ITOPS_MONITORED_ENDPOINT') {
+        suffix = 'Endpoint/';
       }
     if(componentID !== undefined ) {
       const prefix = 'http://10.123.123.50:18002/pegacorn/internal/itops/r1/';
@@ -108,6 +110,8 @@ class DashboardPage extends React.Component {
         autoDismiss: 5,
         dismissible: 'click'
       });
+      this.state.auditData = '';
+      this.forceUpdate();
     }
   }
 
@@ -128,11 +132,11 @@ class DashboardPage extends React.Component {
         </div>
       ); 
     } else {
+      let message = "No component selected";
       return (
         <div style={{ marginTop: "10px" }}>
-          <p>No component selected.</p>
+          <p>{message}</p>
         </div>
-
       );
     }
   }

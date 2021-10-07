@@ -25,7 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWidePubSubMapDM;
 import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.ProcessingPlantSubscriptionSummary;
+import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.PublisherSubscriptionSummary;
 import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.WorkUnitProcessorSubscriptionSummary;
+import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.common.SubscriptionSummaryBase;
+
 import org.apache.camel.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,5 +64,13 @@ public class ITOpsPubSubReportHandler {
         WorkUnitProcessorSubscriptionSummary wupPubSubReport = pubSubMapDM.getWorkUnitProcessorPubSubReport(componentId);
         LOG.debug(".retrieveWorkUnitProcessorPubSubReport(): Exit");
         return(wupPubSubReport);
+    }
+    
+    //XXX Maybe put a more descriptive object in, or switch to a string that shows "N/A"
+    public SubscriptionSummaryBase retrieveEndpointPubSubReport(@Header("componentId")String componentId){
+        LOG.info(".retrieveEndpointPubSubReport(): Entry, componentId->{}", componentId);
+       //There is no current endpoint for this, return empty string
+        LOG.info(".retrieveEndpointPubSubReport(): Exit");
+        return new SubscriptionSummaryBase();
     }
 }
