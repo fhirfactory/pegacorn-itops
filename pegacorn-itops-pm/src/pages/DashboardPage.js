@@ -110,6 +110,8 @@ class DashboardPage extends React.Component {
         autoDismiss: 5,
         dismissible: 'click'
       });
+      this.state.auditData = '';
+      this.forceUpdate();
     }
   }
 
@@ -130,11 +132,11 @@ class DashboardPage extends React.Component {
         </div>
       ); 
     } else {
+      let message = "No component selected";
       return (
         <div style={{ marginTop: "10px" }}>
-          <p>No component selected.</p>
+          <p>{message}</p>
         </div>
-
       );
     }
   }
