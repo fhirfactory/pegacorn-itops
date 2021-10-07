@@ -29,6 +29,8 @@ import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
 import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.ProcessingPlantSubscriptionSummary;
 import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.PublisherSubscriptionSummary;
 import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.WorkUnitProcessorSubscriptionSummary;
+import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.common.SubscriptionSummaryBase;
+
 import org.apache.camel.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +68,11 @@ public class ITOpsPubSubReportHandler {
         return(wupPubSubReport);
     }
     
-    public PublisherSubscriptionSummary retrieveEndpointPubSubReport(@Header("componentId")String componentId){
-        LOG.debug(".retrieveEndpointPubSubReport(): Entry, componentId->{}", componentId);
-        //TODO fix this up so it is right
-        PublisherSubscriptionSummary wupPubSubReport = pubSubMapDM.getWorkUnitProcessorPubSubReport(componentId);
-        LOG.debug(".retrieveEndpointPubSubReport(): Exit");
-        return(wupPubSubReport);
+    //XXX Maybe put a more descriptive object in, or switch to a string that shows "N/A"
+    public SubscriptionSummaryBase retrieveEndpointPubSubReport(@Header("componentId")String componentId){
+        LOG.info(".retrieveEndpointPubSubReport(): Entry, componentId->{}", componentId);
+       //There is no current endpoint for this, return empty string
+        LOG.info(".retrieveEndpointPubSubReport(): Exit");
+        return new SubscriptionSummaryBase();
     }
 }
