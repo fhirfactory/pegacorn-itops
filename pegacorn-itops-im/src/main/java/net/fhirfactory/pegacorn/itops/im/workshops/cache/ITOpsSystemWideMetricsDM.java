@@ -22,7 +22,8 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.cache;
 
 import net.fhirfactory.pegacorn.petasos.itops.caches.common.ITOpsLocalDMRefreshBase;
-import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.WorkUnitProcessorNodeMetrics;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.common.NodeMetricsBase;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,9 +35,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @ApplicationScoped
 public class ITOpsSystemWideMetricsDM extends ITOpsLocalDMRefreshBase {
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsSystemWideMetricsDM.class);
-    private ConcurrentHashMap<String, ITOpsMetricsSet> currentStateComponentMetricSetMap;
-    private ConcurrentHashMap<String, ITOpsMetricsSet> previousStateComponentMetricSetMap;
-    private ConcurrentHashMap<String, ITOpsMetricsSet> displayedComponentMetricSetMap;
+    private ConcurrentHashMap<String, NodeMetricsBase> currentStateComponentMetricSetMap;
+    private ConcurrentHashMap<String, NodeMetricsBase> previousStateComponentMetricSetMap;
+    private ConcurrentHashMap<String, NodeMetricsBase> displayedComponentMetricSetMap;
 
     public ITOpsSystemWideMetricsDM(){
         this.currentStateComponentMetricSetMap = new ConcurrentHashMap<>();
@@ -48,27 +49,27 @@ public class ITOpsSystemWideMetricsDM extends ITOpsLocalDMRefreshBase {
     // Getters (and Setters)
     //
 
-    public ConcurrentHashMap<String, ITOpsMetricsSet> getCurrentStateComponentMetricSetMap() {
+    public ConcurrentHashMap<String, NodeMetricsBase> getCurrentStateComponentMetricSetMap() {
         return currentStateComponentMetricSetMap;
     }
 
-    public void setCurrentStateComponentMetricSetMap(ConcurrentHashMap<String, ITOpsMetricsSet> currentStateComponentMetricSetMap) {
+    public void setCurrentStateComponentMetricSetMap(ConcurrentHashMap<String, NodeMetricsBase> currentStateComponentMetricSetMap) {
         this.currentStateComponentMetricSetMap = currentStateComponentMetricSetMap;
     }
 
-    public ConcurrentHashMap<String, ITOpsMetricsSet> getPreviousStateComponentMetricSetMap() {
+    public ConcurrentHashMap<String, NodeMetricsBase> getPreviousStateComponentMetricSetMap() {
         return previousStateComponentMetricSetMap;
     }
 
-    public void setPreviousStateComponentMetricSetMap(ConcurrentHashMap<String, ITOpsMetricsSet> previousStateComponentMetricSetMap) {
+    public void setPreviousStateComponentMetricSetMap(ConcurrentHashMap<String, NodeMetricsBase> previousStateComponentMetricSetMap) {
         this.previousStateComponentMetricSetMap = previousStateComponentMetricSetMap;
     }
 
-    public ConcurrentHashMap<String, ITOpsMetricsSet> getDisplayedComponentMetricSetMap() {
+    public ConcurrentHashMap<String, NodeMetricsBase> getDisplayedComponentMetricSetMap() {
         return displayedComponentMetricSetMap;
     }
 
-    public void setDisplayedComponentMetricSetMap(ConcurrentHashMap<String, ITOpsMetricsSet> displayedComponentMetricSetMap) {
+    public void setDisplayedComponentMetricSetMap(ConcurrentHashMap<String, NodeMetricsBase> displayedComponentMetricSetMap) {
         this.displayedComponentMetricSetMap = displayedComponentMetricSetMap;
     }
 
@@ -80,7 +81,7 @@ public class ITOpsSystemWideMetricsDM extends ITOpsLocalDMRefreshBase {
     // Business Functions
     //
 
-    public void addComponentMetricSet(String componentID, ITOpsMetricsSet metricsSet){
+    public void addComponentMetricSet(String componentID, NodeMetricsBase metricsSet){
         getLogger().debug(".addComponentMetricSet(): Entry, componentID->{}, metricSet->{}", componentID, metricsSet);
         if(StringUtils.isEmpty(componentID) || metricsSet == null){
             getLogger().debug(".addComponentMetricSet(): Exit, either componentID or metricSet is empty");
@@ -98,27 +99,27 @@ public class ITOpsSystemWideMetricsDM extends ITOpsLocalDMRefreshBase {
         getLogger().debug(".addComponentMetricsSet():Exit");
     }
 
-    public ITOpsMetricsSet getComponentMetricSetForDisplay(String componentID){
+    public NodeMetricsBase getComponentMetricSetForDisplay(String componentID){
         getLogger().debug(".getComponentMetricSetForPublishing(): Entry, componentID->{}", componentID);
         if(getCurrentStateComponentMetricSetMap().containsKey(componentID)){
-            return(new ITOpsMetricsSet());
+            return(new NodeMetricsBase());
         }
-        ITOpsMetricsSet currentMetricsSet = getCurrentStateComponentMetricSetMap().get(componentID);
+        NodeMetricsBase currentMetricsSet = getCurrentStateComponentMetricSetMap().get(componentID);
         if(getDisplayedComponentMetricSetMap().containsKey(componentID)){
             getDisplayedComponentMetricSetMap().remove(componentID);
         }
-        ITOpsMetricsSet publishedMetricsSet = SerializationUtils.clone(currentMetricsSet);
+        NodeMetricsBase publishedMetricsSet = SerializationUtils.clone(currentMetricsSet);
         getDisplayedComponentMetricSetMap().put(componentID, publishedMetricsSet);
         getLogger().debug(".getComponentMetricSetForPublishing(): Exit, publishedMetricSet->{}", publishedMetricsSet);
         return(publishedMetricsSet);
     }
 
-    public ITOpsMetricsSet getComponentMetricsSet(String componentID){
+    public NodeMetricsBase getComponentMetricsSet(String componentID){
         getLogger().debug(".getComponentMetricsSet(): Entry, componentID->{}", componentID);
         if(StringUtils.isEmpty(componentID)){
             return(null);
         }
-        ITOpsMetricsSet currentState = getCurrentStateComponentMetricSetMap().get(componentID);
+        NodeMetricsBase currentState = getCurrentStateComponentMetricSetMap().get(componentID);
         getLogger().debug(".getComponentMetricsSet(): Exit, currentState->{}", currentState);
         return(currentState);
     }

@@ -80,7 +80,7 @@ class DashboardPage extends React.Component {
         suffix = 'WorkUnitProcessor/';
       }
     if(componentID !== undefined ) {
-      const prefix = 'http://localhost:18002/pegacorn/internal/itops/r1/';
+      const prefix = 'http://10.123.123.50:18002/pegacorn/internal/itops/r1/';
       if(eventName === 'Audit') {
         endpoint = prefix + 'AuditEvents/' + componentID;
       }

@@ -27,7 +27,10 @@ import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisati
 import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideMetricsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.edge.common.ITOpsReceiverBase;
 import net.fhirfactory.pegacorn.petasos.itops.valuesets.ITOpsCapabilityNamesEnum;
-import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ProcessingPlantNodeMetrics;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.WorkUnitProcessorNodeMetrics;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.common.NodeMetricsBase;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +52,8 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase {
 
     @Override
     public CapabilityUtilisationResponse executeTask(CapabilityUtilisationRequest request) {
-        getLogger().debug(".executeTask(): Entry, request->{}", request);
-        ITOpsMetricsSet metricsSet = extractMetricsSet(request);
+        getLogger().info(".executeTask(): Entry, request->{}", request);
+        NodeMetricsBase metricsSet = extractMetricsSet(request);
         if(metricsSet != null){
             metricsDM.addComponentMetricSet(metricsSet.getComponentID(), metricsSet);
         }
@@ -65,7 +68,7 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase {
             response.setAssociatedRequestID(request.getRequestID());
             response.setResponseContent("OK");
         }
-        getLogger().debug(".executeTask(): Exit, response->{}", response);
+        getLogger().info(".executeTask(): Exit, response->{}", response);
         return(response);
     }
 
@@ -74,15 +77,26 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase {
         return(LOG);
     }
 
-    protected ITOpsMetricsSet extractMetricsSet(CapabilityUtilisationRequest request){
-        getLogger().debug(".extractMetricsSet(): Entry, request->{}", request);
-        ITOpsMetricsSet metricsSet = null;
+    protected NodeMetricsBase extractMetricsSet(CapabilityUtilisationRequest request){
+        getLogger().info(".extractMetricsSet(): Entry, request->{}", request);
+        NodeMetricsBase metricsSet = null;
         try {
-            metricsSet = getJsonMapper().readValue(request.getRequestContent(),ITOpsMetricsSet.class);
+            JSONObject metricsJSON = new JSONObject(request.getRequestContent());
+            String metricsType = metricsJSON.getString("metricsType");
+            switch(metricsType){
+                case ProcessingPlantNodeMetrics.PROCESSING_PLANT_METRICS_TYPE:
+                    metricsSet = getJsonMapper().readValue(request.getRequestContent(), ProcessingPlantNodeMetrics.class);
+                    break;
+                case WorkUnitProcessorNodeMetrics.WORK_UNIT_PROCESSOR_METRICS_TYPE:
+                    metricsSet = getJsonMapper().readValue(request.getRequestContent(), WorkUnitProcessorNodeMetrics.class);
+                    break;
+                default:
+                    metricsSet = getJsonMapper().readValue(request.getRequestContent(), NodeMetricsBase.class);
+            }
         } catch (JsonProcessingException e) {
             getLogger().error(".extractMetricsSet(): Unable to JSON Decode String, {}", e);
         }
-        getLogger().debug(".extractMetricsSet(): Exit, metricSet->{}", metricsSet);
+        getLogger().info(".extractMetricsSet(): Exit, metricSet->{}", metricsSet);
         return(metricsSet);
     }
 

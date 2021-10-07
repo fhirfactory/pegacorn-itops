@@ -50,7 +50,7 @@ public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase {
 
     @Override
     public CapabilityUtilisationResponse executeTask(CapabilityUtilisationRequest request) {
-        getLogger().info(".executeTask(): Entry, request->{}", request);
+        getLogger().debug(".executeTask(): Entry, request->{}", request);
         ITOpsTopologyGraph topologyGraph = extractTopologyGraph(request);
         if(topologyGraph != null){
             for(ITOpsMonitoredProcessingPlant currentProcessingPlant: topologyGraph.getProcessingPlants().values()) {
@@ -69,7 +69,7 @@ public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase {
             response.setAssociatedRequestID(request.getRequestID());
             response.setResponseContent("OK");
         }
-        getLogger().info(".executeTask(): Exit, reponse->{}", response);
+        getLogger().debug(".executeTask(): Exit, response->{}", response);
         return(response);
     }
 

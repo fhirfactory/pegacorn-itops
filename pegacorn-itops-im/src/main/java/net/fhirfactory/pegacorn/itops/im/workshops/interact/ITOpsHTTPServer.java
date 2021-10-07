@@ -21,12 +21,21 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.interact;
 
-import java.util.ArrayList;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
+import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeFDN;
+import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceNotFoundException;
+import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceUpdateException;
+import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.IPCTopologyEndpoint;
+import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPServerClusterServiceTopologyEndpointPort;
+import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantTopologyNode;
+import net.fhirfactory.pegacorn.internals.PegacornReferenceProperties;
+import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.*;
+import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ProcessingPlantNodeMetrics;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.WorkUnitProcessorNodeMetrics;
+import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
+import net.fhirfactory.pegacorn.workshops.base.Workshop;
+import net.fhirfactory.pegacorn.wups.archetypes.unmanaged.NonResilientWithAuditTrailWUP;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.OnExceptionDefinition;
@@ -36,20 +45,9 @@ import org.hl7.fhir.r4.model.AuditEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeFDN;
-import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceNotFoundException;
-import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceUpdateException;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.IPCTopologyEndpoint;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPServerClusterServiceTopologyEndpointPort;
-import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantTopologyNode;
-import net.fhirfactory.pegacorn.deployment.topology.model.nodes.WorkshopTopologyNode;
-import net.fhirfactory.pegacorn.internals.PegacornReferenceProperties;
-import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
-import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
-import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
-import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
-import net.fhirfactory.pegacorn.workshops.base.Workshop;
-import net.fhirfactory.pegacorn.wups.archetypes.unmanaged.NonResilientWithAuditTrailWUP;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.ArrayList;
 
 @ApplicationScoped
 public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
@@ -109,10 +107,10 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                     .dataFormatProperty("prettyPrint", "true")
                     .contextPath(getPegacornReferenceProperties().getITOpsContextPath())
                     .host(getServerHostName())
-                    .port(getServerHostPort());
-//                    .enableCORS(true)
-//                    .corsAllowCredentials(true)
-//                    .corsHeaderProperty("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, login");
+                    .port(getServerHostPort())
+                    .enableCORS(true)
+                    .corsAllowCredentials(true)
+                    .corsHeaderProperty("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, login");
 
         rest("/ITOpsTopologyGraph")
                 .get("")
@@ -158,27 +156,27 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         //
 
         rest("/ProcessingPlant")
-                .get("/{componentId}/ITOpsMetrics").outType(ITOpsMetricsSet.class)
+                .get("/{componentId}/ITOpsMetrics").outType(ProcessingPlantNodeMetrics.class)
                 .to("direct:ProcessingPlantMetricsGET");
 
         from("direct:ProcessingPlantMetricsGET")
                 .log(LoggingLevel.INFO, "GET Metrics Request")
-                .bean(metricsHandler, "retrieveMetrics");
+                .bean(metricsHandler, "retrieveProcessingPlantMetrics");
 
         rest("/WorkUnitProcessor")
-                .get("/{componentId}/ITOpsMetrics").outType(ITOpsMetricsSet.class)
+                .get("/{componentId}/ITOpsMetrics").outType(WorkUnitProcessorNodeMetrics.class)
                 .to("direct:WUPMetricsGET");
 
         from("direct:WUPMetricsGET")
                 .log(LoggingLevel.INFO, "GET Metrics Request")
-                .bean(metricsHandler, "retrieveMetrics");
+                .bean(metricsHandler, "retrieveWorkUnitProcessorMetrics");
 
         //
         // PubSub Report
         //
 
         rest("/ProcessingPlant")
-                .get("/{componentId}/PublishSubscribeReport").outType(ITOpsMetricsSet.class)
+                .get("/{componentId}/PublishSubscribeReport").outType(WorkUnitProcessorNodeMetrics.class)
                 .to("direct:ProcessingPlantPubSubReportGET");
 
         from("direct:ProcessingPlantPubSubReportGET")
@@ -186,7 +184,7 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                 .bean(pubSubReportHandler, "retrieveProcessingPlantPubSubReport");
 
         rest("/WorkUnitProcessor")
-                .get("/{componentId}/PublishSubscribeReport").outType(ITOpsMetricsSet.class)
+                .get("/{componentId}/PublishSubscribeReport").outType(WorkUnitProcessorNodeMetrics.class)
                 .to("direct:WUPPubSubReportGET");
 
         from("direct:WUPPubSubReportGET")

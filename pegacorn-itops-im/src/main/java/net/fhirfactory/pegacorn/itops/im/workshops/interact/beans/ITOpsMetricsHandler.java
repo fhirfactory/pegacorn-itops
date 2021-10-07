@@ -25,7 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.fhirfactory.pegacorn.components.capabilities.CapabilityUtilisationBrokerInterface;
 import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideMetricsDM;
-import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ProcessingPlantNodeMetrics;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.WorkUnitProcessorNodeMetrics;
 import org.apache.camel.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,9 +51,17 @@ public class ITOpsMetricsHandler {
     }
 
 
-    public ITOpsMetricsSet retrieveMetrics(@Header("componentId") String componentID){
-        CapabilityUtilisationRequest request = new CapabilityUtilisationRequest();
-        ITOpsMetricsSet componentMetricsSet = metricsDM.getComponentMetricsSet(componentID);
-        return(componentMetricsSet);
+    public WorkUnitProcessorNodeMetrics retrieveWorkUnitProcessorMetrics(@Header("componentId") String componentID){
+        LOG.info(".retrieveMetrics(): Entry, componentID->{}", componentID);
+        WorkUnitProcessorNodeMetrics componentMetrics = (WorkUnitProcessorNodeMetrics) metricsDM.getComponentMetricsSet(componentID);
+        LOG.info(".retrieveMetrics(): Exit, componentMetrics->{}",componentMetrics);
+        return(componentMetrics);
+    }
+
+    public ProcessingPlantNodeMetrics retrieveProcessingPlantMetrics(@Header("componentId") String componentID){
+        LOG.info(".retrieveMetrics(): Entry, componentID->{}", componentID);
+        ProcessingPlantNodeMetrics componentMetrics = (ProcessingPlantNodeMetrics) metricsDM.getComponentMetricsSet(componentID);
+        LOG.info(".retrieveMetrics(): Exit, componentMetrics->{}",componentMetrics);
+        return(componentMetrics);
     }
 }
