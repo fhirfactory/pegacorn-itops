@@ -15,11 +15,11 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>pegacorn-itops-im</artifactId>
+    <artifactId>pegacorn-itops-pm</artifactId>
     <packaging>jar</packaging>
 
-    <name>Pegacorn :: ITOps :: IM (Information Manager)</name>
-    <description>The Service Broker for the (Real-Time) View of the Pegacorn Subsystems</description>
+    <name>Pegacorn :: ITOps :: PM (Presentation Manager)</name>
+    <description>The User Interface for the (Real-Time) View of the Pegacorn Subsystems</description>
 
     <!--***********************************************************************************-->
     <!--                                                                                   -->
@@ -143,16 +143,6 @@
         </dependency>
 
         <!--*******************************************************************************-->
-        <!-- Apache Camel JSON Libraries                                                    -->
-        <!--*******************************************************************************-->
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-jackson</artifactId>
-            <version>${version-org.apache.camel}</version>
-        </dependency>
-
-        <!--*******************************************************************************-->
         <!-- JSON Manipulation Libraries                                                   -->
         <!--*******************************************************************************-->
 
@@ -167,16 +157,7 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${version-com.fasterxml.jackson.core-jackson-core}</version>
-            <scope>compile</scope>
         </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${version-com.fasterxml.jackson.datatype-jackson-datatype-jsr310}</version>
-            <scope>compile</scope>
-        </dependency>
-
 
         <!--*******************************************************************************-->
         <!-- Pegacorn (Platform) Libraries                                                 -->
@@ -252,25 +233,9 @@
             <scope>compile</scope>
         </dependency>
 
-        <!--*******************************************************************************-->
-        <!-- Pegacorn (Petasos Audit) Libraries                                            -->
-        <!--*******************************************************************************-->
-
         <dependency>
             <groupId>net.fhirfactory.pegacorn</groupId>
             <artifactId>pegacorn-platform-petasos-audit</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <!--*******************************************************************************-->
-        <!-- Pegacorn (Petasos IT-Ops) Libraries                                           -->
-        <!--*******************************************************************************-->
-
-        <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-itops</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
@@ -362,18 +327,6 @@
             <groupId>net.fhirfactory.pegacorn</groupId>
             <artifactId>pegacorn-buildingblocks-workunitprocessors</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!--*******************************************************************************-->
-        <!-- Pegacorn ITOps Services Library                                               -->
-        <!--*******************************************************************************-->
-
-        <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-itops</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
             <scope>compile</scope>
         </dependency>
 
