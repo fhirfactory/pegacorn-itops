@@ -82,7 +82,7 @@ class DashboardPage extends React.Component {
         suffix = 'Endpoint/';
       }
     if(componentID !== undefined ) {
-      const prefix = 'http://10.123.123.50:18002/pegacorn/internal/itops/r1/';
+      const prefix = 'http://aether-itops-im.site-a:18002/pegacorn/internal/itops/r1/';
       if(eventName === 'Audit') {
         endpoint = prefix + 'AuditEvents/' + componentID;
       }
@@ -152,7 +152,7 @@ class DashboardPage extends React.Component {
             <Card>
               <CardHeader>
                 Latest Object Graph{' '}
-                <small className="text-muted">refresh time: dd/mm/yy hh:mm:ss</small>
+                {/* <small className="text-muted">refresh time: dd/mm/yy hh:mm:ss</small> */}
               </CardHeader>
               <CardBody>
                 <this.JsonView />
