@@ -27,6 +27,8 @@ import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisati
 import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideMetricsDM;
 import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ProcessingPlantNodeMetrics;
 import net.fhirfactory.pegacorn.petasos.model.itops.metrics.WorkUnitProcessorNodeMetrics;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.common.NodeMetricsBase;
+
 import org.apache.camel.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,5 +65,11 @@ public class ITOpsMetricsHandler {
         ProcessingPlantNodeMetrics componentMetrics = (ProcessingPlantNodeMetrics) metricsDM.getComponentMetricsSet(componentID);
         LOG.info(".retrieveMetrics(): Exit, componentMetrics->{}",componentMetrics);
         return(componentMetrics);
+    }
+    
+    public NodeMetricsBase retrieveEndpointMetrics(@Header("componentId") String componentID) {
+        LOG.info(".retrieveEndpointMetrics(): Entry, componentID->{}", componentID);
+        LOG.info(".retrieveEndpointMetrics(): Exit, CURRENTLY UNSUPPORTED");
+        return( new NodeMetricsBase());
     }
 }
