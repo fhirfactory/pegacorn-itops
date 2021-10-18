@@ -126,11 +126,6 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                     .param().name("sortOrder").type(RestParamType.query).required(false).endParam()
                     .to("direct:ProcessingPlantTopologyNodeListGET");      
 
-        rest("/AuditEvents")
-                .get("/{nodeName}")
-                .to("direct:AuditEventGET");
-
-
         from("direct:ITOpsTopologyGraphGET")
                 .log(LoggingLevel.INFO, "GET TopologyGraph")
                 .bean(topologyGraphHandler, "getTopologyGraph");
