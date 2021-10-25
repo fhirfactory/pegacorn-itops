@@ -65,11 +65,10 @@ public class ITOpsMetricsHandler {
         LOG.info(".retrieveMetrics(): Exit, componentMetrics->{}",componentMetrics);
         return(componentMetrics);
     }
-
-    public NodeMetricsBase retrieveEndpointMetrics(@Header("componentId") String componentID){
-        LOG.info(".retrieveMetrics(): Entry, componentID->{}", componentID);
-        NodeMetricsBase componentMetrics = (NodeMetricsBase) metricsDM.getComponentMetricsSet(componentID);
-        LOG.info(".retrieveMetrics(): Exit, componentMetrics->{}",componentMetrics);
-        return(componentMetrics);
+    
+    public NodeMetricsBase retrieveEndpointMetrics(@Header("componentId") String componentID) {
+        LOG.info(".retrieveEndpointMetrics(): Entry, componentID->{}", componentID);
+        LOG.info(".retrieveEndpointMetrics(): Exit, CURRENTLY UNSUPPORTED");
+        return( new NodeMetricsBase());
     }
 }

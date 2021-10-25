@@ -40,7 +40,7 @@ class MainLayout extends React.Component {
   componentDidMount() {
     this.checkBreakpoint(this.props.breakpoint);
 
-    fetch('http://10.123.123.50:18002/pegacorn/internal/itops/r1/ITOpsTopologyGraph')
+    fetch('http://aether-itops-im.site-a:18002/pegacorn/internal/itops/r1/ITOpsTopologyGraph')
       .then(res => res.json())
       .then((data) => {
         if (daat) {

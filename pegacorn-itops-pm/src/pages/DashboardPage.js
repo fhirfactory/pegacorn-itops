@@ -23,7 +23,8 @@ class DashboardPage extends React.Component {
       data: [],
       menuData: [],
       refreshedData: [],
-      auditData: ''
+      auditData: '',
+      auditRecord: ''
     };
     console.log("constructor...");
   }
@@ -71,6 +72,7 @@ class DashboardPage extends React.Component {
 
   fetchOnDemandMetrics = (eventName) => {
     const componentID = this.state.refreshedData['componentID'];
+    this.state.auditRecord = componentID;
     const type = this.state.refreshedData['nodeType'];
     let endpoint = '';
     let suffix = '';
@@ -82,7 +84,7 @@ class DashboardPage extends React.Component {
         suffix = 'Endpoint/';
       }
     if(componentID !== undefined ) {
-      const prefix = 'http://10.123.123.50:18002/pegacorn/internal/itops/r1/';
+      const prefix = 'http://aether-itops-im.site-a:18002/pegacorn/internal/itops/r1/';
       if(eventName === 'Audit') {
         endpoint = prefix + 'AuditEvents/' + componentID;
       }
@@ -117,6 +119,10 @@ class DashboardPage extends React.Component {
 
   AuditView = () => {
     // let testString = '{\n  \"resourceType\": \"Communication\",\n  \"identifier\": [ {\n    \"type\": {\n      \"coding\": [ {\n        \"system\": \"http://ontology.fhirfactory.net/fhir/code-systems/identifier-type\",\n        \"code\": \"idcode:communication.HL7v2-container\"\n      } ],\n      \"text\": \"idcode:communication.HL7v2-container --> \"\n    },\n    \"system\": \"AETHER/local/fhir/code-systems/identifiers\",\n    \"value\": \"1501\",\n    \"period\": {\n      \"start\": \"2021-08-01T22:31:05+00:00\"\n    },\n    \"assigner\": {\n      \"type\": \"Oranization\",\n      \"identifier\": {\n        \"use\": \"secondary\",\n        \"type\": {\n          \"coding\": [ {\n            \"system\": \"http://terminology.hl7.org/ValueSet/v2-0203\",\n            \"code\": \"RI\"\n          } ],\n          \"text\": \"Generalized Resource Identifier\"\n        },\n        \"system\": \"FHIRFactory\",\n        \"value\": \"TBA\",\n        \"period\": {\n          \"start\": \"2021-08-30T02:23:36+00:00\"\n        },\n        \"assigner\": {\n          \"reference\": \"Organization/FHIRFactory\"\n        }\n      },\n      \"display\": \"Australian Capital Territory Health Services\"\n    }\n  } ],\n  \"status\": \"completed\",\n  \"priority\": \"routine\",\n  \"payload\": [ {\n    \"extension\": [ {\n      \"url\": \"http://www.fhirfactory.net/pegacorn/FHIR/R4/Communication/communication_payload_type_extension\",\n      \"valueString\": \"{\\\"dataParcelDefiner\\\":\\\"HL7\\\",\\\"dataParcelCategory\\\":\\\"Message\\\",\\\"dataParcelSubCategory\\\":\\\"ADT\\\",\\\"dataParcelResource\\\":\\\"A04\\\",\\\"dataParcelSegment\\\":null,\\\"dataParcelAttribute\\\":null,\\\"dataParcelDiscriminatorType\\\":null,\\\"dataParcelDiscriminatorValue\\\":null,\\\"version\\\":\\\"2.4\\\"}\"\n    } ],\n    \"contentString\": \"MSH|^~\\\\&|||||20210801153105.221-0700||ADT^A04^ADT_A01|1501|T|2.4\\r\"\n  } ]\n}';
+    //check if the active component is the same as the one the auditData is loaded against
+	if(this.state.auditRecord !== this.state.refreshedData['componentID']) {
+      this.state.auditData = '';
+    }
     if(this.state.auditData !== '') {
        let testString = this.state.auditData;
       return (
@@ -152,7 +158,7 @@ class DashboardPage extends React.Component {
             <Card>
               <CardHeader>
                 Latest Object Graph{' '}
-                <small className="text-muted">refresh time: dd/mm/yy hh:mm:ss</small>
+                {/* <small className="text-muted">refresh time: dd/mm/yy hh:mm:ss</small> */}
               </CardHeader>
               <CardBody>
                 <this.JsonView />

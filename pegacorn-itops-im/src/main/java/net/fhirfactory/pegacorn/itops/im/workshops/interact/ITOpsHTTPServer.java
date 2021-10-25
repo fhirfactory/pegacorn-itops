@@ -130,11 +130,6 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                     .param().name("sortOrder").type(RestParamType.query).required(false).endParam()
                     .to("direct:ProcessingPlantTopologyNodeListGET");      
 
-        rest("/AuditEvents")
-                .get("/{nodeName}")
-                .to("direct:AuditEventGET");
-
-
         from("direct:ITOpsTopologyGraphGET")
                 .log(LoggingLevel.INFO, "GET TopologyGraph")
                 .bean(topologyGraphHandler, "getTopologyGraph");
@@ -175,8 +170,9 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                 .log(LoggingLevel.INFO, "GET Metrics Request")
                 .bean(metricsHandler, "retrieveWorkUnitProcessorMetrics");
 
+        /*
         rest("/Endpoint")
-                .get("/{componentId}/ITOpsMetrics").outType(NodeMetricsBase.class)
+                .get("/{componentId}/ITOpsMetrics")
                 .to("direct:EndpointMetricsGET");
 
         from("direct:EndpointMetricsGET")
@@ -202,14 +198,15 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         from("direct:WUPPubSubReportGET")
                 .log(LoggingLevel.INFO, "GET PubSub Report Request")
                 .bean(pubSubReportHandler, "retrieveWorkUnitProcessorPubSubReport");
-        
-/*        rest("/Endpoint")
-                .get("/{componentId}/PublishSubscribeReport").outType(ITOpsMetricsSet.class)
+        /*
+        rest("/Endpoint")
+                .get("/{componentId}/PublishSubscribeReport")
                 .to("direct:EndpointPubSubReportGET");
         
         from("direct:EndpointPubSubReportGET")
                 .log(LoggingLevel.INFO, "GET PubSub Report Request")
                 .bean(pubSubReportHandler, "retrieveEndpointPubSubReport");
+        */
 
 */
 
