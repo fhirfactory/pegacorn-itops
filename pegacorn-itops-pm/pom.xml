@@ -13,7 +13,6 @@
         <groupId>net.fhirfactory.pegacorn</groupId>
         <artifactId>pegacorn-itops</artifactId>
         <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../pegacorn-itops</relativePath>
     </parent>
 
     <artifactId>pegacorn-itops-pm</artifactId>

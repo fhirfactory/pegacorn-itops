@@ -33,6 +33,10 @@ import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.*;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ProcessingPlantNodeMetrics;
 import net.fhirfactory.pegacorn.petasos.model.itops.metrics.WorkUnitProcessorNodeMetrics;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.common.NodeMetricsBase;
+import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.ProcessingPlantSubscriptionSummary;
+import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.WorkUnitProcessorSubscriptionSummary;
+import net.fhirfactory.pegacorn.processingplant.ProcessingPlant;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.workshops.base.Workshop;
 import net.fhirfactory.pegacorn.wups.archetypes.unmanaged.NonResilientWithAuditTrailWUP;
@@ -172,19 +176,19 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                 .bean(metricsHandler, "retrieveWorkUnitProcessorMetrics");
 
         rest("/Endpoint")
-                .get("/{componentId}/ITOpsMetrics").outType(ITOpsMetricsSet.class)
+                .get("/{componentId}/ITOpsMetrics").outType(NodeMetricsBase.class)
                 .to("direct:EndpointMetricsGET");
 
         from("direct:EndpointMetricsGET")
                 .log(LoggingLevel.INFO, "GET Metrics Request")
-                .bean(metricsHandler, "retrieveMetrics");
+                .bean(metricsHandler, "retrieveEndpointMetrics");
 
         //
         // PubSub Report
         //
 
         rest("/ProcessingPlant")
-                .get("/{componentId}/PublishSubscribeReport").outType(WorkUnitProcessorNodeMetrics.class)
+                .get("/{componentId}/PublishSubscribeReport").outType(ProcessingPlantSubscriptionSummary.class)
                 .to("direct:ProcessingPlantPubSubReportGET");
 
         from("direct:ProcessingPlantPubSubReportGET")
@@ -192,14 +196,14 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                 .bean(pubSubReportHandler, "retrieveProcessingPlantPubSubReport");
 
         rest("/WorkUnitProcessor")
-                .get("/{componentId}/PublishSubscribeReport").outType(WorkUnitProcessorNodeMetrics.class)
+                .get("/{componentId}/PublishSubscribeReport").outType(WorkUnitProcessorSubscriptionSummary.class)
                 .to("direct:WUPPubSubReportGET");
 
         from("direct:WUPPubSubReportGET")
                 .log(LoggingLevel.INFO, "GET PubSub Report Request")
                 .bean(pubSubReportHandler, "retrieveWorkUnitProcessorPubSubReport");
         
-        rest("/Endpoint")
+/*        rest("/Endpoint")
                 .get("/{componentId}/PublishSubscribeReport").outType(ITOpsMetricsSet.class)
                 .to("direct:EndpointPubSubReportGET");
         
@@ -207,7 +211,7 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                 .log(LoggingLevel.INFO, "GET PubSub Report Request")
                 .bean(pubSubReportHandler, "retrieveEndpointPubSubReport");
 
-
+*/
 
     }
 
