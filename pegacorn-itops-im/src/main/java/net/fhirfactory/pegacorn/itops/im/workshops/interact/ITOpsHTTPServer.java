@@ -21,12 +21,13 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.interact;
 
-import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeFDN;
+import net.fhirfactory.pegacorn.core.constants.systemwide.PegacornReferenceProperties;
+import net.fhirfactory.pegacorn.core.model.componentid.TopologyNodeFDN;
 import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceNotFoundException;
 import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceUpdateException;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.IPCTopologyEndpoint;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPServerClusterServiceTopologyEndpointPort;
-import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantTopologyNode;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.base.IPCTopologyEndpoint;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.general.HTTPServerTopologyEndpoint;
+import net.fhirfactory.pegacorn.core.model.topology.nodes.ProcessingPlantTopologyNode;
 import net.fhirfactory.pegacorn.internals.PegacornReferenceProperties;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.*;
@@ -36,7 +37,6 @@ import net.fhirfactory.pegacorn.petasos.model.itops.metrics.WorkUnitProcessorNod
 import net.fhirfactory.pegacorn.petasos.model.itops.metrics.common.NodeMetricsBase;
 import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.ProcessingPlantSubscriptionSummary;
 import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.WorkUnitProcessorSubscriptionSummary;
-import net.fhirfactory.pegacorn.processingplant.ProcessingPlant;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.workshops.base.Workshop;
 import net.fhirfactory.pegacorn.wups.archetypes.unmanaged.NonResilientWithAuditTrailWUP;
@@ -258,7 +258,7 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
 
     protected void deriveEndpointDetails() {
         MessageBasedWUPEndpoint endpoint = new MessageBasedWUPEndpoint();
-        HTTPServerClusterServiceTopologyEndpointPort serverTopologyEndpoint = (HTTPServerClusterServiceTopologyEndpointPort) getTopologyEndpoint(names.getInteractITOpsIMHTTPServerName());
+        HTTPServerTopologyEndpoint serverTopologyEndpoint = (HTTPServerTopologyEndpoint) getTopologyEndpoint(names.getInteractITOpsIMHTTPServerName());
         this.serverHostPort = serverTopologyEndpoint.getPortValue();
         this.serverHostName = serverTopologyEndpoint.getHostDNSName();
         if(serverTopologyEndpoint.isEncrypted()){

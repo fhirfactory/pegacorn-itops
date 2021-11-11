@@ -39,3 +39,7 @@ pegacorn-itops-im/target/maven-archiver/pom.properties
 *.lst
 
 *.iml
+
+pegacorn-itops-pm/.env
+
+pegacorn-itops-pm/.project
