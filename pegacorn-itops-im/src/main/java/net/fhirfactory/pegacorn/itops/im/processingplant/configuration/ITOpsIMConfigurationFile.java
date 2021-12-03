@@ -63,8 +63,8 @@ public class ITOpsIMConfigurationFile extends PetasosEnabledSubsystemPropertyFil
                 ", interZoneIPC=" + getInterZoneIPC() +
                 ", edgeAnswer=" + getEdgeAnswer() +
                 ", intraZoneIPC=" + getIntraZoneIPC() +
-                ", interZoneOAM=" + getInterZoneOAM() +
-                ", intraZoneOAM=" + getIntraZoneOAM() +
+                ", interZoneOAM=" + getInterZoneTopology() +
+                ", intraZoneOAM=" + getIntraZoneTopology() +
                 ", httpServerPortSegment=" + itopsServerSegment +
                 '}';
     }

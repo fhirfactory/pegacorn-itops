@@ -22,13 +22,15 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.edge;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideTopologyDM;
+import net.fhirfactory.pegacorn.core.interfaces.topology.PetasosTopologyHandlerInterface;
+import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
+import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.CapabilityProviderTitlesEnum;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.PetasosMonitoredTopologyGraph;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.petasos.PetasosEndpointIdentifier;
+import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
+import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.edge.common.ITOpsReceiverBase;
-import net.fhirfactory.pegacorn.petasos.itops.valuesets.ITOpsCapabilityNamesEnum;
-import net.fhirfactory.pegacorn.petasos.model.itops.topology.ITOpsMonitoredProcessingPlant;
-import net.fhirfactory.pegacorn.petasos.model.itops.topology.ITOpsTopologyGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,34 +39,29 @@ import javax.inject.Inject;
 import java.time.Instant;
 
 @ApplicationScoped
-public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase {
+public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase implements PetasosTopologyHandlerInterface {
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsTopologyReportReceiver.class);
 
     @Inject
-    private ITOpsSystemWideTopologyDM topologyMapDM;
+    private ITOpsSystemWideTopologyMapDM topologyMapDM;
 
     @Override
     protected void registerCapabilities(){
-        getProcessingPlant().registerCapabilityFulfillmentService(ITOpsCapabilityNamesEnum.IT_OPS_TOPOLOGY_REPORT_COLLATOR.getCapabilityName(), this);
+        getProcessingPlant().registerCapabilityFulfillmentService(CapabilityProviderTitlesEnum.CAPABILITY_INFORMATION_MANAGEMENT_IT_OPS.getToken(), this);
     }
 
     @Override
     public CapabilityUtilisationResponse executeTask(CapabilityUtilisationRequest request) {
         getLogger().debug(".executeTask(): Entry, request->{}", request);
-        ITOpsTopologyGraph topologyGraph = extractTopologyGraph(request);
-        if(topologyGraph != null){
-            for(ITOpsMonitoredProcessingPlant currentProcessingPlant: topologyGraph.getProcessingPlants().values()) {
-                topologyMapDM.addProcessingPlant(currentProcessingPlant);
-            }
-            topologyMapDM.refreshNodeMap();
-        }
+        PetasosMonitoredTopologyGraph topologyGraph = extractTopologyGraph(request);
+
         CapabilityUtilisationResponse response = null;
         if(topologyGraph == null){
             response = generateBadResponse(request.getRequestID());
 
         } else {
             response = new CapabilityUtilisationResponse();
-            response.setDateCompleted(Instant.now());
+            response.setInstantCompleted(Instant.now());
             response.setSuccessful(true);
             response.setAssociatedRequestID(request.getRequestID());
             response.setResponseContent("OK");
@@ -78,11 +75,11 @@ public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase {
         return(LOG);
     }
 
-    protected ITOpsTopologyGraph extractTopologyGraph(CapabilityUtilisationRequest request){
+    protected PetasosMonitoredTopologyGraph extractTopologyGraph(CapabilityUtilisationRequest request){
         getLogger().debug(".extractMetricsSet(): Entry, request->{}", request);
-        ITOpsTopologyGraph topologyGraph = null;
+        PetasosMonitoredTopologyGraph topologyGraph = null;
         try {
-            topologyGraph = getJsonMapper().readValue(request.getRequestContent(),ITOpsTopologyGraph.class);
+            topologyGraph = getJsonMapper().readValue(request.getRequestStringContent(),PetasosMonitoredTopologyGraph.class);
         } catch (JsonProcessingException e) {
             getLogger().error(".extractMetricsSet(): Unable to JSON Decode String, {}", e);
         }
@@ -90,4 +87,13 @@ public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase {
         return(topologyGraph);
     }
 
+    @Override
+    public Instant mergeRemoteTopologyGraph(PetasosMonitoredTopologyGraph topologyGraph, PetasosEndpointIdentifier requesterEndpointIdentifier) {
+        if(topologyGraph != null) {
+            for (ProcessingPlantSummary currentProcessingPlant : topologyGraph.getProcessingPlants().values()) {
+                topologyMapDM.addProcessingPlant(currentProcessingPlant);
+            }
+        }
+        return(Instant.now());
+    }
 }

@@ -21,8 +21,8 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.cache;
 
-import net.fhirfactory.pegacorn.petasos.model.itops.topology.*;
-import net.fhirfactory.pegacorn.petasos.model.itops.topology.common.ITOpsMonitoredNode;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.PetasosMonitoredTopologyGraph;
+import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,28 +34,29 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
-public class ITOpsSystemWideTopologyDM {
+public class ITOpsSystemWideTopologyMapDM {
+    private static final Logger LOG = LoggerFactory.getLogger(ITOpsSystemWideTopologyMapDM.class);
 
-    private static final Logger LOG = LoggerFactory.getLogger(ITOpsSystemWideTopologyDM.class);
-
-    private ITOpsTopologyGraph topologyGraph;
-    private Map<String, ITOpsMonitoredNode> nodeMap;
+    private PetasosMonitoredTopologyGraph topologyGraph;
+    private Map<String, SoftwareComponentSummary> nodeMap;
+    private ConcurrentHashMap<String, Instant> sourceUpdateInstantMap;
     private Instant currentStateUpdateInstant;
     private Object graphLock;
 
-    public ITOpsSystemWideTopologyDM() {
+    public ITOpsSystemWideTopologyMapDM() {
         LOG.debug(".ITOpsCollatedNodesDM(): Constructor initialisation");
-        this.topologyGraph = new ITOpsTopologyGraph();
+        this.topologyGraph = new PetasosMonitoredTopologyGraph();
         this.currentStateUpdateInstant = Instant.now();
         this.nodeMap = new ConcurrentHashMap<>();
+        this.sourceUpdateInstantMap = new ConcurrentHashMap<>();
         this.graphLock = new Object();
     }
 
-    public ITOpsTopologyGraph getTopologyGraph() {
+    public PetasosMonitoredTopologyGraph getTopologyGraph() {
         return topologyGraph;
     }
 
-    public void setTopologyGraph(ITOpsTopologyGraph topologyGraph) {
+    public void setTopologyGraph(PetasosMonitoredTopologyGraph topologyGraph) {
         this.topologyGraph = topologyGraph;
         this.currentStateUpdateInstant = Instant.now();
     }
@@ -68,15 +69,23 @@ public class ITOpsSystemWideTopologyDM {
         this.currentStateUpdateInstant = currentStateUpdateInstant;
     }
 
-    public void addProcessingPlant(ITOpsMonitoredProcessingPlant processingPlant){
+    public void addProcessingPlant(ProcessingPlantSummary processingPlant){
         synchronized (graphLock) {
             topologyGraph.addProcessingPlant(processingPlant);
+            if(nodeMap.containsKey(processingPlant.getComponentID().getId())){
+                nodeMap.remove(processingPlant.getComponentID().getId());
+            }
+            nodeMap.put(processingPlant.getComponentID().getId(), processingPlant);
+            if(sourceUpdateInstantMap.containsKey(processingPlant.getComponentID().getId())){
+                sourceUpdateInstantMap.remove(processingPlant.getComponentID().getId());
+            }
+            sourceUpdateInstantMap.put(processingPlant.getComponentID().getId(),Instant.now());
         }
         currentStateUpdateInstant = Instant.now();
     }
 
-    public void removeProcessingPlant(ITOpsMonitoredProcessingPlant processingPlant){
-        removeProcessingPlant(processingPlant.getComponentID());
+    public void removeProcessingPlant(ProcessingPlantSummary processingPlant){
+        removeProcessingPlant(processingPlant.getComponentID().getId());
     }
 
     public void removeProcessingPlant(String componentID){
@@ -85,17 +94,25 @@ public class ITOpsSystemWideTopologyDM {
         }
     }
 
+    public ConcurrentHashMap<String, Instant> getSourceUpdateInstantMap() {
+        return sourceUpdateInstantMap;
+    }
+
+    public void setSourceUpdateInstantMap(ConcurrentHashMap<String, Instant> sourceUpdateInstantMap) {
+        this.sourceUpdateInstantMap = sourceUpdateInstantMap;
+    }
+
     public void refreshNodeMap(){
         synchronized (graphLock){
             nodeMap.clear();
-            for(ITOpsMonitoredProcessingPlant currentProcessingPlant: topologyGraph.getProcessingPlants().values()){
-                nodeMap.put(currentProcessingPlant.getComponentID(), currentProcessingPlant);
-                for(ITOpsMonitoredWorkshop currentWorkshop: currentProcessingPlant.getWorkshops().values()){
-                    nodeMap.put(currentWorkshop.getComponentID(), currentWorkshop);
-                    for(ITOpsMonitoredWUP currentWUP: currentWorkshop.getWorkUnitProcessors().values()){
-                        nodeMap.put(currentWUP.getComponentID(), currentWUP);
-                        for(ITOpsMonitoredEndpoint currentEndpoint: currentWUP.getEndpoints().values()){
-                            nodeMap.put(currentEndpoint.getComponentID(), currentEndpoint);
+            for(ProcessingPlantSummary currentProcessingPlant: topologyGraph.getProcessingPlants().values()){
+                nodeMap.put(currentProcessingPlant.getComponentID().getId(), currentProcessingPlant);
+                for(WorkshopSummary currentWorkshop: currentProcessingPlant.getWorkshops().values()){
+                    nodeMap.put(currentWorkshop.getComponentID().getId(), currentWorkshop);
+                    for(WorkUnitProcessorSummary currentWUP: currentWorkshop.getWorkUnitProcessors().values()){
+                        nodeMap.put(currentWUP.getComponentID().getId(), currentWUP);
+                        for(EndpointSummary currentEndpoint: currentWUP.getEndpoints().values()){
+                            nodeMap.put(currentEndpoint.getComponentID().getId(), currentEndpoint);
                         }
                     }
                 }
@@ -103,7 +120,7 @@ public class ITOpsSystemWideTopologyDM {
         }
     }
 
-    public ITOpsMonitoredNode getNode(String componentID){
+    public SoftwareComponentSummary getNode(String componentID){
         if(nodeMap.containsKey(componentID)){
             return(nodeMap.get(componentID));
         } else {
@@ -111,8 +128,8 @@ public class ITOpsSystemWideTopologyDM {
         }
     }
 
-    public List<ITOpsMonitoredProcessingPlant> getProcessingPlants(){
-        List<ITOpsMonitoredProcessingPlant> plantList = new ArrayList<>();
+    public List<ProcessingPlantSummary> getProcessingPlants(){
+        List<ProcessingPlantSummary> plantList = new ArrayList<>();
         synchronized(graphLock){
             plantList.addAll(topologyGraph.getProcessingPlants().values());
         }

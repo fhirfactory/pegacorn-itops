@@ -24,9 +24,9 @@ package net.fhirfactory.pegacorn.itops.im.workshops.edge.common;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import net.fhirfactory.pegacorn.components.capabilities.CapabilityFulfillmentInterface;
-import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.components.interfaces.topology.ProcessingPlantInterface;
+import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterface;
+import net.fhirfactory.pegacorn.core.model.capabilities.CapabilityFulfillmentInterface;
+import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -88,7 +88,7 @@ public abstract class ITOpsReceiverBase extends RouteBuilder implements Capabili
             response.setAssociatedRequestID(requestID);
         }
         response.setSuccessful(false);
-        response.setDateCompleted(Instant.now());
+        response.setInstantCompleted(Instant.now());
         return(response);
     }
 

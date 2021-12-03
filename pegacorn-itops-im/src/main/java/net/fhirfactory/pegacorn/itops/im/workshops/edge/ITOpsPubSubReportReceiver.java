@@ -21,15 +21,17 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.edge;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWidePubSubMapDM;
+import net.fhirfactory.pegacorn.core.interfaces.pubsub.PetasosSubscriptionReportHandlerInterface;
+import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
+import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.CapabilityProviderTitlesEnum;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosProcessingPlantSubscriptionSummary;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosPublisherSubscriptionSummary;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosSubscriptionSummaryReport;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosWorkUnitProcessorSubscriptionSummary;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.petasos.PetasosEndpointIdentifier;
+import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideSubscriptionMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.edge.common.ITOpsReceiverBase;
-import net.fhirfactory.pegacorn.petasos.itops.valuesets.ITOpsCapabilityNamesEnum;
-import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.ITOpsPubSubReport;
-import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.ProcessingPlantSubscriptionSummary;
-import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.WorkUnitProcessorSubscriptionSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,26 +40,25 @@ import javax.inject.Inject;
 import java.time.Instant;
 
 @ApplicationScoped
-public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase {
+public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase implements PetasosSubscriptionReportHandlerInterface{
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsPubSubReportReceiver.class);
 
     @Inject
-    private ITOpsSystemWidePubSubMapDM pubsubMapDM;
+    private ITOpsSystemWideSubscriptionMapDM subscriptionMapDM;
 
     @Override
     protected void registerCapabilities(){
-        getProcessingPlant().registerCapabilityFulfillmentService(ITOpsCapabilityNamesEnum.IT_OPS_PUBSUB_REPORT_COLLATOR.getCapabilityName(), this);
+        getProcessingPlant().registerCapabilityFulfillmentService(CapabilityProviderTitlesEnum.CAPABILITY_INFORMATION_MANAGEMENT_IT_OPS.getToken(), this);
     }
 
     @Override
     public CapabilityUtilisationResponse executeTask(CapabilityUtilisationRequest request) {
         getLogger().debug(".executeTask(): Entry, request->{}", request);
-        if(request.getRequiredCapabilityName().contentEquals(ITOpsCapabilityNamesEnum.IT_OPS_PUBSUB_REPORT_COLLATOR.getCapabilityName())) {
-            ITOpsPubSubReport pubsubReport = extractPubSubReport(request);
+        if(request.getRequiredCapabilityName().contentEquals(CapabilityProviderTitlesEnum.CAPABILITY_INFORMATION_MANAGEMENT_IT_OPS.getToken())) {
+            PetasosPublisherSubscriptionSummary pubsubReport = extractPubSubReport(request);
             if (pubsubReport != null) {
-                updateLocalCache(pubsubReport);
                 CapabilityUtilisationResponse response = new CapabilityUtilisationResponse();
-                response.setDateCompleted(Instant.now());
+                response.setInstantCompleted(Instant.now());
                 response.setSuccessful(true);
                 response.setAssociatedRequestID(request.getRequestID());
                 response.setResponseContent("OK");
@@ -75,18 +76,14 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase {
         return(LOG);
     }
 
-    protected ITOpsPubSubReport extractPubSubReport(CapabilityUtilisationRequest request){
+    protected PetasosPublisherSubscriptionSummary extractPubSubReport(CapabilityUtilisationRequest request){
         getLogger().debug(".extractPubSubReport(): Entry, request->{}", request);
-        ITOpsPubSubReport report = null;
-        try {
-            report = getJsonMapper().readValue(request.getRequestContent(),ITOpsPubSubReport.class);
-        } catch (JsonProcessingException e) {
-            getLogger().error(".extractPubSubReport(): Unable to JSON Decode String, {}", e);
-        }
-        getLogger().debug(".extractPubSubReport(): Exit, report->{}", report);
+        PetasosPublisherSubscriptionSummary report = null;
+           getLogger().debug(".extractPubSubReport(): Exit, report->{}", report);
         return(report);
     }
 
+    /*
     private void updateLocalCache(ITOpsPubSubReport report){
         getLogger().debug(".updateLocalCache(): Entry");
         for(ProcessingPlantSubscriptionSummary currentSummary: report.getProcessingPlantSubscriptionSummarySet().values()){
@@ -100,4 +97,18 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase {
         getLogger().debug(".updateLocalCache(): Exit");
     }
 
+     */
+
+    @Override
+    public Instant shareSubscriptionSummaryReport(PetasosSubscriptionSummaryReport summaryReport, PetasosEndpointIdentifier endpointIdentifier) {
+        if(summaryReport != null){
+            for(PetasosWorkUnitProcessorSubscriptionSummary wupSummary: summaryReport.getWupSubscriptionSummarySet().values()){
+                subscriptionMapDM.addWorkUnitProcessorSubscriptionSummary(wupSummary);
+            }
+            for(PetasosProcessingPlantSubscriptionSummary processingPlantSummary: summaryReport.getProcessingPlantSubscriptionSummarySet().values()){
+                subscriptionMapDM.addProcessingPlantSubscriptionSummary(processingPlantSummary);
+            }
+        }
+        return(Instant.now());
+    }
 }

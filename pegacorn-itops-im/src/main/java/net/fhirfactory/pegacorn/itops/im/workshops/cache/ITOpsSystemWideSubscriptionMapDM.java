@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MAHun
+ * Copyright (c) 2021 Mark A. Hunter (ACT Health)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,9 +21,9 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.cache;
 
-import net.fhirfactory.pegacorn.petasos.itops.caches.common.ITOpsLocalDMRefreshBase;
-import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.ProcessingPlantSubscriptionSummary;
-import net.fhirfactory.pegacorn.petasos.model.itops.subscriptions.WorkUnitProcessorSubscriptionSummary;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosProcessingPlantSubscriptionSummary;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosSubscriptionSummaryReport;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosWorkUnitProcessorSubscriptionSummary;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,54 +32,51 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
-public class ITOpsSystemWidePubSubMapDM extends ITOpsLocalDMRefreshBase {
-    private static final Logger LOG = LoggerFactory.getLogger(ITOpsSystemWidePubSubMapDM.class);
+public class ITOpsSystemWideSubscriptionMapDM {
+    private static final Logger LOG = LoggerFactory.getLogger(ITOpsSystemWideSubscriptionMapDM.class);
 
     // ConcurrentHashMap<componentID, ProcessingPlantSubscriptionSummary>
-    private ConcurrentHashMap<String, ProcessingPlantSubscriptionSummary> processingPlantSubscriptionSummarySet;
+    private ConcurrentHashMap<String, PetasosProcessingPlantSubscriptionSummary> processingPlantSubscriptionSummarySet;
     // ConcurrentHashMap<componentID, WorkUnitProcessorSubscriptionSummary>
-    private ConcurrentHashMap<String, WorkUnitProcessorSubscriptionSummary> workUnitProcessorSubscriptionSummarySet;
+    private ConcurrentHashMap<String, PetasosWorkUnitProcessorSubscriptionSummary> workUnitProcessorSubscriptionSummarySet;
     private Object publisherSubscriptionMapLock;
 
-    public ITOpsSystemWidePubSubMapDM(){
+    public ITOpsSystemWideSubscriptionMapDM(){
         this.processingPlantSubscriptionSummarySet = new ConcurrentHashMap<>();
         this.workUnitProcessorSubscriptionSummarySet = new ConcurrentHashMap<>();
         this.publisherSubscriptionMapLock = new Object();
-
     }
 
     //
     // Publisher Subscription Traceability
     //
 
-    public void addProcessingPlantSubscriptionSummary(ProcessingPlantSubscriptionSummary summary){
+    public void addProcessingPlantSubscriptionSummary(PetasosProcessingPlantSubscriptionSummary summary){
         LOG.debug(".addProcessingPlantSubscriptionSummary(): Entry, summary->{}", summary);
         if(processingPlantSubscriptionSummarySet.containsKey(summary.getComponentID())){
             processingPlantSubscriptionSummarySet.remove(summary.getComponentID());
         }
-        processingPlantSubscriptionSummarySet.put(summary.getComponentID(), summary);
-        refreshCurrentStateUpdateInstant();
+        processingPlantSubscriptionSummarySet.put(summary.getComponentID().getId(), summary);
         LOG.debug(".addProcessingPlantSubscriptionSummary(): Exit");
     }
 
-    public void addWorkUnitProcessorSubscriptionSummary(WorkUnitProcessorSubscriptionSummary summary){
+    public void addWorkUnitProcessorSubscriptionSummary(PetasosWorkUnitProcessorSubscriptionSummary summary){
         LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Entry, summary->{}", summary);
         if(workUnitProcessorSubscriptionSummarySet.containsKey(summary.getSubscriber())){
             workUnitProcessorSubscriptionSummarySet.remove(summary.getSubscriber());
         }
-        workUnitProcessorSubscriptionSummarySet.put(summary.getSubscriber(), summary);
-        refreshCurrentStateUpdateInstant();
+        workUnitProcessorSubscriptionSummarySet.put(summary.getSubscriber().getId(), summary);
         LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Exit" );
     }
 
-    public ProcessingPlantSubscriptionSummary getProcessingPlantPubSubReport(String componentID){
+    public PetasosProcessingPlantSubscriptionSummary getProcessingPlantPubSubReport(String componentID){
         LOG.debug(".getProcessingPlantPubSubReport(): Entry, componentID->{}", componentID);
         if(StringUtils.isEmpty(componentID)){
             LOG.debug(".getProcessingPlantPubSubReport(): Exit, componentID is empty");
             return(null);
         }
         if(processingPlantSubscriptionSummarySet.containsKey(componentID)){
-            ProcessingPlantSubscriptionSummary summary = processingPlantSubscriptionSummarySet.get(componentID);
+            PetasosProcessingPlantSubscriptionSummary summary = processingPlantSubscriptionSummarySet.get(componentID);
             return(summary);
         } else {
             LOG.debug(".getProcessingPlantPubSubReport(): Exit, cannot find processing plant with given componentID");
@@ -87,16 +84,15 @@ public class ITOpsSystemWidePubSubMapDM extends ITOpsLocalDMRefreshBase {
         }
     }
 
-    public WorkUnitProcessorSubscriptionSummary getWorkUnitProcessorPubSubReport(String componentID){
+    public PetasosWorkUnitProcessorSubscriptionSummary getWorkUnitProcessorPubSubReport(String componentID){
         if(StringUtils.isEmpty(componentID)){
             return(null);
         }
         if(workUnitProcessorSubscriptionSummarySet.containsKey(componentID)){
-            WorkUnitProcessorSubscriptionSummary summary = workUnitProcessorSubscriptionSummarySet.get(componentID);
+            PetasosWorkUnitProcessorSubscriptionSummary summary = workUnitProcessorSubscriptionSummarySet.get(componentID);
             return(summary);
         } else {
             return(null);
         }
     }
-
 }
