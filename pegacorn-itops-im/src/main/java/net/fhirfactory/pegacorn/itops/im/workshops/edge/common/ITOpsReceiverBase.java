@@ -35,11 +35,17 @@ import org.slf4j.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.time.Instant;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public abstract class ITOpsReceiverBase extends RouteBuilder implements CapabilityFulfillmentInterface {
 
     private ObjectMapper jsonMapper;
     private boolean initialised;
+    private Instant lastUpdate;
+
+    private static Long CACHE_MONITOR_PERIOD = 30000L;
+    private static Long CACHE_INITIAL_WAIT = 60000L;
 
     public ITOpsReceiverBase(){
         super();
@@ -48,6 +54,7 @@ public abstract class ITOpsReceiverBase extends RouteBuilder implements Capabili
         JavaTimeModule module = new JavaTimeModule();
         jsonMapper.registerModule(module);
         jsonMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        this.lastUpdate = Instant.EPOCH;
     }
 
     @Inject
@@ -71,14 +78,8 @@ public abstract class ITOpsReceiverBase extends RouteBuilder implements Capabili
 
     protected abstract void registerCapabilities();
     protected abstract Logger getLogger();
-
-    public ProcessingPlantInterface getProcessingPlant() {
-        return processingPlant;
-    }
-
-    public ObjectMapper getJsonMapper() {
-        return jsonMapper;
-    }
+    protected abstract void cacheMonitorProcess();
+    protected abstract String cacheMonitorProcessTimerName();
 
     protected CapabilityUtilisationResponse generateBadResponse(String requestID){
         CapabilityUtilisationResponse response = new CapabilityUtilisationResponse();
@@ -99,5 +100,48 @@ public abstract class ITOpsReceiverBase extends RouteBuilder implements Capabili
         from("timer://"+receiverName+"?delay=1000&repeatCount=1")
                 .routeId("ITOpsReceiver::"+receiverName)
                 .log(LoggingLevel.DEBUG, "Starting....");
+    }
+
+    //
+    // Scheduler
+    //
+
+    public void scheduleOngoingCacheUpdateNotificationService() {
+        getLogger().debug(".scheduleOngoingCacheUpdateNotificationService(): Entry");
+        TimerTask ongoingWatchdogTask = new TimerTask() {
+            public void run() {
+                getLogger().debug(".ongoingWatchdogTask(): Entry");
+                cacheMonitorProcess();
+                getLogger().debug(".ongoingWatchdogTask(): Exit");
+            }
+        };
+        Timer timer = new Timer(cacheMonitorProcessTimerName());
+        timer.schedule(ongoingWatchdogTask, CACHE_INITIAL_WAIT, CACHE_MONITOR_PERIOD);
+
+        getLogger().debug(".scheduleOngoingCacheUpdateNotificationService(): Exit");
+    }
+
+    //
+    // Getters (and Setters)
+    //
+
+    public ProcessingPlantInterface getProcessingPlant() {
+        return processingPlant;
+    }
+
+    public ObjectMapper getJsonMapper() {
+        return jsonMapper;
+    }
+
+    protected Instant getLastUpdate() {
+        return lastUpdate;
+    }
+
+    protected void touchLastUpdateInstant() {
+        this.lastUpdate = Instant.now();
+    }
+
+    public Long getCacheMonitorPeriod() {
+        return CACHE_MONITOR_PERIOD;
     }
 }

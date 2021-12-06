@@ -21,21 +21,40 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.edge;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
 import net.fhirfactory.pegacorn.core.interfaces.oam.metrics.PetasosMetricsHandlerInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
 import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.CapabilityProviderTitlesEnum;
+import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelTypeDescriptor;
+import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelDirectionEnum;
+import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelNormalisationStatusEnum;
+import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelValidationStatusEnum;
+import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.PolicyEnforcementPointApprovalStatusEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.PetasosComponentMetric;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.PetasosComponentMetricSet;
+import net.fhirfactory.pegacorn.core.model.petasos.task.PetasosActionableTask;
+import net.fhirfactory.pegacorn.core.model.petasos.task.datatypes.work.datatypes.TaskWorkItemType;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.petasos.PetasosEndpointIdentifier;
+import net.fhirfactory.pegacorn.internals.fhir.r4.resources.task.factories.TaskWorkItemFactory;
 import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideMetricsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.edge.common.ITOpsReceiverBase;
+import net.fhirfactory.pegacorn.petasos.core.tasks.factories.PetasosActionableTaskFactory;
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.time.Instant;
+import java.util.List;
 
 @ApplicationScoped
 public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements PetasosMetricsHandlerInterface {
@@ -43,6 +62,12 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
 
     @Inject
     private ITOpsSystemWideMetricsDM metricsDM;
+
+    @Inject
+    private PetasosActionableTaskFactory actionableTaskFactory;
+
+    @Produce
+    private ProducerTemplate template;
 
 
     @Override
@@ -93,5 +118,52 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
             metricsDM.addComponentMetricSet(endpointIdentifier.getEndpointComponentID().getId(), metricSet);
         }
         return(Instant.now());
+    }
+
+    //
+    // Update Notification Service
+    //
+
+    @Override
+    protected void cacheMonitorProcess() {
+        List<PetasosComponentMetricSet> updatedMetricSets = metricsDM.getUpdatedMetricSets();
+        for(PetasosComponentMetricSet currentMetricSet: updatedMetricSets){
+            TaskWorkItemType taskWorkItem = new TaskWorkItemType();
+            String workItemPayload = null;
+            try {
+                workItemPayload= getJsonMapper().writeValueAsString(currentMetricSet);
+            } catch (JsonProcessingException e) {
+                getLogger().warn("cacheMonitorProcess(): Could not convert metric to JSON, error->{}", ExceptionUtils.getStackTrace(e));
+            }
+            if(workItemPayload != null){
+                UoWPayload ingresPayload = new UoWPayload();
+                ingresPayload.setPayload(workItemPayload);
+
+                DataParcelManifest manifest = new DataParcelManifest();
+                DataParcelTypeDescriptor descriptor = new DataParcelTypeDescriptor();
+                descriptor.setDataParcelDefiner("FHIRFactory");
+                descriptor.setDataParcelCategory("OAM");
+                descriptor.setDataParcelSubCategory("Reporting");
+                descriptor.setDataParcelResource("PetasosComponentMetricSet");
+                manifest.setContentDescriptor(descriptor);
+                manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_FALSE);
+                manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
+                manifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_INBOUND_DATA_PARCEL);
+                manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
+                ingresPayload.setPayloadManifest(manifest);
+
+                taskWorkItem.setIngresContent(ingresPayload);
+
+                PetasosActionableTask actionableTask = actionableTaskFactory.newMessageBasedActionableTask(taskWorkItem);
+
+                template.sendBody(PetasosPropertyConstants.TASK_DISTRIBUTION_QUEUE, ExchangePattern.InOnly, actionableTask);
+            }
+        }
+        touchLastUpdateInstant();
+    }
+
+    @Override
+    protected String cacheMonitorProcessTimerName() {
+        return ("MetricsNotificationServiceTimer");
     }
 }

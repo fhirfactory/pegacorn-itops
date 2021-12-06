@@ -96,4 +96,19 @@ public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase implements Pe
         }
         return(Instant.now());
     }
+
+    //
+    // Update Notification Service
+    //
+
+    @Override
+    protected void cacheMonitorProcess() {
+
+    }
+
+    @Override
+    protected String cacheMonitorProcessTimerName() {
+        return ("TopologyNotificationServiceTimer");
+    }
+
 }

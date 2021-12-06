@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform;
+package net.fhirfactory.pegacorn.itops.im.workshops.gatekeeper;
 
 import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
@@ -28,8 +28,8 @@ import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelDirect
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelNormalisationStatusEnum;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelValidationStatusEnum;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.PolicyEnforcementPointApprovalStatusEnum;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.beans.WrapMetricsContent;
-import net.fhirfactory.pegacorn.workshops.TransformWorkshop;
+import net.fhirfactory.pegacorn.itops.im.workshops.gatekeeper.beans.MetricsCheckpointBean;
+import net.fhirfactory.pegacorn.workshops.PolicyEnforcementWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.MOAStandardWUP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,26 +40,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
-public class TransformMetricsUpdateIntoMessageWUP extends MOAStandardWUP {
-    private static final Logger LOG = LoggerFactory.getLogger(TransformMetricsUpdateIntoMessageWUP.class);
+public class MetricsCheckpointWUP extends MOAStandardWUP {
+    private static final Logger LOG = LoggerFactory.getLogger(MetricsCheckpointWUP.class);
+
+    private static String WUP_VERSION = "1.0.0";
 
     @Inject
-    private TransformWorkshop transformWorkshop;
+    private PolicyEnforcementWorkshop policyEnforcementWorkshop;
 
     @Inject
-    private WrapMetricsContent wrapMetricsContent;
-
-    //
-    // Contstructor(s)
-    //
-
-    public TransformMetricsUpdateIntoMessageWUP(){
-        super();
-    }
-
-    //
-    // Post Construct
-    //
+    private MetricsCheckpointBean metricsCheckpoint;
 
     @Override
     protected Logger specifyLogger() {
@@ -75,9 +65,9 @@ public class TransformMetricsUpdateIntoMessageWUP extends MOAStandardWUP {
         descriptor.setDataParcelDefiner("FHIRFactory");
         descriptor.setDataParcelCategory("OAM");
         descriptor.setDataParcelSubCategory("Reporting");
-        descriptor.setDataParcelResource("PetasosComponentMetricSet");
+        descriptor.setDataParcelResource("PetasosComponentMetric");
         manifest.setContentDescriptor(descriptor);
-        manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_FALSE);
+        manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
         manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
         manifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_INBOUND_DATA_PARCEL);
         manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
@@ -98,12 +88,12 @@ public class TransformMetricsUpdateIntoMessageWUP extends MOAStandardWUP {
 
     @Override
     protected String specifyWUPInstanceVersion() {
-        return ("1.0.0");
+        return (WUP_VERSION);
     }
 
     @Override
     protected WorkshopInterface specifyWorkshop() {
-        return (transformWorkshop);
+        return (policyEnforcementWorkshop);
     }
 
     @Override
@@ -113,7 +103,7 @@ public class TransformMetricsUpdateIntoMessageWUP extends MOAStandardWUP {
 
         fromIncludingPetasosServices(ingresFeed())
                 .routeId(getNameSet().getRouteCoreWUP())
-                .bean(wrapMetricsContent, "wrapMetric")
+                .bean(metricsCheckpoint, "enforceInboundPolicy")
                 .to(egressFeed());
     }
 }

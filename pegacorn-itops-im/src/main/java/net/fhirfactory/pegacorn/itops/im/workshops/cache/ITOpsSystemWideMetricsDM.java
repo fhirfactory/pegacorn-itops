@@ -21,14 +21,19 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.cache;
 
+import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.PetasosComponentMetric;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.PetasosComponentMetricSet;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
@@ -39,6 +44,7 @@ public class ITOpsSystemWideMetricsDM {
     private ConcurrentHashMap<String, PetasosComponentMetricSet> displayedComponentMetricSetMap;
     private ConcurrentHashMap<String, String> endpointRouteToSourceMap;
     private ConcurrentHashMap<String, Instant> sourceUpdateInstantMap;
+    private Instant lastUpdate;
 
     public ITOpsSystemWideMetricsDM(){
         this.currentStateComponentMetricSetMap = new ConcurrentHashMap<>();
@@ -46,6 +52,7 @@ public class ITOpsSystemWideMetricsDM {
         this.displayedComponentMetricSetMap = new ConcurrentHashMap<>();
         this.endpointRouteToSourceMap = new ConcurrentHashMap<>();
         this.sourceUpdateInstantMap = new ConcurrentHashMap<>();
+        this.lastUpdate = Instant.now();
     }
 
     //
@@ -148,5 +155,23 @@ public class ITOpsSystemWideMetricsDM {
         PetasosComponentMetricSet currentState = getCurrentStateComponentMetricSetMap().get(metricSourceComponentId);
         getLogger().debug(".getComponentMetricsSet(): Exit, currentState->{}", currentState);
         return(currentState);
+    }
+
+    public List<PetasosComponentMetricSet> getUpdatedMetricSets(){
+        List<PetasosComponentMetricSet> currentStateMetricsSets = new ArrayList<>();
+        if(currentStateComponentMetricSetMap.isEmpty()){
+            return(currentStateMetricsSets);
+        }
+        Enumeration<String> updateInstanceKeys = sourceUpdateInstantMap.keys();
+        Instant currentTime = Instant.now();
+        while(updateInstanceKeys.hasMoreElements()){
+            String currentUpdateKey = updateInstanceKeys.nextElement();
+            Instant lastUpdateForSourceId = sourceUpdateInstantMap.get(currentUpdateKey);
+            if(lastUpdateForSourceId.isAfter(lastUpdate)){
+                currentStateMetricsSets.add(currentStateComponentMetricSetMap.get(currentUpdateKey));
+            }
+        }
+        lastUpdate = Instant.now();
+        return(currentStateMetricsSets);
     }
 }

@@ -43,3 +43,13 @@ pegacorn-itops-im/target/maven-archiver/pom.properties
 pegacorn-itops-pm/.env
 
 pegacorn-itops-pm/.project
+
+.project
+
+.settings/org.eclipse.core.resources.prefs
+
+pegacorn-itops-im/.classpath
+
+pegacorn-itops-im/.settings/org.eclipse.core.resources.prefs
+
+pegacorn-itops-im/.settings/org.eclipse.jdt.core.prefs

@@ -111,4 +111,18 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase implements Peta
         }
         return(Instant.now());
     }
+
+    //
+    // Update Notification Service
+    //
+
+    @Override
+    protected void cacheMonitorProcess() {
+
+    }
+
+    @Override
+    protected String cacheMonitorProcessTimerName() {
+        return ("SubscriptionNotificationServiceTimer");
+    }
 }
