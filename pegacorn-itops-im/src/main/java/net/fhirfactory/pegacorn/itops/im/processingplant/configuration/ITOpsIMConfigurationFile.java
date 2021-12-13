@@ -28,9 +28,17 @@ public class ITOpsIMConfigurationFile extends PetasosEnabledSubsystemPropertyFil
 
     private ClusteredInteractHTTPServerPortSegment itopsServerSegment;
 
+    //
+    // Constructor
+    //
+
     public ITOpsIMConfigurationFile(){
         itopsServerSegment = new ClusteredInteractHTTPServerPortSegment();
     }
+
+    //
+    // Getters and Setters
+    //
 
     public ClusteredInteractHTTPServerPortSegment getItopsServerSegment() {
         return itopsServerSegment;
@@ -39,6 +47,10 @@ public class ITOpsIMConfigurationFile extends PetasosEnabledSubsystemPropertyFil
     public void setItopsServerSegment(ClusteredInteractHTTPServerPortSegment itopsServerSegment) {
         this.itopsServerSegment = itopsServerSegment;
     }
+
+    //
+    // To String
+    //
 
     @Override
     public String toString() {
@@ -60,12 +72,17 @@ public class ITOpsIMConfigurationFile extends PetasosEnabledSubsystemPropertyFil
                 ", debugProperties=" + getDebugProperties() +
                 ", hapiAPIKey=" + getHapiAPIKey() +
                 ", javaDeploymentParameters=" + getJavaDeploymentParameters() +
-                ", interZoneIPC=" + getInterZoneIPC() +
+                ", petasosSubscriptionsEndpoint=" + getPetasosSubscriptionsEndpoint() +
+                ", edgeAsk=" + getEdgeAsk() +
+                ", petasosAuditServicesEndpoint=" + getPetasosAuditServicesEndpoint() +
+                ", petasosInterceptionEndpoint=" + getPetasosInterceptionEndpoint() +
+                ", petasosTaskServicesEndpoint=" + getPetasosTaskServicesEndpoint() +
+                ", multiuseInfinispanEndpoint=" + getMultiuseInfinispanEndpoint() +
+                ", petasosMetricsEndpoint=" + getPetasosMetricsEndpoint() +
+                ", petasosIPCMessagingEndpoint=" + getPetasosIPCMessagingEndpoint() +
                 ", edgeAnswer=" + getEdgeAnswer() +
-                ", intraZoneIPC=" + getIntraZoneIPC() +
-                ", interZoneOAM=" + getInterZoneTopology() +
-                ", intraZoneOAM=" + getIntraZoneTopology() +
-                ", httpServerPortSegment=" + itopsServerSegment +
+                ", petasosTopologyDiscoveryEndpoint=" + getPetasosTopologyDiscoveryEndpoint() +
+                ", itopsServerSegment=" + itopsServerSegment +
                 '}';
     }
 }
