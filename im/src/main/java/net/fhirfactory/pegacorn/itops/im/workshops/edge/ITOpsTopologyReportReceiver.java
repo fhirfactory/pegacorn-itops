@@ -22,12 +22,12 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.edge;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import net.fhirfactory.pegacorn.core.interfaces.topology.PetasosTopologyHandlerInterface;
+import net.fhirfactory.pegacorn.core.interfaces.oam.topology.PetasosTopologyReportingHandlerInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
 import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.CapabilityProviderTitlesEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.PetasosMonitoredTopologyGraph;
-import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.petasos.PetasosEndpointIdentifier;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.jgroups.JGroupsIntegrationPointSummary;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.edge.common.ITOpsReceiverBase;
@@ -39,7 +39,7 @@ import javax.inject.Inject;
 import java.time.Instant;
 
 @ApplicationScoped
-public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase implements PetasosTopologyHandlerInterface {
+public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase implements PetasosTopologyReportingHandlerInterface {
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsTopologyReportReceiver.class);
 
     @Inject
@@ -88,8 +88,8 @@ public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase implements Pe
     }
 
     @Override
-    public Instant mergeRemoteTopologyGraph(PetasosMonitoredTopologyGraph topologyGraph, PetasosEndpointIdentifier requesterEndpointIdentifier) {
-        if(topologyGraph != null) {
+    public Instant mergeTopologyGraph(JGroupsIntegrationPointSummary integrationPoint, PetasosMonitoredTopologyGraph topologyGraph) {
+       if(topologyGraph != null) {
             for (ProcessingPlantSummary currentProcessingPlant : topologyGraph.getProcessingPlants().values()) {
                 topologyMapDM.addProcessingPlant(currentProcessingPlant);
             }

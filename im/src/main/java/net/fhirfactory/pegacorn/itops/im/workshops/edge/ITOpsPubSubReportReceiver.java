@@ -21,7 +21,7 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.edge;
 
-import net.fhirfactory.pegacorn.core.interfaces.pubsub.PetasosSubscriptionReportHandlerInterface;
+import net.fhirfactory.pegacorn.core.interfaces.oam.subscriptions.PetasosSubscriptionReportHandlerInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
 import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.CapabilityProviderTitlesEnum;
@@ -29,7 +29,8 @@ import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosProc
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosPublisherSubscriptionSummary;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosSubscriptionSummaryReport;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.PetasosWorkUnitProcessorSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.petasos.PetasosEndpointIdentifier;
+import net.fhirfactory.pegacorn.core.model.petasos.endpoint.JGroupsIntegrationPointIdentifier;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.jgroups.JGroupsIntegrationPointSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideSubscriptionMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.edge.common.ITOpsReceiverBase;
 import org.slf4j.Logger;
@@ -53,7 +54,7 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase implements Peta
 
     @Override
     public CapabilityUtilisationResponse executeTask(CapabilityUtilisationRequest request) {
-        getLogger().debug(".executeTask(): Entry, request->{}", request);
+        getLogger().info(".executeTask(): Entry, request->{}", request);
         if(request.getRequiredCapabilityName().contentEquals(CapabilityProviderTitlesEnum.CAPABILITY_INFORMATION_MANAGEMENT_IT_OPS.getToken())) {
             PetasosPublisherSubscriptionSummary pubsubReport = extractPubSubReport(request);
             if (pubsubReport != null) {
@@ -79,7 +80,7 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase implements Peta
     protected PetasosPublisherSubscriptionSummary extractPubSubReport(CapabilityUtilisationRequest request){
         getLogger().debug(".extractPubSubReport(): Entry, request->{}", request);
         PetasosPublisherSubscriptionSummary report = null;
-           getLogger().debug(".extractPubSubReport(): Exit, report->{}", report);
+        getLogger().debug(".extractPubSubReport(): Exit, report->{}", report);
         return(report);
     }
 
@@ -100,7 +101,7 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase implements Peta
      */
 
     @Override
-    public Instant shareSubscriptionSummaryReport(PetasosSubscriptionSummaryReport summaryReport, PetasosEndpointIdentifier endpointIdentifier) {
+    public Instant replicateSubscriptionSummaryReportHandler(PetasosSubscriptionSummaryReport summaryReport, JGroupsIntegrationPointSummary integrationPoint) {
         if(summaryReport != null){
             for(PetasosWorkUnitProcessorSubscriptionSummary wupSummary: summaryReport.getWupSubscriptionSummarySet().values()){
                 subscriptionMapDM.addWorkUnitProcessorSubscriptionSummary(wupSummary);

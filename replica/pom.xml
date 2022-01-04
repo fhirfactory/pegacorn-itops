@@ -15,11 +15,11 @@
         <version>1.5.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>pegacorn-itops-im</artifactId>
-    <packaging>jar</packaging>
+    <artifactId>pegacorn-itops-replica</artifactId>
+    <packaging>war</packaging>
 
-    <name>Pegacorn :: ITOps :: IM (Information Manager)</name>
-    <description>The Service Broker for the (Real-Time) View of the Pegacorn Subsystems</description>
+    <name>Pegacorn :: ITOps :: Replica</name>
+    <description>A (Synapse) RoomServer based mimic/replica of the Pegacorn Systems</description>
 
     <!--***********************************************************************************-->
     <!--                                                                                   -->
@@ -87,7 +87,7 @@
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
             <version>${version-javax.enterprise-cdi-api}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>

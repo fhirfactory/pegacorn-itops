@@ -40,16 +40,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ITOpsSystemWideMetricsDM {
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsSystemWideMetricsDM.class);
     private ConcurrentHashMap<String, PetasosComponentMetricSet> currentStateComponentMetricSetMap;
-    private ConcurrentHashMap<String, PetasosComponentMetricSet> previousStateComponentMetricSetMap;
-    private ConcurrentHashMap<String, PetasosComponentMetricSet> displayedComponentMetricSetMap;
     private ConcurrentHashMap<String, String> endpointRouteToSourceMap;
     private ConcurrentHashMap<String, Instant> sourceUpdateInstantMap;
     private Instant lastUpdate;
 
     public ITOpsSystemWideMetricsDM(){
         this.currentStateComponentMetricSetMap = new ConcurrentHashMap<>();
-        this.previousStateComponentMetricSetMap = new ConcurrentHashMap<>();
-        this.displayedComponentMetricSetMap = new ConcurrentHashMap<>();
         this.endpointRouteToSourceMap = new ConcurrentHashMap<>();
         this.sourceUpdateInstantMap = new ConcurrentHashMap<>();
         this.lastUpdate = Instant.now();
@@ -65,22 +61,6 @@ public class ITOpsSystemWideMetricsDM {
 
     public void setCurrentStateComponentMetricSetMap(ConcurrentHashMap<String, PetasosComponentMetricSet> currentStateComponentMetricSetMap) {
         this.currentStateComponentMetricSetMap = currentStateComponentMetricSetMap;
-    }
-
-    public ConcurrentHashMap<String, PetasosComponentMetricSet> getPreviousStateComponentMetricSetMap() {
-        return previousStateComponentMetricSetMap;
-    }
-
-    public void setPreviousStateComponentMetricSetMap(ConcurrentHashMap<String, PetasosComponentMetricSet> previousStateComponentMetricSetMap) {
-        this.previousStateComponentMetricSetMap = previousStateComponentMetricSetMap;
-    }
-
-    public ConcurrentHashMap<String, PetasosComponentMetricSet> getDisplayedComponentMetricSetMap() {
-        return displayedComponentMetricSetMap;
-    }
-
-    public void setDisplayedComponentMetricSetMap(ConcurrentHashMap<String, PetasosComponentMetricSet> displayedComponentMetricSetMap) {
-        this.displayedComponentMetricSetMap = displayedComponentMetricSetMap;
     }
 
     public ConcurrentHashMap<String, String> getEndpointRouteToSourceMap() {
@@ -114,11 +94,7 @@ public class ITOpsSystemWideMetricsDM {
             return;
         }
         if(getCurrentStateComponentMetricSetMap().containsKey(metricsSet.getMetricSourceComponentId())){
-            if(getPreviousStateComponentMetricSetMap().containsKey(metricsSet.getMetricSourceComponentId())){
-                getPreviousStateComponentMetricSetMap().remove(metricsSet.getMetricSourceComponentId());
-            }
-            getPreviousStateComponentMetricSetMap().put(metricsSet.getMetricSourceComponentId(), getCurrentStateComponentMetricSetMap().get(metricsSet.getMetricSourceComponentId()));
-            getCurrentStateComponentMetricSetMap().remove(metricsSet.getMetricSourceComponentId());
+             getCurrentStateComponentMetricSetMap().remove(metricsSet.getMetricSourceComponentId());
         }
         getCurrentStateComponentMetricSetMap().put(metricsSet.getMetricSourceComponentId(), metricsSet);
         if(!this.endpointRouteToSourceMap.containsKey(metricsSet.getMetricSourceComponentId())){
@@ -138,11 +114,7 @@ public class ITOpsSystemWideMetricsDM {
             return(new PetasosComponentMetricSet());
         }
         PetasosComponentMetricSet currentMetricsSet = getCurrentStateComponentMetricSetMap().get(metricSourceComponentId);
-        if(getDisplayedComponentMetricSetMap().containsKey(metricSourceComponentId)){
-            getDisplayedComponentMetricSetMap().remove(metricSourceComponentId);
-        }
         PetasosComponentMetricSet publishedMetricsSet = SerializationUtils.clone(currentMetricsSet);
-        getDisplayedComponentMetricSetMap().put(metricSourceComponentId, publishedMetricsSet);
         getLogger().debug(".getComponentMetricSetForPublishing(): Exit, publishedMetricSet->{}", publishedMetricsSet);
         return(publishedMetricsSet);
     }

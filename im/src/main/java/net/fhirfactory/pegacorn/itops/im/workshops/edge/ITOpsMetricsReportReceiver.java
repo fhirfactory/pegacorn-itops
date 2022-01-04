@@ -23,10 +23,12 @@ package net.fhirfactory.pegacorn.itops.im.workshops.edge;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.pegacorn.core.interfaces.oam.metrics.PetasosMetricsBrokerInterface;
 import net.fhirfactory.pegacorn.core.interfaces.oam.metrics.PetasosMetricsHandlerInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
 import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.CapabilityProviderTitlesEnum;
+import net.fhirfactory.pegacorn.core.model.componentid.ComponentIdType;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelTypeDescriptor;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelDirectionEnum;
@@ -37,13 +39,13 @@ import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.PetasosComponentM
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.PetasosComponentMetricSet;
 import net.fhirfactory.pegacorn.core.model.petasos.task.PetasosActionableTask;
 import net.fhirfactory.pegacorn.core.model.petasos.task.datatypes.work.datatypes.TaskWorkItemType;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
-import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.petasos.PetasosEndpointIdentifier;
-import net.fhirfactory.pegacorn.internals.fhir.r4.resources.task.factories.TaskWorkItemFactory;
+import net.fhirfactory.pegacorn.core.model.petasos.endpoint.JGroupsIntegrationPointIdentifier;
+import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.jgroups.JGroupsIntegrationPointSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideMetricsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.edge.common.ITOpsReceiverBase;
 import net.fhirfactory.pegacorn.petasos.core.tasks.factories.PetasosActionableTaskFactory;
+import net.fhirfactory.pegacorn.petasos.endpoints.services.common.ProcessingPlantJGroupsIntegrationPointSet;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -57,7 +59,7 @@ import java.time.Instant;
 import java.util.List;
 
 @ApplicationScoped
-public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements PetasosMetricsHandlerInterface {
+public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements PetasosMetricsHandlerInterface, PetasosMetricsBrokerInterface {
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsMetricsReportReceiver.class);
 
     @Inject
@@ -67,7 +69,10 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
     private PetasosActionableTaskFactory actionableTaskFactory;
 
     @Produce
-    private ProducerTemplate template;
+    ProducerTemplate template;
+
+    @Inject
+    private ProcessingPlantJGroupsIntegrationPointSet integrationPointSet;
 
 
     @Override
@@ -108,14 +113,33 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
     }
 
     @Override
-    public Instant captureMetric(PetasosComponentMetric metric, PetasosEndpointIdentifier endpointIdentifier) {
-        return null;
+    public Instant replicateMetricToServerHandler(PetasosComponentMetric metric, JGroupsIntegrationPointSummary integrationPoint) {
+        return(Instant.now());
     }
 
     @Override
-    public Instant captureMetrics(PetasosComponentMetricSet metricSet, PetasosEndpointIdentifier endpointIdentifier) {
+    public Instant replicateMetricSetToServerHandler(PetasosComponentMetricSet metricSet, JGroupsIntegrationPointSummary integrationPoint) {
         if(metricSet != null){
-            metricsDM.addComponentMetricSet(endpointIdentifier.getEndpointComponentID().getId(), metricSet);
+            metricsDM.addComponentMetricSet(integrationPoint.getComponentId().getId(), metricSet);
+        }
+        return(Instant.now());
+    }
+
+    @Override
+    public Instant replicateMetricToServer(String collectorSubsystemName, PetasosComponentMetric metric) {
+        if(metric == null){
+            return(Instant.now());
+        }
+        ComponentIdType MyComponentId = getProcessingPlant().getMeAsASoftwareComponent().getComponentID();
+        PetasosComponentMetricSet componentMetricsSet = metricsDM.getComponentMetricsSet(metric.getMetricSource().getId());
+        componentMetricsSet.addMetric(metric);
+        return (Instant.now());
+    }
+
+    @Override
+    public Instant replicateMetricSetToServer(String collectorServiceName, PetasosComponentMetricSet metricSet) {
+        if(metricSet == null){
+            return(null);
         }
         return(Instant.now());
     }

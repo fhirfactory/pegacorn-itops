@@ -27,6 +27,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.CapabilityFulfillmentInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.pegacorn.services.oam.endpoint.PetasosOAMMetricsCollectorEndpoint;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +48,17 @@ public abstract class ITOpsReceiverBase extends RouteBuilder implements Capabili
     private static Long CACHE_MONITOR_PERIOD = 30000L;
     private static Long CACHE_INITIAL_WAIT = 60000L;
 
+
+    @Inject
+    private ProcessingPlantInterface processingPlant;
+
+    @Inject
+    private PetasosOAMMetricsCollectorEndpoint metricsCollectorEndpoint;
+
+    //
+    // Constructor(s)
+    //
+
     public ITOpsReceiverBase(){
         super();
         this.initialised = false;
@@ -57,8 +69,9 @@ public abstract class ITOpsReceiverBase extends RouteBuilder implements Capabili
         this.lastUpdate = Instant.EPOCH;
     }
 
-    @Inject
-    private ProcessingPlantInterface processingPlant;
+    //
+    // Post Construct
+    //
 
     @PostConstruct
     public void initialise(){
@@ -68,6 +81,9 @@ public abstract class ITOpsReceiverBase extends RouteBuilder implements Capabili
             getLogger().info(".initialise(): [Register Capability] Start");
             registerCapabilities();
             getLogger().info(".initialise(): [Register Capability] Finish");
+            getLogger().info(".initialise(): [Initialise Collection Endpoint] Start");
+            metricsCollectorEndpoint.initialise();
+            getLogger().info(".initialise(): [Initialise Collection Endpoint] Finish");
             this.initialised = true;
             getLogger().info(".initialise(): Done.");
         } else {
