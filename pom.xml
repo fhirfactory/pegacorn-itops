@@ -20,7 +20,7 @@
     
     <modules>
         <module>im</module>
-        <module>pm</module>
+        <!-- <module>pm</module> -->
 	<module>replica</module>
     </modules>
     <dependencies>
