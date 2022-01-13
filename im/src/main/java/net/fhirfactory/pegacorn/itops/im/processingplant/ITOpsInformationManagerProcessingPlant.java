@@ -21,9 +21,25 @@
  */
 package net.fhirfactory.pegacorn.itops.im.processingplant;
 
+import net.fhirfactory.pegacorn.petasos.oam.common.ITOpsReplicaLocalServerName;
 import net.fhirfactory.pegacorn.processingplant.ProcessingPlant;
 
+import javax.inject.Inject;
+
 public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingPlant {
+
+    @Inject
+    private ITOpsReplicaLocalServerName replicaLocalServerName;
+
+    //
+    // Constructor(s)
+    //
+
+    //
+    // Abstract Methods
+    //
+
+    abstract protected String specifyITOpsReplicaLocalServiceName();
 
     @Override
     public boolean isITOpsNode() {
@@ -32,6 +48,6 @@ public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingP
 
     @Override
     protected void executePostConstructActivities() {
-
+        replicaLocalServerName.setServerName(specifyITOpsReplicaLocalServiceName());
     }
 }

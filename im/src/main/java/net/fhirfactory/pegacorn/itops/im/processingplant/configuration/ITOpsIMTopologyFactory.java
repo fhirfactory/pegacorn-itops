@@ -2,8 +2,8 @@ package net.fhirfactory.pegacorn.itops.im.processingplant.configuration;
 
 import net.fhirfactory.pegacorn.core.model.topology.nodes.*;
 import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.segments.ports.interact.ClusteredInteractHTTPServerPortSegment;
-import net.fhirfactory.pegacorn.deployment.topology.factories.archetypes.fhirpersistence.im.FHIRIMSubsystemTopologyFactory;
 import net.fhirfactory.pegacorn.core.model.topology.nodes.common.EndpointProviderInterface;
+import net.fhirfactory.pegacorn.communicate.matrixbridge.processingplant.configuration.MatrixBridgeTopologyFactory;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.util.PegacornEnvironmentProperties;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class ITOpsIMTopologyFactory extends FHIRIMSubsystemTopologyFactory {
+public class ITOpsIMTopologyFactory extends MatrixBridgeTopologyFactory {
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsIMTopologyFactory.class);
 
     @Inject
@@ -51,6 +51,14 @@ public class ITOpsIMTopologyFactory extends FHIRIMSubsystemTopologyFactory {
         // Unique to ITOpsIM
         getLogger().trace(".buildSubsystemTopology(): Add the HTTP Server port to the ProcessingPlant Topology Node");
         addHTTPServerPorts(processingPlantSoftwareComponent);
+
+        // For the Matrix Integration Services
+        getLogger().trace(".buildSubsystemTopology(): Add the HTTP Server port to the ProcessingPlant Topology Node");
+        addMatrixEventsReceiver(processingPlantSoftwareComponent);
+        getLogger().trace(".buildSubsystemTopology(): Add the HTTP Client ports to the ProcessingPlant Topology Node");
+        addMatrixActionsClient(processingPlantSoftwareComponent);
+        addMatrixQueryClient(processingPlantSoftwareComponent);
+        addSynapseAdminClientEndpoint(processingPlantSoftwareComponent);
         return(processingPlantSoftwareComponent);
     }
 

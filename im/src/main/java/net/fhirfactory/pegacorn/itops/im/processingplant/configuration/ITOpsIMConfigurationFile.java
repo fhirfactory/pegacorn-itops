@@ -21,12 +21,15 @@
  */
 package net.fhirfactory.pegacorn.itops.im.processingplant.configuration;
 
+import net.fhirfactory.pegacorn.communicate.matrixbridge.processingplant.configuration.MatrixBridgePropertyFile;
 import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.archetypes.PetasosEnabledSubsystemPropertyFile;
 import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.segments.ports.interact.ClusteredInteractHTTPServerPortSegment;
+import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.segments.ports.interact.StandardInteractHTTPClientPortSegment;
 
-public class ITOpsIMConfigurationFile extends PetasosEnabledSubsystemPropertyFile {
+public class ITOpsIMConfigurationFile extends MatrixBridgePropertyFile {
 
     private ClusteredInteractHTTPServerPortSegment itopsServerSegment;
+
 
     //
     // Constructor
@@ -34,6 +37,7 @@ public class ITOpsIMConfigurationFile extends PetasosEnabledSubsystemPropertyFil
 
     public ITOpsIMConfigurationFile(){
         itopsServerSegment = new ClusteredInteractHTTPServerPortSegment();
+
     }
 
     //
@@ -83,6 +87,10 @@ public class ITOpsIMConfigurationFile extends PetasosEnabledSubsystemPropertyFil
                 ", edgeAnswer=" + getEdgeAnswer() +
                 ", petasosTopologyDiscoveryEndpoint=" + getPetasosTopologyDiscoveryEndpoint() +
                 ", itopsServerSegment=" + itopsServerSegment +
+                ", interactIngressMatrixEvents=" + getInteractIngressMatrixEvents() +
+                ", interactEgressMatrixActions=" + getInteractEgressMatrixActions() +
+                ", interactEgressMatrixQuery=" + getInteractEgressMatrixQuery() +
+                ", interactEgressSynapseAPIClient=" + getInteractEgressSynapseAPIClient() +
                 '}';
     }
 }

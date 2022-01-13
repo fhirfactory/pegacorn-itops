@@ -19,32 +19,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.common;
+package net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge;
 
-import net.fhirfactory.pegacorn.communicate.matrixbridge.common.MatrixBridgeNames;
+import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import java.util.Locale;
 
 @ApplicationScoped
-public class ITOpsIMNames {
+public class ParticipantRoomIdentityFactory {
 
-    @Inject
-    private MatrixBridgeNames matrixBridgeNames;
+    public String buildWUPRoomCanonicalAlias(String processingPlantParticipantName, String workshopParticipantName, String wupParticipantName, OAMRoomTypeEnum oamRoomType){
 
-    public String getInteractEgressApplicationServicesClientServerAPIName(){
-        return(matrixBridgeNames.getInteractEgressMatrixEventsName());
+        String aliasId = oamRoomType.getAliasPrefix().toLowerCase(Locale.ROOT) +
+                processingPlantParticipantName.toLowerCase(Locale.ROOT).replace(".", "-") +
+                "-" +
+                workshopParticipantName.toLowerCase(Locale.ROOT).replace(".", "-") +
+                "-" +
+                wupParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
+        return(aliasId);
     }
 
-    public String getInteractEgressSynapseAPIName(){
-        return(matrixBridgeNames.getInteractEgressSynapseActionsName());
+    public String buildProcessingPlantCanonicalAlias(String processingPlantParticipantName, OAMRoomTypeEnum roomType) {
+        String alias = roomType.getAliasPrefix().toLowerCase(Locale.ROOT) + processingPlantParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
+        return(alias);
     }
 
-    public String getInteractIngressApplicationServices(){
-        return(matrixBridgeNames.getInteractIngressMatrixEventsName());
-    }
-
-    public String getInteractITOpsIMHTTPServerName(){
-        return("iops-im-rest");
-    }
 }
