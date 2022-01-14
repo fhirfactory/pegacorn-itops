@@ -191,6 +191,8 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
             PetasosComponentITOpsNotification nextNotification = notificationsDM.getNextNotification();
             switch (nextNotification.getComponentType()) {
                 case PETASOS_MONITORED_COMPONENT_SUBSYSTEM:
+                    getLogger().info(".notificationForwarder(): Processing ProcessorPlant Metrics");
+                    forwardProcessingPlantNotification(nextNotification);
                     break;
                 case PETASOS_MONITORED_COMPONENT_SERVICE:
                     break;

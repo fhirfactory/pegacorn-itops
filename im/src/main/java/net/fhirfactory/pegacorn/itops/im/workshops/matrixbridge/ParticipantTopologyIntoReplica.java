@@ -412,7 +412,8 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
                 String spaceId = matrixBridgeCache.getSpaceIdForParticipant(currentParticipantName);
                 if (!alreadyExists) {
                     getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For Workshops As Required] Creating Space for ->{}", workshopAlias);
-                    MRoomCreation mRoomCreation = matrixBridgeFactories.newSpaceInSpaceCreationRequest(workshopName, workshopAlias, "Workshop", spaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+                    String workshopTopic = currentParticipantName + "." + workshopName;
+                    MRoomCreation mRoomCreation = matrixBridgeFactories.newSpaceInSpaceCreationRequest(workshopName, workshopAlias, workshopTopic, spaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
                     SynapseRoom createdRoom = matrixSpaceAPI.createSpace(synapseAccessToken.getUserName(), mRoomCreation);
                     workshopId = createdRoom.getRoomID();
                     getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For Workshops As Required] Created Space ->{}", createdRoom);
@@ -439,7 +440,8 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
                     }
                     if (!wupSpaceAlreadyExists) {
                         getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For WUP As Required] Creating Space for WUP ->{}", wupAlias);
-                        MRoomCreation mRoomCreation = matrixBridgeFactories.newSpaceInSpaceCreationRequest(wupName, wupAlias, "WorkUnitProcessor", workshopId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+                        String wupTopic = currentParticipantName + "." + workshopName + "." + wupName;
+                        MRoomCreation mRoomCreation = matrixBridgeFactories.newSpaceInSpaceCreationRequest(wupName, wupAlias, wupTopic, workshopId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
                         SynapseRoom createdRoom = matrixSpaceAPI.createSpace(synapseAccessToken.getUserName(), mRoomCreation);
                         wupRoomId = createdRoom.getRoomID();
                         getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For WUP As Required] Created Space ->{}", createdRoom);
@@ -453,7 +455,7 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
                         String tasksRoomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(currentParticipantName, workshopName, wupName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS);
                         if (scanForExistingRoomWithAlias(roomList, tasksRoomAlias) == null) {
                             String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS.getDisplayName();
-                            String roomTopic = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS.getDisplayName();
+                            String roomTopic = currentParticipantName + "." + workshopName + "." + wupName + "." + OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS.getDisplayName();
                             MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, tasksRoomAlias, roomTopic, wupRoomId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
                             SynapseRoom createdRoom = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
                             waitALittleBit();
@@ -466,7 +468,7 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
                         String metricsRoomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(currentParticipantName, workshopName, wupName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS);
                         if (scanForExistingRoomWithAlias(roomList, metricsRoomAlias) == null) {
                             String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS.getDisplayName();
-                            String roomTopic = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS.getDisplayName();
+                            String roomTopic = currentParticipantName + "." + workshopName + "." + wupName + "." + OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS.getDisplayName();
                             MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, metricsRoomAlias, roomTopic, wupRoomId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
                             SynapseRoom createdRoom = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
                             waitALittleBit();
@@ -479,7 +481,7 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
                         String eventsRoomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(currentParticipantName, workshopName, wupName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_EVENTS);
                         if (scanForExistingRoomWithAlias(roomList, eventsRoomAlias) == null) {
                             String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_EVENTS.getDisplayName();
-                            String roomTopic = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_EVENTS.getDisplayName();
+                            String roomTopic = currentParticipantName + "." + workshopName + "." + wupName + "." + OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_EVENTS.getDisplayName();
                             MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, eventsRoomAlias, roomTopic, wupRoomId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
                             SynapseRoom createdRoom = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
                             waitALittleBit();
@@ -492,7 +494,7 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
                         String subscriptionsRoomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(currentParticipantName, workshopName, wupName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS);
                         if (scanForExistingRoomWithAlias(roomList, subscriptionsRoomAlias) == null) {
                             String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS.getDisplayName();
-                            String roomTopic = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS.getDisplayName();
+                            String roomTopic = currentParticipantName + "." + workshopName + "." + wupName + "." + OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS.getDisplayName();
                             MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, subscriptionsRoomAlias, roomTopic, wupRoomId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
                             SynapseRoom createdRoom = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
                             waitALittleBit();
