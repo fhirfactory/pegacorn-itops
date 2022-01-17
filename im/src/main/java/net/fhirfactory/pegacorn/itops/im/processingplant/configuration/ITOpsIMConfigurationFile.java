@@ -22,13 +22,11 @@
 package net.fhirfactory.pegacorn.itops.im.processingplant.configuration;
 
 import net.fhirfactory.pegacorn.communicate.matrixbridge.processingplant.configuration.MatrixBridgePropertyFile;
-import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.archetypes.PetasosEnabledSubsystemPropertyFile;
-import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.segments.ports.interact.ClusteredInteractHTTPServerPortSegment;
-import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.segments.ports.interact.StandardInteractHTTPClientPortSegment;
+import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.segments.ports.http.ClusteredHTTPServerPortSegment;
 
 public class ITOpsIMConfigurationFile extends MatrixBridgePropertyFile {
 
-    private ClusteredInteractHTTPServerPortSegment itopsServerSegment;
+    private ClusteredHTTPServerPortSegment itopsServerSegment;
 
 
     //
@@ -36,7 +34,7 @@ public class ITOpsIMConfigurationFile extends MatrixBridgePropertyFile {
     //
 
     public ITOpsIMConfigurationFile(){
-        itopsServerSegment = new ClusteredInteractHTTPServerPortSegment();
+        itopsServerSegment = new ClusteredHTTPServerPortSegment();
 
     }
 
@@ -44,11 +42,11 @@ public class ITOpsIMConfigurationFile extends MatrixBridgePropertyFile {
     // Getters and Setters
     //
 
-    public ClusteredInteractHTTPServerPortSegment getItopsServerSegment() {
+    public ClusteredHTTPServerPortSegment getItopsServerSegment() {
         return itopsServerSegment;
     }
 
-    public void setItopsServerSegment(ClusteredInteractHTTPServerPortSegment itopsServerSegment) {
+    public void setItopsServerSegment(ClusteredHTTPServerPortSegment itopsServerSegment) {
         this.itopsServerSegment = itopsServerSegment;
     }
 

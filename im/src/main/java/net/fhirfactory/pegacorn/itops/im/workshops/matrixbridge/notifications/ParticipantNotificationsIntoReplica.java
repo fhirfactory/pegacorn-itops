@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge;
+package net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge.notifications;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixInstantMessageMethods;
@@ -29,17 +29,13 @@ import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAcce
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInterface;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
-import net.fhirfactory.pegacorn.core.model.componentid.ComponentIdType;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.SoftwareComponentSummary;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.WorkUnitProcessorSummary;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsNotificationsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideMetricsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.OAMToMatrixBridgeCache;
+import net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge.common.ParticipantRoomIdentityFactory;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -184,37 +180,39 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     //
 
     private void notificationForwarder(){
-        getLogger().info(".notificationForwarder(): Entry");
+        getLogger().debug(".notificationForwarder(): Entry");
         stillRunning = true;
         while(notificationsDM.hasMoreNotifications()) {
-            getLogger().info(".notificationForwarder(): Entry");
+            getLogger().trace(".notificationForwarder(): Entry");
             PetasosComponentITOpsNotification nextNotification = notificationsDM.getNextNotification();
             switch (nextNotification.getComponentType()) {
                 case PETASOS_MONITORED_COMPONENT_SUBSYSTEM:
-                    getLogger().info(".notificationForwarder(): Processing ProcessorPlant Metrics");
+                    getLogger().trace(".notificationForwarder(): Processing ProcessorPlant Metrics");
                     forwardProcessingPlantNotification(nextNotification);
                     break;
                 case PETASOS_MONITORED_COMPONENT_SERVICE:
                     break;
                 case PETASOS_MONITORED_COMPONENT_PROCESSING_PLANT:
-                    getLogger().info(".notificationForwarder(): Processing ProcessorPlant Metrics");
+                    getLogger().trace(".notificationForwarder(): Processing ProcessorPlant Metrics");
                     forwardProcessingPlantNotification(nextNotification);
                     break;
                 case PETASOS_MONITORED_COMPONENT_WORKSHOP:
                     break;
                 case PETASOS_MONITORED_COMPONENT_WORK_UNIT_PROCESSOR:
-                    getLogger().info(".notificationForwarder(): Processing WorkUnitProcessor Metrics");
+                    getLogger().trace(".notificationForwarder(): Processing WorkUnitProcessor Metrics");
                     forwardWUPNotification(nextNotification);
                     break;
                 case PETASOS_MONITORED_COMPONENT_WORK_UNIT_PROCESSOR_COMPONENT:
                     break;
                 case PETASOS_MONITORED_COMPONENT_ENDPOINT:
+                    getLogger().trace(".notificationForwarder(): Processing Endpoint Metrics");
+                    forwardEndpointNotification(nextNotification);
                     break;
             }
             waitALittleBit();
         }
         stillRunning = false;
-        getLogger().info(".notificationForwarder(): Exit");
+        getLogger().debug(".notificationForwarder(): Exit");
     }
 
     //
@@ -222,19 +220,17 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     //
 
     private void forwardWUPNotification(PetasosComponentITOpsNotification notification){
-        getLogger().info(".forwardWUPNotification(): Entry, notification->{}",notification);
+        getLogger().debug(".forwardWUPNotification(): Entry, notification->{}",notification);
 
         String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
-                notification.getProcessingPlantParticipantName(),
-                notification.getWorkshopParticipantName(),
-                notification.getWorkUnitProcessorParticipantName(),
+                notification.getParticipantName(),
                 OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_EVENTS);
 
-        getLogger().info(".forwardWUPNotification(): roomAlias for Events->{}", roomAlias);
+        getLogger().trace(".forwardWUPNotification(): roomAlias for Events->{}", roomAlias);
 
         String roomIdFromAlias = getRoomId(roomAlias);
 
-        getLogger().info(".forwardWUPNotification(): roomId for Events->{}", roomIdFromAlias);
+        getLogger().trace(".forwardWUPNotification(): roomId for Events->{}", roomIdFromAlias);
 
         if(roomIdFromAlias != null) {
 
@@ -246,21 +242,21 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
                 getLogger().warn(".forwardWUPNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             }
         } else {
-            getLogger().warn(".forwardWUPNotification(): No room to forward work unit processor notifications into (WorkUnitProcessor->{}!", notification.getWorkUnitProcessorParticipantName());
+            getLogger().warn(".forwardWUPNotification(): No room to forward work unit processor notifications into (WorkUnitProcessor->{}!", notification.getParticipantName());
             // TODO either re-queue or send to DeadLetter
         }
     }
 
     private void forwardProcessingPlantNotification(PetasosComponentITOpsNotification notification){
-        getLogger().info(".forwardProcessingPlantNotification(): Entry, notification->{}", notification);
+        getLogger().debug(".forwardProcessingPlantNotification(): Entry, notification->{}", notification);
 
-        String roomAlias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(notification.getProcessingPlantParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_EVENTS);
+        String roomAlias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_EVENTS);
 
-        getLogger().info(".forwardProcessingPlantNotification(): roomAlias for Events->{}", roomAlias);
+        getLogger().trace(".forwardProcessingPlantNotification(): roomAlias for Events->{}", roomAlias);
 
         String roomIdFromAlias = getRoomId(roomAlias);
 
-        getLogger().info(".forwardProcessingPlantNotification(): roomId for Events->{}", roomIdFromAlias);
+        getLogger().trace(".forwardProcessingPlantNotification(): roomId for Events->{}", roomIdFromAlias);
 
         if(roomIdFromAlias != null){
             MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
@@ -271,7 +267,32 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
                 getLogger().warn(".forwardProcessingPlantNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             }
         } else {
-            getLogger().warn(".forwardProcessingPlantNotification(): No room to forward processing plant notifications into (ProcessingPlant->{}!", notification.getProcessingPlantParticipantName());
+            getLogger().warn(".forwardProcessingPlantNotification(): No room to forward processing plant notifications into (ProcessingPlant->{}!", notification.getParticipantName());
+            // TODO either re-queue or send to DeadLetter
+        }
+    }
+
+    private void forwardEndpointNotification(PetasosComponentITOpsNotification notification){
+        getLogger().debug(".forwardEndpointNotification(): Entry, notification->{}", notification);
+
+        String roomAlias = roomIdentityFactory.buildEndpointRoomAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_EVENTS);
+
+        getLogger().info(".forwardEndpointNotification(): roomAlias for Events->{}", roomAlias);
+
+        String roomIdFromAlias = getRoomId(roomAlias);
+
+        getLogger().info(".forwardEndpointNotification(): roomId for Events->{}", roomIdFromAlias);
+
+        if(roomIdFromAlias != null){
+            MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
+            try{
+                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), notificationEvent);
+                getLogger().warn(".forwardEndpointNotification(): notification sent!");
+            } catch(Exception ex){
+                getLogger().warn(".forwardEndpointNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+            }
+        } else {
+            getLogger().warn(".forwardEndpointNotification(): No room to forward endpoint notifications into (EndpointRoom->{}!", notification.getParticipantName());
             // TODO either re-queue or send to DeadLetter
         }
     }
@@ -319,7 +340,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     }
 
     public List<SynapseRoom> getCurrentStateRoomList(){
-        getLogger().info(".getCurrentStateRoomList(): [Synchronise Room List] Start...");
+        getLogger().debug(".getCurrentStateRoomList(): [Synchronise Room List] Start...");
         Long listAge = Instant.now().getEpochSecond() - this.lastRoomListUpdate.getEpochSecond();
         if(listAge > 10) {
             List<SynapseRoom> newRoomList = synapseRoomAPI.getRooms("*");
@@ -327,7 +348,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
             this.roomList.clear();
             this.roomList.addAll(newRoomList);
             this.lastRoomListUpdate = Instant.now();
-            getLogger().info(".getCurrentStateRoomList(): [Synchronise Room List] Finish...");
+            getLogger().debug(".getCurrentStateRoomList(): [Synchronise Room List] Finish...");
         }
         return(roomList);
     }

@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge;
+package net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge.common;
 
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 
@@ -29,13 +29,9 @@ import java.util.Locale;
 @ApplicationScoped
 public class ParticipantRoomIdentityFactory {
 
-    public String buildWUPRoomCanonicalAlias(String processingPlantParticipantName, String workshopParticipantName, String wupParticipantName, OAMRoomTypeEnum oamRoomType){
+    public String buildWUPRoomCanonicalAlias( String wupParticipantName, OAMRoomTypeEnum oamRoomType){
 
         String aliasId = oamRoomType.getAliasPrefix().toLowerCase(Locale.ROOT) +
-                processingPlantParticipantName.toLowerCase(Locale.ROOT).replace(".", "-") +
-                "-" +
-                workshopParticipantName.toLowerCase(Locale.ROOT).replace(".", "-") +
-                "-" +
                 wupParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
         return(aliasId);
     }
@@ -43,6 +39,12 @@ public class ParticipantRoomIdentityFactory {
     public String buildProcessingPlantCanonicalAlias(String processingPlantParticipantName, OAMRoomTypeEnum roomType) {
         String alias = roomType.getAliasPrefix().toLowerCase(Locale.ROOT) + processingPlantParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
         return(alias);
+    }
+
+    public String buildEndpointRoomAlias(String endpointParticipantName, OAMRoomTypeEnum oamRoomTypeEnum){
+        String alias = oamRoomTypeEnum.getAliasPrefix().toLowerCase(Locale.ROOT) + endpointParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
+        return(alias);
+
     }
 
 }

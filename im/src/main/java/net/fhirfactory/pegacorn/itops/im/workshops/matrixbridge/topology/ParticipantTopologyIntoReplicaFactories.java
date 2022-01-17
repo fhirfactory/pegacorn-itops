@@ -19,11 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge;
+package net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge.topology;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MCreationContent;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MStateEvent;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCreation;
@@ -34,13 +35,14 @@ import net.fhirfactory.pegacorn.core.model.componentid.ComponentIdType;
 import net.fhirfactory.pegacorn.core.model.petasos.participant.PetasosParticipantFulfillment;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.PetasosParticipantSummary;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
-import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
+import net.fhirfactory.pegacorn.petasos.oam.common.ITOpsReplicaLocalServerName;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.*;
 
 @ApplicationScoped
@@ -48,6 +50,9 @@ public class ParticipantTopologyIntoReplicaFactories {
     private static final Logger LOG = LoggerFactory.getLogger(ParticipantTopologyIntoReplicaFactories.class);
 
     private ObjectMapper jsonMapper;
+
+    @Inject
+    private ITOpsReplicaLocalServerName localServiceName;
 
     //
     // Constructor(s)
@@ -106,7 +111,7 @@ public class ParticipantTopologyIntoReplicaFactories {
     }
 
     public MRoomCreation newSpaceInSpaceCreationRequest(String spaceName, String spaceAlias, String topic, String spaceId, MRoomPresetEnum roomPreset, MRoomVisibilityEnum visibility ){
-        getLogger().info(".newSpaceCreationRequest(): Entry, spaceName->{}, spaceAlias->{}, topic->{}, roomPreset->{}, visibility->{}", spaceName, spaceAlias, topic, roomPreset, visibility);
+        getLogger().debug(".newSpaceCreationRequest(): Entry, spaceName->{}, spaceAlias->{}, topic->{}, roomPreset->{}, visibility->{}", spaceName, spaceAlias, topic, roomPreset, visibility);
 
         MRoomCreation roomCreationRequest = new MRoomCreation();
         roomCreationRequest.setName(spaceName);
@@ -131,7 +136,7 @@ public class ParticipantTopologyIntoReplicaFactories {
         parent.setType("m.space.parent");
         JSONObject parentContent = new JSONObject();
         JSONArray parentContentVia = new JSONArray();
-        parentContentVia.put("aether-itops-replica-server.local");
+        parentContentVia.put(localServiceName.getServerName());
         parentContent.put("via", parentContentVia);
         parentContent.put("canonical", true);
         parent.setContent(parentContent);
@@ -183,7 +188,7 @@ public class ParticipantTopologyIntoReplicaFactories {
         parent.setType("m.space.parent");
         JSONObject parentContent = new JSONObject();
         JSONArray parentContentVia = new JSONArray();
-        parentContentVia.put("aether-itops-replica-server.local");
+        parentContentVia.put(localServiceName.getServerName());
         parentContent.put("via", parentContentVia);
         parentContent.put("canonical", true);
         parent.setContent(parentContent);

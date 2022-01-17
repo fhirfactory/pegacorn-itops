@@ -25,17 +25,19 @@ import org.apache.commons.lang3.StringUtils;
 
 public enum OAMRoomTypeEnum {
     OAM_ROOM_TYPE_SUBSYSTEM("Subsystem", "subsystem-"),
-    OAM_ROOM_TYPE_SUBSYSTEM_TASKS("SubsystemTasks", "subsystem-tasks-"),
-    OAM_ROOM_TYPE_SUBSYSTEM_METRICS("SubsystemMetrics", "subsystem-metrics-"),
-    OAM_ROOM_TYPE_SUBSYSTEM_EVENTS("SubsystemEvents", "subsystem-events-"),
-    OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS("SubsystemSubscriptions", "subsystem-subscriptions-"),
+    OAM_ROOM_TYPE_SUBSYSTEM_TASKS("ActivityReports", "subsystem-tasks-"),
+    OAM_ROOM_TYPE_SUBSYSTEM_METRICS("Metrics", "subsystem-metrics-"),
+    OAM_ROOM_TYPE_SUBSYSTEM_EVENTS("UncorrelatedEvents", "subsystem-events-"),
+    OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS("Subscriptions", "subsystem-subscriptions-"),
     OAM_ROOM_TYPE_WORKSHOP("Workshop", "workshop-"),
     OAM_ROOM_TYPE_WUP("WorkUnitProcessor", "wup-"),
-    OAM_ROOM_TYPE_WUP_TASKS("WorkUnitProcessorTasks", "wup-tasks-"),
-    OAM_ROOM_TYPE_WUP_METRICS("WorkUnitProcessorMetrics", "wup-metrics-"),
-    OAM_ROOM_TYPE_WUP_EVENTS("WorkUnitProcessorEvents", "wup-events-"),
-    OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS("WorkUnitProcessorSubscriptions", "wup-subscriptions-"),
-    OAM_ROOM_TYPE_ENDPOINT("Endpoint", "endpoint-");
+    OAM_ROOM_TYPE_WUP_TASKS("ActivityReports", "wup-tasks-"),
+    OAM_ROOM_TYPE_WUP_METRICS("Metrics", "wup-metrics-"),
+    OAM_ROOM_TYPE_WUP_EVENTS("UncorrelatedEvents", "wup-events-"),
+    OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS("Subscriptions", "wup-subscriptions-"),
+    OAM_ROOM_TYPE_ENDPOINT("Endpoint", "endpoint-"),
+    OAM_ROOM_TYPE_ENDPOINT_METRICS("Metrics", "endpoint-metrics-"),
+    OAM_ROOM_TYPE_ENDPOINT_EVENTS("UncorrelatedEvents", "endpoint-events-");
 
     private String displayName;
     private String aliasPrefix;

@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge;
+package net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge.topology;
 
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixRoomMethods;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixSpaceMethods;
@@ -33,19 +33,16 @@ import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInter
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseUser;
 import net.fhirfactory.pegacorn.core.model.petasos.participant.PetasosParticipantFulfillmentStatusEnum;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.PetasosParticipantSummary;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.WorkUnitProcessorSummary;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.WorkshopSummary;
+import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.*;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.OAMToMatrixBridgeCache;
+import net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge.common.ParticipantRoomIdentityFactory;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -59,8 +56,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
-public class ParticipantTopologyIntoReplica extends RouteBuilder {
-    private static final Logger LOG = LoggerFactory.getLogger(ParticipantTopologyIntoReplica.class);
+public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
+    private static final Logger LOG = LoggerFactory.getLogger(ParticipantTopologyIntoReplicaDaemon.class);
 
     private boolean initialised;
 
@@ -76,8 +73,7 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
     private Long SHORT_GAPPING_PERIOD = 500L;
     private Long LONG_GAPPING_PERIOD = 1000L;
 
-    private ConcurrentHashMap<String, SynapseRoom> knownRoomSet;
-    private ConcurrentHashMap<String, SynapseUser> knownUserSet;
+
 
     @Inject
     private MatrixRoomMethods matrixRoomAPI;
@@ -112,18 +108,29 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
     @Inject
     private ParticipantRoomIdentityFactory roomIdentityFactory;
 
+    @Inject
+    private WorkUnitProcessorParticipantReplicaServices wupReplicaServices;
+
+    @Inject
+    private WorkshopParticipantReplicaServices workshopReplicaServices;
+
+    @Inject
+    private ProcessingPlantParticipantReplicaServices processingPlantReplicaServices;
+
+    @Inject
+    private EndpointParticipantReplicaServices endpointReplicaServices;
+
     //
     // Constructor(s)
     //
 
-    public ParticipantTopologyIntoReplica() {
+    public ParticipantTopologyIntoReplicaDaemon() {
         super();
         this.initialised = false;
         this.firstRunComplete = false;
         this.daemonIsStillRunning = false;
         this.daemonLastRunTime = Instant.EPOCH;
-        this.knownRoomSet = new ConcurrentHashMap<>();
-        this.knownUserSet = new ConcurrentHashMap<>();
+
     }
 
     //
@@ -171,11 +178,47 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
     }
 
     protected ConcurrentHashMap<String, SynapseRoom> getKnownRoomSet() {
-        return knownRoomSet;
+        return (matrixBridgeCache.getKnownRoomSet());
     }
 
     protected ConcurrentHashMap<String, SynapseUser> getKnownUserSet() {
-        return knownUserSet;
+        return (matrixBridgeCache.getKnownUserSet());
+    }
+
+    protected OAMToMatrixBridgeCache getMatrixBridgeCache(){
+        return(matrixBridgeCache);
+    }
+
+    protected ParticipantRoomIdentityFactory getRoomIdentityFactory(){
+        return(roomIdentityFactory);
+    }
+
+    protected ParticipantTopologyIntoReplicaFactories getMatrixBridgeFactories(){
+        return(matrixBridgeFactories);
+    }
+
+    protected SynapseRoomMethods getSynapseRoomAPI() {
+        return synapseRoomAPI;
+    }
+
+    protected MatrixRoomMethods getMatrixRoomAPI() {
+        return matrixRoomAPI;
+    }
+
+    protected MatrixSpaceMethods getMatrixSpaceAPI() {
+        return matrixSpaceAPI;
+    }
+
+    protected WorkshopParticipantReplicaServices getWorkshopReplicaServices(){
+        return(this.workshopReplicaServices);
+    }
+
+    protected ProcessingPlantParticipantReplicaServices getProcessingPlantReplicaServices(){
+        return(this.processingPlantReplicaServices);
+    }
+
+    protected EndpointParticipantReplicaServices getEndpointReplicaServices(){
+        return(this.endpointReplicaServices);
     }
 
     //
@@ -301,209 +344,17 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
         getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) As Required] Start...");
         List<String> spaceNameSet = matrixBridgeCache.getSpaceNameSet();
         List<String> subsystemNameSet = matrixBridgeCache.getSubsystemParticipantNameSet();
-        for (String currentParticipantName : subsystemNameSet) {
-            if (spaceNameSet.contains(currentParticipantName)) {
-                // do nothing
-            } else {
-                getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) As Required] Creating room for ->{}", currentParticipantName);
-                String alias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(currentParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM);
-                SynapseRoom room = scanForExistingRoomWithAlias(roomList, alias);
-                if (room == null) {
-                    MRoomCreation mRoomCreation = matrixBridgeFactories.newSpaceCreationRequest(currentParticipantName, alias, "", MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                    room = matrixSpaceAPI.createSpace(synapseAccessToken.getUserName(), mRoomCreation);
-                    getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) As Required] Created Room ->{}", room);
-                    roomList.add(room);
-                    waitALittleBitLonger();
-                }
-                matrixBridgeCache.addRoomFromMatrix(room);
-            }
-        }
-        getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) As Required] Finished...");
 
-        // 5th, Add Subsystem Participant Room(s) If Required
-        List<String> usefulAliasSet = extractRoomAliasListWithServer(roomList);
-        getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Start...");
-        for (String currentParticipantName : subsystemNameSet) {
-            boolean shouldWaitAMoment = false;
-            getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Processing Participant ->{}", currentParticipantName);
-            String spaceId = matrixBridgeCache.getSpaceIdForParticipant(currentParticipantName);
-            String tasksRoom = roomIdentityFactory.buildProcessingPlantCanonicalAlias(currentParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS);
-            if (!usefulAliasSet.contains(tasksRoom)) {
-                String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS.getDisplayName();
-                String roomTopic = OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS.getDisplayName();
-                SynapseRoom room = scanForExistingRoomWithAlias(roomList, tasksRoom);
-                if (room == null) {
-                    MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, tasksRoom, roomTopic, spaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                    room = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
-                    roomList.add(room);
-                    getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Created Room ->{}", room);
-                    shouldWaitAMoment = true;
-                    waitALittleBit();
-                }
-                matrixSpaceAPI.addChildToSpace(spaceId, room.getRoomID());
-                matrixBridgeCache.addRoomFromMatrix(room);
-            }
-            String metricsRoom = roomIdentityFactory.buildProcessingPlantCanonicalAlias(currentParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS);
-            if (!usefulAliasSet.contains(metricsRoom)) {
-                String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS.getDisplayName();
-                String roomTopic = OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS.getDisplayName();
-                SynapseRoom room = scanForExistingRoomWithAlias(roomList, metricsRoom);
-                if (room == null) {
-                    MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, metricsRoom, roomTopic, spaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                    room = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
-                    matrixBridgeCache.addRoomFromMatrix(room);
-                    getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Created Room ->{}", room);
-                    waitALittleBit();
-                    roomList.add(room);
-                }
-                matrixSpaceAPI.addChildToSpace(spaceId, room.getRoomID());
-            }
-            String eventsRoom = roomIdentityFactory.buildProcessingPlantCanonicalAlias(currentParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_EVENTS);
-            if (!usefulAliasSet.contains(eventsRoom)) {
-                String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_EVENTS.getDisplayName();
-                String roomTopic = OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_EVENTS.getDisplayName();
-                SynapseRoom room = scanForExistingRoomWithAlias(roomList, eventsRoom);
-                if (room == null) {
-                    MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, eventsRoom, roomTopic, spaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                    room = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
-                    matrixBridgeCache.addRoomFromMatrix(room);
-                    getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Created Room ->{}", room);
-                    shouldWaitAMoment = true;
-                    waitALittleBit();
-                    roomList.add(room);
-                }
-                matrixSpaceAPI.addChildToSpace(spaceId, room.getRoomID());
-            }
-            String subscriptionsRoom = roomIdentityFactory.buildProcessingPlantCanonicalAlias(currentParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS);
-            if (!usefulAliasSet.contains(subscriptionsRoom)) {
-                String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS.getDisplayName();
-                String roomTopic = OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS.getDisplayName();
-                SynapseRoom room = scanForExistingRoomWithAlias(roomList, subscriptionsRoom);
-                if (room == null) {
-                    MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, subscriptionsRoom, roomTopic, spaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                    room = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
-                    matrixBridgeCache.addRoomFromMatrix(room);
-                    getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Created Room ->{}", room);
-                    waitALittleBit();
-                    roomList.add(room);
-                }
-                matrixSpaceAPI.addChildToSpace(spaceId, room.getRoomID());
-            }
-        }
-        getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Finish...");
-
-        // 6th, Adding Workshop Space(s) If Required
+        // Adding Space(s) and Room(s) If Required
         getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For Workshops As Required] Start...");
         for (ProcessingPlantSummary currentProcessingPlant : processingPlants) {
-            boolean shouldWaitAMoment = false;
+            String processingPlantSpaceId = getProcessingPlantReplicaServices().createProcessingPlantSpace(currentProcessingPlant.getParticipantName(), roomList);
             for (WorkshopSummary currentWorkshop : currentProcessingPlant.getWorkshops().values()) {
-                getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For Workshops As Required] workshop->{}", currentWorkshop.getTopologyNodeFDN());
-                String currentParticipantName = currentProcessingPlant.getSubsystemParticipantName();
-                String workshopName = currentWorkshop.getParticipantName();
-                boolean alreadyExists = false;
-                String workshopId = null;
-                String workshopAlias = OAMRoomTypeEnum.OAM_ROOM_TYPE_WORKSHOP.getAliasPrefix() + currentParticipantName.toLowerCase(Locale.ROOT).replace(".", "-") + "-" + workshopName.toLowerCase(Locale.ROOT).replace(".", "-");
-                SynapseRoom workshopRoom = scanForExistingRoomWithAlias(roomList, workshopAlias);
-                if(workshopRoom != null){
-                    alreadyExists = true;
-                    workshopId = workshopRoom.getRoomID();
-                    break;
-                }
-                String spaceId = matrixBridgeCache.getSpaceIdForParticipant(currentParticipantName);
-                if (!alreadyExists) {
-                    getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For Workshops As Required] Creating Space for ->{}", workshopAlias);
-                    String workshopTopic = currentParticipantName + "." + workshopName;
-                    MRoomCreation mRoomCreation = matrixBridgeFactories.newSpaceInSpaceCreationRequest(workshopName, workshopAlias, workshopTopic, spaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                    SynapseRoom createdRoom = matrixSpaceAPI.createSpace(synapseAccessToken.getUserName(), mRoomCreation);
-                    workshopId = createdRoom.getRoomID();
-                    getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For Workshops As Required] Created Space ->{}", createdRoom);
-                    matrixBridgeCache.addRoomFromMatrix(createdRoom);
-                    roomList.add(createdRoom);
-                    waitALittleBit();
-                }
-                matrixSpaceAPI.addChildToSpace(spaceId, workshopId);
+                String workshopId = getWorkshopReplicaServices().createWorkUnitProcessorSpace(processingPlantSpaceId, roomList, currentWorkshop);
                 for (WorkUnitProcessorSummary currentWUPSummary : currentWorkshop.getWorkUnitProcessors().values()) {
-                    getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For WUP As Required] wup->{}", currentWUPSummary);
-                    String wupName = currentWUPSummary.getParticipantName();
-                    boolean wupSpaceAlreadyExists = false;
-                    String wupAlias = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP.getAliasPrefix() +
-                            currentParticipantName.toLowerCase(Locale.ROOT).replace(".", "-") +
-                            "-" +
-                            workshopName.toLowerCase(Locale.ROOT).replace(".", "-") +
-                            wupName.toLowerCase(Locale.ROOT).replace(".", "-");
-                    String wupRoomId = null;
-                    SynapseRoom foundRoom = scanForExistingRoomWithAlias(roomList, wupAlias);
-                    if(foundRoom != null){
-                        wupSpaceAlreadyExists = true;
-                        wupRoomId = foundRoom.getRoomID();
-                        break;
-                    }
-                    if (!wupSpaceAlreadyExists) {
-                        getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For WUP As Required] Creating Space for WUP ->{}", wupAlias);
-                        String wupTopic = currentParticipantName + "." + workshopName + "." + wupName;
-                        MRoomCreation mRoomCreation = matrixBridgeFactories.newSpaceInSpaceCreationRequest(wupName, wupAlias, wupTopic, workshopId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                        SynapseRoom createdRoom = matrixSpaceAPI.createSpace(synapseAccessToken.getUserName(), mRoomCreation);
-                        wupRoomId = createdRoom.getRoomID();
-                        getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For WUP As Required] Created Space ->{}", createdRoom);
-                        matrixBridgeCache.addRoomFromMatrix(createdRoom);
-                        roomList.add(createdRoom);
-                        waitALittleBit();
-                    }
-                    matrixSpaceAPI.addChildToSpace(workshopId, wupRoomId);
-                    waitALittleBit();
-                    if (wupRoomId != null) {
-                        String tasksRoomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(currentParticipantName, workshopName, wupName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS);
-                        if (scanForExistingRoomWithAlias(roomList, tasksRoomAlias) == null) {
-                            String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS.getDisplayName();
-                            String roomTopic = currentParticipantName + "." + workshopName + "." + wupName + "." + OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS.getDisplayName();
-                            MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, tasksRoomAlias, roomTopic, wupRoomId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                            SynapseRoom createdRoom = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
-                            waitALittleBit();
-                            matrixSpaceAPI.addChildToSpace(wupRoomId, createdRoom.getRoomID());
-                            getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Created Room ->{}", createdRoom);
-                            matrixBridgeCache.addRoomFromMatrix(createdRoom);
-                            roomList.add(createdRoom);
-                            waitALittleBit();
-                        }
-                        String metricsRoomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(currentParticipantName, workshopName, wupName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS);
-                        if (scanForExistingRoomWithAlias(roomList, metricsRoomAlias) == null) {
-                            String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS.getDisplayName();
-                            String roomTopic = currentParticipantName + "." + workshopName + "." + wupName + "." + OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS.getDisplayName();
-                            MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, metricsRoomAlias, roomTopic, wupRoomId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                            SynapseRoom createdRoom = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
-                            waitALittleBit();
-                            matrixSpaceAPI.addChildToSpace(wupRoomId, createdRoom.getRoomID());
-                            getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Created Room ->{}", createdRoom);
-                            matrixBridgeCache.addRoomFromMatrix(createdRoom);
-                            roomList.add(createdRoom);
-                            waitALittleBit();
-                        }
-                        String eventsRoomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(currentParticipantName, workshopName, wupName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_EVENTS);
-                        if (scanForExistingRoomWithAlias(roomList, eventsRoomAlias) == null) {
-                            String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_EVENTS.getDisplayName();
-                            String roomTopic = currentParticipantName + "." + workshopName + "." + wupName + "." + OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_EVENTS.getDisplayName();
-                            MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, eventsRoomAlias, roomTopic, wupRoomId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                            SynapseRoom createdRoom = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
-                            waitALittleBit();
-                            matrixSpaceAPI.addChildToSpace(wupRoomId, createdRoom.getRoomID());
-                            getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Created Room ->{}", createdRoom);
-                            matrixBridgeCache.addRoomFromMatrix(createdRoom);
-                            roomList.add(createdRoom);
-                            waitALittleBit();
-                        }
-                        String subscriptionsRoomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(currentParticipantName, workshopName, wupName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS);
-                        if (scanForExistingRoomWithAlias(roomList, subscriptionsRoomAlias) == null) {
-                            String roomName = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS.getDisplayName();
-                            String roomTopic = currentParticipantName + "." + workshopName + "." + wupName + "." + OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS.getDisplayName();
-                            MRoomCreation mRoomCreation = matrixBridgeFactories.newRoomInSpaceCreationRequest(roomName, subscriptionsRoomAlias, roomTopic, wupRoomId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                            SynapseRoom createdRoom = matrixRoomAPI.createRoom(synapseAccessToken.getUserName(), mRoomCreation);
-                            waitALittleBit();
-                            matrixSpaceAPI.addChildToSpace(wupRoomId, createdRoom.getRoomID());
-                            getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Rooms If Required] Created Room ->{}", createdRoom);
-                            matrixBridgeCache.addRoomFromMatrix(createdRoom);
-                            roomList.add(createdRoom);
-                            waitALittleBit();
-                        }
+                    String wupSpaceId = wupReplicaServices.createWorkUnitProcessorSpace(workshopId, roomList, currentWUPSummary);
+                    for(EndpointSummary currentEndpointSummary: currentWUPSummary.getEndpoints().values()){
+                        String endPointId = getEndpointReplicaServices().createEndpointSpaceIfRequired(currentEndpointSummary.getParticipantName(),wupSpaceId, roomList, currentEndpointSummary);
                     }
                 }
             }
@@ -547,7 +398,10 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
                         currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_EVENTS.getAliasPrefix()) ||
                         currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS.getAliasPrefix()) ||
                         currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS.getAliasPrefix()) ||
-                        currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS.getAliasPrefix())) {
+                        currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS.getAliasPrefix()) ||
+                        currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT.getAliasPrefix()) ||
+                        currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_EVENTS.getAliasPrefix()) ||
+                        currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_METRICS.getAliasPrefix())) {
 
                     getLogger().info(".topologyReplicationSynchronisationDaemon(): [AAuto Join Users to Added Rooms] Processing Space->{}", currentRoomAlias);
                     String roomId = currentRoom.getRoomID();
@@ -599,7 +453,10 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
                         currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_EVENTS.getAliasPrefix()) ||
                         currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS.getAliasPrefix()) ||
                         currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS.getAliasPrefix()) ||
-                        currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS.getAliasPrefix())) {
+                        currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS.getAliasPrefix()) ||
+                        currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT.getAliasPrefix()) ||
+                        currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_EVENTS.getAliasPrefix()) ||
+                        currentRoomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_METRICS.getAliasPrefix())) {
 
                     getLogger().info(".topologyReplicationSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
                     String roomId = currentRoom.getRoomID();
@@ -639,44 +496,6 @@ public class ParticipantTopologyIntoReplica extends RouteBuilder {
 
         getLogger().info(".topologyReplicationSynchronisationDaemon(): Exit");
     }
-
-    private List<String> extractRoomAliasListWithServer (List < SynapseRoom > roomList) {
-        getLogger().info(".extractRoomAliasListWithServer(): Entry");
-        List<String> roomAliasList = new ArrayList<>();
-        for (SynapseRoom currentRoom : roomList) {
-            String roomAlias = currentRoom.getCanonicalAlias();
-            getLogger().info(".extractRoomAliasListWithServer(): processing roomAlias->{}", roomAlias);
-            if (StringUtils.isNotEmpty(roomAlias)) {
-                String clonedRoomAlias = SerializationUtils.clone(roomAlias);
-                String[] split = roomAlias.split(":");
-                String firstPart = split[0];
-                String aliasOfInterest = firstPart.substring(1);
-                roomAliasList.add(aliasOfInterest);
-            }
-        }
-        getLogger().info(".extractRoomAliasListWithServer(): Exit");
-        return (roomAliasList);
-    }
-
-    private SynapseRoom scanForExistingRoomWithAlias (List < SynapseRoom > roomList, String alias){
-        if (roomList.isEmpty()) {
-            return (null);
-        }
-        if (StringUtils.isEmpty(alias)) {
-            return (null);
-        }
-        for (SynapseRoom currentRoom : roomList) {
-            if (StringUtils.isNotEmpty(currentRoom.getCanonicalAlias())) {
-                String roomAlias = SerializationUtils.clone(currentRoom.getCanonicalAlias()).toLowerCase(Locale.ROOT);
-                String lowerCaseAlias = SerializationUtils.clone(alias).toLowerCase(Locale.ROOT);
-                if (roomAlias.contains(lowerCaseAlias)) {
-                    return (currentRoom);
-                }
-            }
-        }
-        return (null);
-    }
-
 
     //
     // Mechanism to ensure Startup

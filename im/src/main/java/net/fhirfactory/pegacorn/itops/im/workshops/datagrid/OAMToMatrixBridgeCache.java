@@ -22,12 +22,11 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.datagrid;
 
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
-import net.fhirfactory.pegacorn.core.model.componentid.ComponentIdType;
+import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseUser;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.valuesets.PetasosMonitoredComponentTypeEnum;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.PetasosParticipantSummary;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
-import net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge.ParticipantRoomIdentityFactory;
-import org.apache.commons.lang3.SerializationException;
+import net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge.common.ParticipantRoomIdentityFactory;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -38,7 +37,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
@@ -66,6 +65,11 @@ public class OAMToMatrixBridgeCache {
     // ConcurrentHashMap<roomAlias, roomId> (not the Canonical Alias Id, the Alias which is in the Id)
     private ConcurrentHashMap<String, String> aliasMap;
 
+
+    private ConcurrentHashMap<String, SynapseRoom> knownRoomSet;
+    private ConcurrentHashMap<String, SynapseUser> knownUserSet;
+
+
     @Inject
     private ParticipantRoomIdentityFactory roomIdentityFactory;
 
@@ -81,11 +85,21 @@ public class OAMToMatrixBridgeCache {
         this.roomIdToParticipantIdNameMap = new ConcurrentHashMap<>();
         this.matrixSpaceMap = new ConcurrentHashMap<>();
         this.aliasMap = new ConcurrentHashMap<>();
+        this.knownRoomSet = new ConcurrentHashMap<>();
+        this.knownUserSet = new ConcurrentHashMap<>();
     }
 
     //
     // Getters (and Setters)
     //
+
+    public ConcurrentHashMap<String, SynapseRoom> getKnownRoomSet() {
+        return knownRoomSet;
+    }
+
+    public ConcurrentHashMap<String, SynapseUser> getKnownUserSet() {
+        return knownUserSet;
+    }
 
     protected ConcurrentHashMap<String, PetasosParticipantSummary> getParticipantMap(){
         return(participantMap);
@@ -295,4 +309,41 @@ public class OAMToMatrixBridgeCache {
         return(alias);
     }
 
+
+    public  List<String> extractRoomAliasListWithServer (List < SynapseRoom > roomList) {
+        getLogger().info(".extractRoomAliasListWithServer(): Entry");
+        List<String> roomAliasList = new ArrayList<>();
+        for (SynapseRoom currentRoom : roomList) {
+            String roomAlias = currentRoom.getCanonicalAlias();
+            getLogger().info(".extractRoomAliasListWithServer(): processing roomAlias->{}", roomAlias);
+            if (StringUtils.isNotEmpty(roomAlias)) {
+                String clonedRoomAlias = SerializationUtils.clone(roomAlias);
+                String[] split = roomAlias.split(":");
+                String firstPart = split[0];
+                String aliasOfInterest = firstPart.substring(1);
+                roomAliasList.add(aliasOfInterest);
+            }
+        }
+        getLogger().info(".extractRoomAliasListWithServer(): Exit");
+        return (roomAliasList);
+    }
+
+    public SynapseRoom scanForExistingRoomWithAlias (List < SynapseRoom > roomList, String alias){
+        if (roomList.isEmpty()) {
+            return (null);
+        }
+        if (StringUtils.isEmpty(alias)) {
+            return (null);
+        }
+        for (SynapseRoom currentRoom : roomList) {
+            if (StringUtils.isNotEmpty(currentRoom.getCanonicalAlias())) {
+                String roomAlias = SerializationUtils.clone(currentRoom.getCanonicalAlias()).toLowerCase(Locale.ROOT);
+                String lowerCaseAlias = SerializationUtils.clone(alias).toLowerCase(Locale.ROOT);
+                if (roomAlias.contains(lowerCaseAlias)) {
+                    return (currentRoom);
+                }
+            }
+        }
+        return (null);
+    }
 }

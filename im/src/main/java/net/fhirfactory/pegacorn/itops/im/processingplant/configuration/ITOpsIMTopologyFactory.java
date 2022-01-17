@@ -1,7 +1,7 @@
 package net.fhirfactory.pegacorn.itops.im.processingplant.configuration;
 
 import net.fhirfactory.pegacorn.core.model.topology.nodes.*;
-import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.segments.ports.interact.ClusteredInteractHTTPServerPortSegment;
+import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.segments.ports.http.ClusteredHTTPServerPortSegment;
 import net.fhirfactory.pegacorn.core.model.topology.nodes.common.EndpointProviderInterface;
 import net.fhirfactory.pegacorn.communicate.matrixbridge.processingplant.configuration.MatrixBridgeTopologyFactory;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
@@ -66,8 +66,8 @@ public class ITOpsIMTopologyFactory extends MatrixBridgeTopologyFactory {
         getLogger().debug(".addHTTPServerPorts(): Entry, endpointProvider->{}", endpointProvider);
 
         getLogger().trace(".addHTTPServerPorts(): Creating the HTTP Server");
-        ClusteredInteractHTTPServerPortSegment interactHTTPServer = ((ITOpsIMConfigurationFile) getPropertyFile()).getItopsServerSegment();
-        newHTTPServer(endpointProvider, names.getInteractITOpsIMHTTPServerName(),interactHTTPServer );
+        ClusteredHTTPServerPortSegment interactHTTPServer = ((ITOpsIMConfigurationFile) getPropertyFile()).getItopsServerSegment();
+        getHTTPTopologyEndpointFactory().newHTTPServerTopologyEndpoint(getPropertyFile(), endpointProvider, names.getInteractITOpsIMHTTPServerName(),interactHTTPServer );
 
         getLogger().debug(".addHTTPServerPorts(): Exit");
     }
