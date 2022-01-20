@@ -178,6 +178,9 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
         getLogger().debug(".reportsAndMetricsForwarder(): Entry");
         List<PetasosComponentMetricSet> metricSets = systemWideMetrics.getUpdatedMetricSets();
         for(PetasosComponentMetricSet currentMetricSet: metricSets){
+            if(getLogger().isInfoEnabled()) {
+                getLogger().info(".reportsAndMetricsForwarder(): Processing Metrics From -->{}", currentMetricSet.getSourceParticipantName());
+            }
             switch (currentMetricSet.getComponentType()) {
                 case PETASOS_MONITORED_COMPONENT_SUBSYSTEM:
                     break;

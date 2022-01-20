@@ -70,6 +70,7 @@ public class EndpointParticipantReplicaServices extends BaseParticipantReplicaSe
         String endpointSpaceId = null;
         SynapseRoom foundRoom = getMatrixBridgeCache().scanForExistingRoomWithAlias(roomList, endpointParticipantAlias);
         if (foundRoom != null) {
+            getLogger().info(".createEndpointSpaceIfRequired(): Room Exists, no action required");
             endpointSpaceId = foundRoom.getRoomID();
         } else {
             getLogger().info(".createEndpointSpaceIfRequired(): Creating Space for WUP ->{}", endpointParticipantAlias);

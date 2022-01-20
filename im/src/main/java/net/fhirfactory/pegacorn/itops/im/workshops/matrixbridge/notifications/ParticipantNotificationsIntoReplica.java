@@ -205,7 +205,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
                 case PETASOS_MONITORED_COMPONENT_WORK_UNIT_PROCESSOR_COMPONENT:
                     break;
                 case PETASOS_MONITORED_COMPONENT_ENDPOINT:
-                    getLogger().trace(".notificationForwarder(): Processing Endpoint Metrics");
+                    getLogger().info(".notificationForwarder(): Processing Endpoint Metrics");
                     forwardEndpointNotification(nextNotification);
                     break;
             }
@@ -242,7 +242,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
                 getLogger().warn(".forwardWUPNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             }
         } else {
-            getLogger().warn(".forwardWUPNotification(): No room to forward work unit processor notifications into (WorkUnitProcessor->{}!", notification.getParticipantName());
+            getLogger().warn(".forwardWUPNotification(): No room to forward work unit processor notifications into (WorkUnitProcessor->{})!", notification.getParticipantName());
             // TODO either re-queue or send to DeadLetter
         }
     }
