@@ -143,6 +143,8 @@ public abstract class BaseParticipantReplicaServices {
             getMatrixSpaceAPI().addChildToSpace(participantSpaceId, createdRoom.getRoomID());
             getMatrixBridgeCache().addRoomFromMatrix(createdRoom);
             waitALittleBit();
+        } else {
+            getLogger().info(".installAnOAMRoom(): Room Exists, not action required");
         }
         getLogger().debug(".installAnOAMRoom(): Exit");
     }

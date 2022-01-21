@@ -27,7 +27,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.CapabilityFulfillmentInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.services.oam.endpoint.PetasosOAMMetricsCollectorEndpoint;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.endpoint.PetasosOAMMetricsCollectorEndpoint;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.lang3.StringUtils;

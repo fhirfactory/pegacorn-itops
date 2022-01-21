@@ -93,10 +93,26 @@ public class ParticipantMetricsReportEventFactory {
             currentMetricEvent.setSender(accessToken.getMatrixUserId());
             currentMetricEvent.setEventType("m.room.message");
 
-            StringBuilder metricTextBodyBuilder = new StringBuilder();
-            StringBuilder metricFormattedTextBodyBuilder = new StringBuilder();
+            String metricTimestamp = timeFormatter.format(metricSet.getReportingInstant());
+            if (metricSet.getReportingInstant() != null) {
+                    metricTimestamp = getTimeFormatter().format(metricSet.getReportingInstant());
+            }
+            if (metricTimestamp == null) {
+                metricTimestamp = "Not Specified";
+            }
 
-            metricFormattedTextBodyBuilder.append("<table style='width:100%'> <tr><th>Timestamp</th><th>Metric Name</th><th>Metric Type</th><th>Matric Unit</th><th>Metric Value</th></tr>");
+            StringBuilder metricTextBodyBuilder = new StringBuilder();
+            metricTextBodyBuilder.append("Processing Plant Metric Report ("+metricTimestamp+") \n");
+
+            StringBuilder metricFormattedTextBodyBuilder = new StringBuilder();
+            metricFormattedTextBodyBuilder.append("<b> Processing Plant Metric Report ("+metricTimestamp+") </b> \n" );
+            metricFormattedTextBodyBuilder.append("<table style='width:100%'>");
+            metricFormattedTextBodyBuilder.append("<tr>");
+            metricFormattedTextBodyBuilder.append("<th>Metric Name</th>");
+            metricFormattedTextBodyBuilder.append("<th>Metric Type</th>");
+            metricFormattedTextBodyBuilder.append("<th>Metric Unit</th>");
+            metricFormattedTextBodyBuilder.append("<th>Metric Value</th>");
+            metricFormattedTextBodyBuilder.append("</tr>");
             for (PetasosComponentMetric currentMetric : metricSet.getMetrics().values()) {
                 String metricName = currentMetric.getMetricName();
                 String metricType = null;
@@ -113,18 +129,18 @@ public class ParticipantMetricsReportEventFactory {
                 }
 
                 String metricValue = getMetricValueAsString(currentMetric.getMetricValue());
-                String metricTimestamp = null;
-                if (currentMetric.getMetricTimestamp() != null) {
-                    if (currentMetric.getMetricTimestamp().hasMeasurementCaptureInstant()) {
-                        metricTimestamp = getTimeFormatter().format(currentMetric.getMetricTimestamp().getMeasurementCaptureInstant());
-                    }
-                }
-                if (metricTimestamp == null) {
-                    metricTimestamp = "Not Specified";
-                }
-                metricTextBodyBuilder.append(metricTimestamp + ":" + metricName + ":" + metricType + ":" + metricUnit + ":" + metricValue);
-                metricFormattedTextBodyBuilder.append("<tr><td>" + metricTimestamp + "</td><td>" + metricName + "</td><td>" + metricType + "</td><td>" + metricUnit + "</td><td>" + metricValue + "</td></tr>");
+
+                metricTextBodyBuilder.append(metricName + ":" + metricType + ":" + metricUnit + ":" + metricValue +"\n");
+
+                metricFormattedTextBodyBuilder.append("<tr>");
+                metricFormattedTextBodyBuilder.append("<td>" + metricName + "</td>");
+                metricFormattedTextBodyBuilder.append("<td>" + metricType + "</td>");
+                metricFormattedTextBodyBuilder.append("<td>" + metricUnit + "</td>");
+                metricFormattedTextBodyBuilder.append("<td>" + metricValue + "</td>");
+                metricFormattedTextBodyBuilder.append("</tr>");
             }
+
+            metricFormattedTextBodyBuilder.append("</table>");
 
             MTextContentType textContent = new MTextContentType();
             textContent.setBody(metricTextBodyBuilder.toString());

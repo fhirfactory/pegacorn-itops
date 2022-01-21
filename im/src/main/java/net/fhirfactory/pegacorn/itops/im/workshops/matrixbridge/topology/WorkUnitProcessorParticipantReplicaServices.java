@@ -74,14 +74,15 @@ public class WorkUnitProcessorParticipantReplicaServices extends BaseParticipant
         String wupRoomId = null;
         SynapseRoom foundRoom = getMatrixBridgeCache().scanForExistingRoomWithAlias(roomList, wupAlias);
         if (foundRoom != null) {
+            getLogger().info(".createWorkUnitProcessorSpace(): Room Found, no action required");
             wupRoomId = foundRoom.getRoomID();
         } else {
-            getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For WUP As Required] Creating Space for WUP ->{}", wupAlias);
+            getLogger().info(".createWorkUnitProcessorSpace(): [Add Space(s) For WUP As Required] Creating Space for WUP ->{}", wupAlias);
             String wupTopic = "WorkUnitProcessor, " + wupSummary.getComponentID().getId();
             MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(wupParticipantDisplayName, wupAlias, wupTopic, workshopId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
             SynapseRoom createdRoom = getMatrixSpaceAPI().createSpace(getSynapseAccessToken().getUserName(), mRoomCreation);
             wupRoomId = createdRoom.getRoomID();
-            getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For WUP As Required] Created Space ->{}", createdRoom);
+            getLogger().info(".createWorkUnitProcessorSpace(): [Add Space(s) For WUP As Required] Created Space ->{}", createdRoom);
             getMatrixBridgeCache().addRoomFromMatrix(createdRoom);
             roomList.add(createdRoom);
             waitALittleBit();
@@ -90,12 +91,12 @@ public class WorkUnitProcessorParticipantReplicaServices extends BaseParticipant
         // TODO, Should check if it is already a child
         getMatrixSpaceAPI().addChildToSpace(workshopId, wupRoomId);
         waitALittleBit();
-        getLogger().info(".createProcessingPlantSpace(): [Add Rooms If Required] Start...");
+        getLogger().info(".createWorkUnitProcessorSpace(): [Add Rooms If Required] Start...");
         installAnOAMRoom(wupParticipantName, wupParticipantDisplayName, wupRoomId, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_EVENTS,roomList);
         installAnOAMRoom(wupParticipantName, wupParticipantDisplayName, wupRoomId, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS, roomList);
         installAnOAMRoom(wupParticipantName, wupParticipantDisplayName, wupRoomId, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS, roomList);
         installAnOAMRoom(wupParticipantName, wupParticipantDisplayName, wupRoomId, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS, roomList);
-        getLogger().info(".createProcessingPlantSpace(): [Add Rooms If Required] Finish...");
+        getLogger().info(".createWorkUnitProcessorSpace(): [Add Rooms If Required] Finish...");
 
         getLogger().info(".createWorkUnitProcessorSpace(): Exit, wupRoomId->{}", wupRoomId);
         return(wupRoomId);

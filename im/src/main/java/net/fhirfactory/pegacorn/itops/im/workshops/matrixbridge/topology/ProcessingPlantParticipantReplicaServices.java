@@ -61,7 +61,7 @@ public class ProcessingPlantParticipantReplicaServices extends BaseParticipantRe
         String participantRoomAlias = getRoomIdentityFactory().buildProcessingPlantCanonicalAlias(processingPlantParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM);
         SynapseRoom participantRoom = getMatrixBridgeCache().scanForExistingRoomWithAlias(roomList, participantRoomAlias);
         if(participantRoom != null){
-            // do nothing
+            getLogger().trace(".createProcessingPlantSpace(): Room Exists, nothing to do");
         } else {
             getLogger().trace(".createProcessingPlantSpace(): [Add Space(s) As Required] Creating room for ->{}", processingPlantParticipantName);
             MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceCreationRequest(processingPlantParticipantName, participantRoomAlias, "", MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
