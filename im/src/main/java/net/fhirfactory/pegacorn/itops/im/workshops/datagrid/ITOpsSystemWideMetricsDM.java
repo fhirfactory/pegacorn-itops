@@ -86,7 +86,7 @@ public class ITOpsSystemWideMetricsDM {
     //
 
     public void addComponentMetricSet(String routingEndpointId, PetasosComponentMetricSet metricsSet){
-        getLogger().info(".addComponentMetricSet(): Entry, componentID->{}, metricSet->{}", routingEndpointId, metricsSet);
+        getLogger().debug(".addComponentMetricSet(): Entry, componentID->{}, metricSet->{}", routingEndpointId, metricsSet);
         if(StringUtils.isEmpty(routingEndpointId) || metricsSet == null){
             getLogger().debug(".addComponentMetricSet(): Exit, either componentID or metricSet is empty");
             return;

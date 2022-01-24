@@ -21,6 +21,7 @@
  */
 package net.fhirfactory.pegacorn.itops.im.processingplant;
 
+import net.fhirfactory.pegacorn.core.model.topology.role.ProcessingPlantRoleEnum;
 import net.fhirfactory.pegacorn.petasos.oam.common.ITOpsReplicaLocalServerName;
 import net.fhirfactory.pegacorn.processingplant.ProcessingPlant;
 
@@ -49,5 +50,10 @@ public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingP
     @Override
     protected void executePostConstructActivities() {
         replicaLocalServerName.setServerName(specifyITOpsReplicaLocalServiceName());
+    }
+
+    @Override
+    public ProcessingPlantRoleEnum getProcessingPlantCapability() {
+        return (ProcessingPlantRoleEnum.PETASOS_SERVICE_PROVIDER_ITOPS_MANAGEMENT);
     }
 }

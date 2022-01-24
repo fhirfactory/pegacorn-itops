@@ -28,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
@@ -52,19 +54,23 @@ public class ITOpsSystemWideSubscriptionMapDM {
 
     public void addProcessingPlantSubscriptionSummary(PetasosProcessingPlantSubscriptionSummary summary){
         LOG.debug(".addProcessingPlantSubscriptionSummary(): Entry, summary->{}", summary);
-        if(processingPlantSubscriptionSummarySet.containsKey(summary.getComponentID())){
-            processingPlantSubscriptionSummarySet.remove(summary.getComponentID());
+        synchronized (publisherSubscriptionMapLock) {
+            if (processingPlantSubscriptionSummarySet.containsKey(summary.getComponentID())) {
+                processingPlantSubscriptionSummarySet.remove(summary.getComponentID());
+            }
+            processingPlantSubscriptionSummarySet.put(summary.getComponentID().getId(), summary);
         }
-        processingPlantSubscriptionSummarySet.put(summary.getComponentID().getId(), summary);
         LOG.debug(".addProcessingPlantSubscriptionSummary(): Exit");
     }
 
     public void addWorkUnitProcessorSubscriptionSummary(PetasosWorkUnitProcessorSubscriptionSummary summary){
         LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Entry, summary->{}", summary);
-        if(workUnitProcessorSubscriptionSummarySet.containsKey(summary.getSubscriber())){
-            workUnitProcessorSubscriptionSummarySet.remove(summary.getSubscriber());
+        synchronized (publisherSubscriptionMapLock) {
+            if (workUnitProcessorSubscriptionSummarySet.containsKey(summary.getSubscriber())) {
+                workUnitProcessorSubscriptionSummarySet.remove(summary.getSubscriber());
+            }
+            workUnitProcessorSubscriptionSummarySet.put(summary.getSubscriber().getId(), summary);
         }
-        workUnitProcessorSubscriptionSummarySet.put(summary.getSubscriber().getId(), summary);
         LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Exit" );
     }
 
@@ -74,24 +80,37 @@ public class ITOpsSystemWideSubscriptionMapDM {
             LOG.debug(".getProcessingPlantPubSubReport(): Exit, componentID is empty");
             return(null);
         }
-        if(processingPlantSubscriptionSummarySet.containsKey(componentID)){
-            PetasosProcessingPlantSubscriptionSummary summary = processingPlantSubscriptionSummarySet.get(componentID);
-            return(summary);
-        } else {
-            LOG.debug(".getProcessingPlantPubSubReport(): Exit, cannot find processing plant with given componentID");
-            return(null);
+        PetasosProcessingPlantSubscriptionSummary summary = null;
+        synchronized (publisherSubscriptionMapLock) {
+            if (processingPlantSubscriptionSummarySet.containsKey(componentID)) {
+                summary = processingPlantSubscriptionSummarySet.get(componentID);
+            } else {
+                LOG.debug(".getProcessingPlantPubSubReport(): Cannot find processing plant with given componentID");
+            }
         }
+        LOG.debug(".getProcessingPlantPubSubReport(): Exit, summary->{}", summary);
+        return(summary);
     }
 
     public PetasosWorkUnitProcessorSubscriptionSummary getWorkUnitProcessorPubSubReport(String componentID){
         if(StringUtils.isEmpty(componentID)){
             return(null);
         }
-        if(workUnitProcessorSubscriptionSummarySet.containsKey(componentID)){
-            PetasosWorkUnitProcessorSubscriptionSummary summary = workUnitProcessorSubscriptionSummarySet.get(componentID);
-            return(summary);
-        } else {
-            return(null);
+        PetasosWorkUnitProcessorSubscriptionSummary summary = null;
+        synchronized (publisherSubscriptionMapLock) {
+            if (workUnitProcessorSubscriptionSummarySet.containsKey(componentID)) {
+                summary = workUnitProcessorSubscriptionSummarySet.get(componentID);
+            }
         }
+        LOG.debug(".getWorkUnitProcessorPubSubReport(): Exit, summary->{}", summary);
+        return(summary);
+    }
+
+    public List<PetasosProcessingPlantSubscriptionSummary> getProcessingPlantSubscriptionReports(){
+        List<PetasosProcessingPlantSubscriptionSummary> subscriptionReportList = new ArrayList<>();
+        synchronized (publisherSubscriptionMapLock) {
+            subscriptionReportList.addAll(processingPlantSubscriptionSummarySet.values());
+        }
+        return(subscriptionReportList);
     }
 }

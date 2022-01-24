@@ -26,7 +26,7 @@ import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseUser;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.valuesets.PetasosMonitoredComponentTypeEnum;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.PetasosParticipantSummary;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
-import net.fhirfactory.pegacorn.itops.im.workshops.matrixbridge.common.ParticipantRoomIdentityFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.common.ParticipantRoomIdentityFactory;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
