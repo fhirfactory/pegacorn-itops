@@ -28,9 +28,10 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.messag
 import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosProcessingPlantSubscriptionSummary;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosPublisherSubscriptionSummary;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosSubscriberSubscriptionSummary;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideSubscriptionMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.ParticipantSubscriptionReportEventFactory;
@@ -161,10 +162,15 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
     private void subscriptionReportForwarder() {
         getLogger().debug(".subscriptionReportForwarder(): Entry");
         stillRunning = true;
-        List<PetasosProcessingPlantSubscriptionSummary> processingPlantSubscriptionReports = subscriptionMapDM.getProcessingPlantSubscriptionReports();
-        for (PetasosProcessingPlantSubscriptionSummary currentReport: processingPlantSubscriptionReports) {
+        List<PetasosProcessingPlantSubscriptionSummary> processingPlantSubscriptionSummaries = subscriptionMapDM.getProcessingPlantSubscriptionSummaries();
+        for (PetasosProcessingPlantSubscriptionSummary currentReport: processingPlantSubscriptionSummaries) {
             getLogger().trace(".subscriptionReportForwarder(): Entry");
             forwardProcessingPlantSubscriptionReport(currentReport);
+        }
+        List<PetasosWorkUnitProcessorSubscriptionSummary> wupSubscriptionSummaries = subscriptionMapDM.getWorkUnitProcessorSubscriptionSummaries();
+        for (PetasosWorkUnitProcessorSubscriptionSummary currentReport: wupSubscriptionSummaries) {
+            getLogger().trace(".subscriptionReportForwarder(): Entry");
+            forwardWorkUnitProcessorSubscriptionReport(currentReport);
         }
         stillRunning = false;
         getLogger().debug(".notificationForwarder(): Exit");
@@ -175,7 +181,7 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
     //
 
     private void forwardProcessingPlantSubscriptionReport(PetasosProcessingPlantSubscriptionSummary subscriptionSummary) {
-        getLogger().info(".forwardProcessingPlantSubscriptionReport(): Entry, subscriptionSummary->{}", subscriptionSummary);
+        getLogger().debug(".forwardProcessingPlantSubscriptionReport(): Entry, subscriptionSummary->{}", subscriptionSummary);
 
         String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
                 subscriptionSummary.getParticipantName(),
@@ -189,18 +195,61 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
 
         if (roomIdFromAlias != null) {
 
-            Collection<PetasosSubscriberSubscriptionSummary> values = subscriptionSummary.getAsSubscriber().values();
-            MRoomTextMessageEvent notificationEvent = subscriptionReportEventFactory.newAsASubscriberSubscriptionReportEvent(roomIdFromAlias, values);
+            Collection<PetasosSubscriberSubscriptionSummary> asASubscriberValues = subscriptionSummary.getAsSubscriber().values();
+            MRoomTextMessageEvent subscriberSummaryEvent = subscriptionReportEventFactory.newAsASubscriberSubscriptionReportEvent(roomIdFromAlias, asASubscriberValues);
+            getLogger().trace(".forwardProcessingPlantSubscriptionReport(): subscriberSummaryEvent->{}", subscriberSummaryEvent);
+            if(subscriberSummaryEvent != null) {
+                try {
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), subscriberSummaryEvent);
+                } catch (Exception ex) {
+                    getLogger().warn(".forwardProcessingPlantSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                }
+            }
 
-            try {
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), notificationEvent);
-            } catch (Exception ex) {
-                getLogger().warn(".forwardWUPTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+            Collection<PetasosPublisherSubscriptionSummary> asAPublisherValues = subscriptionSummary.getAsPublisher().values();
+            MRoomTextMessageEvent publisherSummaryEvent = subscriptionReportEventFactory.newAsAPublisherSubscriptionReportEvent(roomIdFromAlias, asAPublisherValues);
+            getLogger().trace(".forwardProcessingPlantSubscriptionReport(): publisherSummaryEvent->{}", publisherSummaryEvent);
+            if(publisherSummaryEvent != null) {
+                try {
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), publisherSummaryEvent);
+                } catch (Exception ex) {
+                    getLogger().warn(".forwardProcessingPlantSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                }
             }
 
         } else {
             getLogger().warn(".forwardWUPTaskReport(): No room to forward work unit processor task reports into (WorkUnitProcessor->{})!", subscriptionSummary.getParticipantName());
             // TODO either re-queue or send to DeadLetter
+        }
+    }
+
+    private void forwardWorkUnitProcessorSubscriptionReport(PetasosWorkUnitProcessorSubscriptionSummary subscriptionSummary) {
+        getLogger().info(".forwardWorkUnitProcessorSubscriptionReport(): Entry, subscriptionSummary->{}", subscriptionSummary);
+
+        String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
+                subscriptionSummary.getParticipantName(),
+                OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS);
+
+        getLogger().info(".forwardWorkUnitProcessorSubscriptionReport(): roomAlias for Events->{}", roomAlias);
+
+        String roomIdFromAlias = getRoomId(roomAlias);
+
+        getLogger().info(".forwardWorkUnitProcessorSubscriptionReport(): roomId for Events->{}", roomIdFromAlias);
+
+        if (roomIdFromAlias != null) {
+
+            MRoomTextMessageEvent subscriberSummaryEvent = subscriptionReportEventFactory.newWUPSubscriberSubscriptionReportEvent(roomIdFromAlias, subscriptionSummary);
+            getLogger().info(".forwardWorkUnitProcessorSubscriptionReport(): subscriberSummaryEvent->{}", subscriberSummaryEvent);
+            if (subscriberSummaryEvent != null) {
+                try {
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), subscriberSummaryEvent);
+                } catch (Exception ex) {
+                    getLogger().warn(".forwardWorkUnitProcessorSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                }
+            } else {
+                getLogger().warn(".forwardWorkUnitProcessorSubscriptionReport(): No room to forward work unit processor task reports into (WorkUnitProcessor->{})!", subscriptionSummary.getParticipantName());
+                // TODO either re-queue or send to DeadLetter
+            }
         }
     }
 

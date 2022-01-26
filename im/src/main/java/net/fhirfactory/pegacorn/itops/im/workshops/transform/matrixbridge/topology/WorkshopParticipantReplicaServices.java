@@ -56,10 +56,11 @@ public class WorkshopParticipantReplicaServices extends BaseParticipantReplicaSe
     // Business Methods
     //
 
-    public String createWorkUnitProcessorSpace(String processingPlantSpaceId, List<SynapseRoom> roomList, WorkshopSummary workshopSummary) {
+    public String createSubSpace(String processingPlantSpaceId, List<SynapseRoom> roomList, WorkshopSummary workshopSummary) {
         getLogger().debug(".createWorkUnitProcessorSpace(): Entry, processingPlantSpaceId->{}, roomList,  workshop->{}", processingPlantSpaceId,  workshopSummary.getTopologyNodeFDN());
 
         String workshopName = workshopSummary.getParticipantName();
+        String workshopDisplayName = workshopSummary.getParticipantDisplayName();
         String workshopId = null;
         String workshopAlias = OAMRoomTypeEnum.OAM_ROOM_TYPE_WORKSHOP.getAliasPrefix() + workshopName.toLowerCase(Locale.ROOT).replace(".", "-");
         SynapseRoom workshopRoom = getMatrixBridgeCache().scanForExistingRoomWithAlias(roomList, workshopAlias);
@@ -67,8 +68,8 @@ public class WorkshopParticipantReplicaServices extends BaseParticipantReplicaSe
             workshopId = workshopRoom.getRoomID();
         } else {
             getLogger().trace(".createWorkUnitProcessorSpace(): Creating Space for ->{}", workshopAlias);
-            String workshopTopic = "Workshop";
-            MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(workshopName, workshopAlias, workshopTopic, processingPlantSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+            String workshopTopic = "Workshop, "+ workshopName;
+            MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(workshopDisplayName, workshopAlias, workshopTopic, processingPlantSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
             SynapseRoom createdRoom = getMatrixSpaceAPI().createSpace(getSynapseAccessToken().getUserName(), mRoomCreation);
             workshopId = createdRoom.getRoomID();
             getLogger().trace(".createWorkUnitProcessorSpace(): Created Space ->{}", createdRoom);

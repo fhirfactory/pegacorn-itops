@@ -40,7 +40,7 @@ import javax.inject.Inject;
 import java.util.List;
 
 public abstract class BaseParticipantReplicaServices {
-    private Long SHORT_GAPPING_PERIOD = 500L;
+    private Long SHORT_GAPPING_PERIOD = 100L;
     private Long LONG_GAPPING_PERIOD = 1000L;
 
     @Inject

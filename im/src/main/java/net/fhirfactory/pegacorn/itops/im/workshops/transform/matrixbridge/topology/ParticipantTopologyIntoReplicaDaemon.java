@@ -29,8 +29,10 @@ import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseUserMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInterface;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseUser;
+import net.fhirfactory.pegacorn.core.model.petasos.endpoint.valuesets.PetasosEndpointTopologyTypeEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.participant.PetasosParticipantFulfillmentStatusEnum;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.*;
+import net.fhirfactory.pegacorn.itops.im.datatypes.ProcessingPlantSpaceDetail;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.OAMToMatrixBridgeCache;
@@ -68,7 +70,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     private Long ROOM_SYNCHRONISATION_WATCHDOG_CHECK_PERIOD = 30000L;
     private Long ROOM_SYNCHRONISATION_WATCHDOG_RESET_PERIOD = 900L;
 
-    private Long SHORT_GAPPING_PERIOD = 500L;
+    private Long SHORT_GAPPING_PERIOD = 100L;
     private Long LONG_GAPPING_PERIOD = 1000L;
 
 
@@ -348,13 +350,20 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         // Adding Space(s) and Room(s) If Required
         getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) For Workshops As Required] Start...");
         for (ProcessingPlantSummary currentProcessingPlant : processingPlants) {
-            String processingPlantSpaceId = getProcessingPlantReplicaServices().createProcessingPlantSpace(currentProcessingPlant.getParticipantName(), roomList);
+            ProcessingPlantSpaceDetail processingPlantSpace = getProcessingPlantReplicaServices().createProcessingPlantSpace(currentProcessingPlant.getParticipantName(), roomList);
             for (WorkshopSummary currentWorkshop : currentProcessingPlant.getWorkshops().values()) {
-                String workshopId = getWorkshopReplicaServices().createWorkUnitProcessorSpace(processingPlantSpaceId, roomList, currentWorkshop);
+                String workshopId = getWorkshopReplicaServices().createSubSpace(processingPlantSpace.getComponentSpaceId(), roomList, currentWorkshop);
                 for (WorkUnitProcessorSummary currentWUPSummary : currentWorkshop.getWorkUnitProcessors().values()) {
                     String wupSpaceId = wupReplicaServices.createWorkUnitProcessorSpace(workshopId, roomList, currentWUPSummary);
                     for(EndpointSummary currentEndpointSummary: currentWUPSummary.getEndpoints().values()){
                         String endPointId = getEndpointReplicaServices().createEndpointSpaceIfRequired(currentEndpointSummary.getParticipantName(),wupSpaceId, roomList, currentEndpointSummary);
+                        boolean isMLLPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_CLIENT);
+                        boolean isMLLPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_SERVER);
+                        boolean isHTTPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_CLIENT);
+                        boolean isHTTPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_SERVER);
+                        if( isHTTPClient || isHTTPServer || isMLLPClient || isMLLPServer ){
+                            getMatrixSpaceAPI().addChildToSpace(processingPlantSpace.getParticipantSpaceId(), endPointId);
+                        }
                     }
                 }
             }
@@ -526,4 +535,5 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         }
 
     }
+
 }

@@ -102,7 +102,7 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
     @Inject
     private ITOpsSystemWideMetricsDM systemWideMetrics;
-    
+
     @Inject
     private ParticipantRoomIdentityFactory roomIdentityFactory;
 
@@ -256,7 +256,7 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
         if(roomIdFromAlias != null) {
 
-            List<MRoomTextMessageEvent> metricsEventSet = metricsReportEventFactory.createWorkUnitProcessorMetricsEvent(roomIdFromAlias, metricSet);
+            List<MRoomTextMessageEvent> metricsEventSet = metricsReportEventFactory.createProcessingPlantMetricsEvent(roomIdFromAlias, metricSet);
 
             for (MRoomTextMessageEvent currentEvent : metricsEventSet) {
                 try {
@@ -286,7 +286,7 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
         if(roomIdFromAlias != null) {
 
-            List<MRoomTextMessageEvent> metricsEventSet = metricsReportEventFactory.createWorkUnitProcessorMetricsEvent(roomIdFromAlias, metricSet);
+            List<MRoomTextMessageEvent> metricsEventSet = metricsReportEventFactory.createEndpointMetricsEvent(roomIdFromAlias, metricSet);
 
             for (MRoomTextMessageEvent currentEvent : metricsEventSet) {
                 try {

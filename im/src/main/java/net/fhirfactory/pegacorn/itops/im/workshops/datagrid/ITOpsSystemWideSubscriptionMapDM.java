@@ -66,10 +66,10 @@ public class ITOpsSystemWideSubscriptionMapDM {
     public void addWorkUnitProcessorSubscriptionSummary(PetasosWorkUnitProcessorSubscriptionSummary summary){
         LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Entry, summary->{}", summary);
         synchronized (publisherSubscriptionMapLock) {
-            if (workUnitProcessorSubscriptionSummarySet.containsKey(summary.getSubscriber())) {
-                workUnitProcessorSubscriptionSummarySet.remove(summary.getSubscriber());
+            if (workUnitProcessorSubscriptionSummarySet.containsKey(summary.getComponentID())) {
+                workUnitProcessorSubscriptionSummarySet.remove(summary.getComponentID());
             }
-            workUnitProcessorSubscriptionSummarySet.put(summary.getSubscriber().getId(), summary);
+            workUnitProcessorSubscriptionSummarySet.put(summary.getComponentID().getId(), summary);
         }
         LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Exit" );
     }
@@ -106,10 +106,18 @@ public class ITOpsSystemWideSubscriptionMapDM {
         return(summary);
     }
 
-    public List<PetasosProcessingPlantSubscriptionSummary> getProcessingPlantSubscriptionReports(){
+    public List<PetasosProcessingPlantSubscriptionSummary> getProcessingPlantSubscriptionSummaries(){
         List<PetasosProcessingPlantSubscriptionSummary> subscriptionReportList = new ArrayList<>();
         synchronized (publisherSubscriptionMapLock) {
             subscriptionReportList.addAll(processingPlantSubscriptionSummarySet.values());
+        }
+        return(subscriptionReportList);
+    }
+
+    public List<PetasosWorkUnitProcessorSubscriptionSummary> getWorkUnitProcessorSubscriptionSummaries(){
+        List<PetasosWorkUnitProcessorSubscriptionSummary> subscriptionReportList = new ArrayList<>();
+        synchronized(publisherSubscriptionMapLock){
+            subscriptionReportList.addAll(workUnitProcessorSubscriptionSummarySet.values());
         }
         return(subscriptionReportList);
     }

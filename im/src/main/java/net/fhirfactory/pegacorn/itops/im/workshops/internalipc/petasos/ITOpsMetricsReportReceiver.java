@@ -141,10 +141,17 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
 
     @Override
     public Instant replicateMetricSetToServer(String collectorServiceName, PetasosComponentMetricSet metricSet) {
+        getLogger().debug(".replicateMetricSetToServerHandler(): Entry, collectorSubsystemName->{}, metric->{}", collectorServiceName, metricSet);
         if(metricSet == null){
-            return(null);
+            return(Instant.now());
         }
-        return(Instant.now());
+        ComponentIdType MyComponentId = getProcessingPlant().getMeAsASoftwareComponent().getComponentID();
+        PetasosComponentMetricSet componentMetricsSet = metricsDM.getComponentMetricsSet(metricSet.getMetricSourceComponentId().getId());
+        for(PetasosComponentMetric currentMetric: metricSet.getMetrics().values()) {
+            componentMetricsSet.addMetric(currentMetric);
+        }
+        getLogger().debug(".replicateMetricSetToServerHandler(): Exit");
+        return (Instant.now());
     }
 
     //

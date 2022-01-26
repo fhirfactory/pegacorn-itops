@@ -29,22 +29,22 @@ import net.fhirfactory.pegacorn.communicate.matrixbridge.workshops.matrixbridge.
 import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetric;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.datatypes.PetasosComponentMetricValue;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.valuesets.PetasosComponentMetricTypeEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.valuesets.PetasosMonitoredComponentTypeEnum;
+import net.fhirfactory.pegacorn.itops.im.datatypes.MetricsReportContentBase;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.common.DefaultMetricsReportContentBodyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
-public class ParticipantMetricsReportEventFactory {
+public class ParticipantMetricsReportEventFactory extends DefaultMetricsReportContentBodyFactory {
     private static final Logger LOG = LoggerFactory.getLogger(ParticipantMetricsReportEventFactory.class);
 
     private DateTimeFormatter timeFormatter;
@@ -62,9 +62,74 @@ public class ParticipantMetricsReportEventFactory {
     public ParticipantMetricsReportEventFactory(){
         timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss.SSS").withZone(ZoneId.of(PetasosPropertyConstants.DEFAULT_TIMEZONE));
     }
+
     //
     // Business Methods
     //
+
+
+    public List<MRoomTextMessageEvent> createProcessingPlantMetricsEvent(String roomId, PetasosComponentMetricSet metricSet){
+        getLogger().debug(".createProcessingPlantMetricsEvent(): Entry, metricSet->{}", metricSet);
+        if(metricSet == null){
+            getLogger().debug(".createProcessingPlantMetricsEvent(): Exit, metricSet is null, returning empty list");
+            return(new ArrayList<>());
+        }
+
+        List<MRoomTextMessageEvent> metricsEventList = new ArrayList<>();
+
+        MRoomTextMessageEvent currentMetricEvent = new MRoomTextMessageEvent();
+        currentMetricEvent.setRoomIdentifier(roomId);
+        currentMetricEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
+        currentMetricEvent.setSender(accessToken.getMatrixUserId());
+        currentMetricEvent.setEventType("m.room.message");
+
+        MetricsReportContentBase content = newDefaultMetricsContentReport(metricSet);
+
+        MTextContentType textContent = new MTextContentType();
+        textContent.setBody(content.getUnformatedText());
+        textContent.setFormattedBody(content.getHtmlText());
+        textContent.setMessageType(MRoomMessageTypeEnum.TEXT.getMsgtype());
+        textContent.setFormat("org.matrix.custom.html");
+
+        currentMetricEvent.setContent(textContent);
+
+        metricsEventList.add(currentMetricEvent);
+
+        getLogger().debug(".createWorkUnitProcessorMetricsEvent(): Exit, metricsEventList->{}", metricsEventList);
+        return(metricsEventList);
+    }
+
+    public List<MRoomTextMessageEvent> createEndpointMetricsEvent(String roomId, PetasosComponentMetricSet metricSet){
+        getLogger().debug(".createEndpointMetricsEvent(): Entry, metricSet->{}", metricSet);
+        if(metricSet == null){
+            getLogger().debug(".createEndpointMetricsEvent(): Exit, metricSet is null, returning empty list");
+            return(new ArrayList<>());
+        }
+
+        List<MRoomTextMessageEvent> metricsEventList = new ArrayList<>();
+
+        MRoomTextMessageEvent currentMetricEvent = new MRoomTextMessageEvent();
+        currentMetricEvent.setRoomIdentifier(roomId);
+        currentMetricEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
+        currentMetricEvent.setSender(accessToken.getMatrixUserId());
+        currentMetricEvent.setEventType("m.room.message");
+
+        MetricsReportContentBase content = newDefaultMetricsContentReport(metricSet);
+
+        MTextContentType textContent = new MTextContentType();
+        textContent.setBody(content.getUnformatedText());
+        textContent.setFormattedBody(content.getHtmlText());
+        textContent.setMessageType(MRoomMessageTypeEnum.TEXT.getMsgtype());
+        textContent.setFormat("org.matrix.custom.html");
+
+        currentMetricEvent.setContent(textContent);
+
+        metricsEventList.add(currentMetricEvent);
+
+        getLogger().debug(".createEndpointMetricsEvent(): Exit, metricsEventList->{}", metricsEventList);
+        return(metricsEventList);
+    }
+
 
     public List<MRoomTextMessageEvent> createWorkUnitProcessorMetricsEvent(String roomId, PetasosComponentMetricSet metricSet){
         getLogger().debug(".createWorkUnitProcessorMetricsEvent(): Entry, metricSet->{}", metricSet);
@@ -87,11 +152,7 @@ public class ParticipantMetricsReportEventFactory {
             }
         } else {
 
-            MRoomTextMessageEvent currentMetricEvent = new MRoomTextMessageEvent();
-            currentMetricEvent.setRoomIdentifier(roomId);
-            currentMetricEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
-            currentMetricEvent.setSender(accessToken.getMatrixUserId());
-            currentMetricEvent.setEventType("m.room.message");
+
 
             String metricTimestamp = timeFormatter.format(metricSet.getReportingInstant());
             if (metricSet.getReportingInstant() != null) {
@@ -142,15 +203,7 @@ public class ParticipantMetricsReportEventFactory {
 
             metricFormattedTextBodyBuilder.append("</table>");
 
-            MTextContentType textContent = new MTextContentType();
-            textContent.setBody(metricTextBodyBuilder.toString());
-            textContent.setFormattedBody(metricFormattedTextBodyBuilder.toString());
-            textContent.setMessageType(MRoomMessageTypeEnum.TEXT.getMsgtype());
-            textContent.setFormat("org.matrix.custom.html");
 
-            currentMetricEvent.setContent(textContent);
-
-            metricsEventList.add(currentMetricEvent);
         }
 
         getLogger().debug(".createWorkUnitProcessorMetricsEvent(): Exit, metricsEventList->{}", metricsEventList);
@@ -316,6 +369,7 @@ public class ParticipantMetricsReportEventFactory {
     // Getters and Setters
     //
 
+    @Override
     protected Logger getLogger(){
         return(LOG);
     }
@@ -324,46 +378,4 @@ public class ParticipantMetricsReportEventFactory {
         return(this.timeFormatter);
     }
 
-    //
-    // Extract Metric Value
-    //
-
-    protected String getMetricValueAsString(PetasosComponentMetricValue metricValue){
-        if(metricValue == null){
-            return("-");
-        }
-        if(metricValue.getObjectType().equals(String.class)){
-            return(metricValue.getStringValue());
-        }
-        if(metricValue.getObjectType().equals(Long.class)){
-            Long value = metricValue.getLongValue();
-            String valueAsString = value.toString();
-            return(valueAsString);
-        }
-        if(metricValue.getObjectType().equals(Boolean.class)){
-            Boolean value = metricValue.getBooleanValue();
-            return(value.toString());
-        }
-        if(metricValue.getObjectType().equals(Integer.class)){
-            Integer value = metricValue.getIntegerValue();
-            String valueAsString = value.toString();
-            return(valueAsString);
-        }
-        if(metricValue.getObjectType().equals(Instant.class)){
-//            String value = metricValue.getInstantValue().toString();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss").withZone(ZoneId.of(PetasosPropertyConstants.DEFAULT_TIMEZONE));
-//            DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of(PetasosPropertyConstants.DEFAULT_TIMEZONE));
-            String value = formatter.format(metricValue.getInstantValue());
-            return(value);
-        }
-        if (metricValue.getObjectType().equals(Double.class)) {
-            String value = metricValue.getDoubleValue().toString();
-            return(value);
-        }
-        if(metricValue.getObjectType().equals(Float.class)){
-            String value = metricValue.getFloatValue().toString();
-            return(value);
-        }
-        return(metricValue.getObject().toString());
-    }
 }

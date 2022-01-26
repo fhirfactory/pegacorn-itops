@@ -25,6 +25,7 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCre
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomPresetEnum;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVisibilityEnum;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
+import net.fhirfactory.pegacorn.itops.im.datatypes.ProcessingPlantSpaceDetail;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.topology.common.BaseParticipantReplicaServices;
 import org.slf4j.Logger;
@@ -54,7 +55,7 @@ public class ProcessingPlantParticipantReplicaServices extends BaseParticipantRe
     // Business Methods
     //
 
-    public String createProcessingPlantSpace(String processingPlantParticipantName, List<SynapseRoom> roomList){
+    public ProcessingPlantSpaceDetail createProcessingPlantSpace(String processingPlantParticipantName, List<SynapseRoom> roomList){
         getLogger().debug(".createProcessingPlantSpace(): Entry, processingPlantParticipantName->{}", processingPlantParticipantName);
 
         String participantRoomAlias = getRoomIdentityFactory().buildProcessingPlantCanonicalAlias(processingPlantParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM);
@@ -75,9 +76,33 @@ public class ProcessingPlantParticipantReplicaServices extends BaseParticipantRe
         installAnOAMRoom(processingPlantParticipantName, processingPlantParticipantName, spaceId, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS, roomList);
         installAnOAMRoom(processingPlantParticipantName, processingPlantParticipantName, spaceId, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS, roomList);
         installAnOAMRoom(processingPlantParticipantName, processingPlantParticipantName, spaceId, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS, roomList);
+
+        //
+        // Build the Component Rooms (this is where or the sub-elements of a ProcessingPlant will hang-off)
+        String participantComponentRoomAlias = getRoomIdentityFactory().buildProcessingPlantCanonicalAlias(processingPlantParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_COMPONENTS);
+        SynapseRoom participantComponentRoom = getMatrixBridgeCache().scanForExistingRoomWithAlias(roomList, participantComponentRoomAlias);
+        if(participantComponentRoom != null){
+            getLogger().trace(".createProcessingPlantSpace(): ProcessingPlant Component Space Exists, nothing to do");
+        } else {
+            getLogger().trace(".createProcessingPlantSpace(): [Add Space(s) As Required] Creating Space for ->{}", participantComponentRoom);
+            MRoomCreation mComponentRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_COMPONENTS.getDisplayName(), participantComponentRoomAlias, "Processing Plant Components", spaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+            participantComponentRoom = getMatrixSpaceAPI().createSpace(getSynapseAccessToken().getUserName(), mComponentRoomCreation);
+            getLogger().trace(".createProcessingPlantSpace(): [Add Space(s) As Required] Created Room ->{}", participantComponentRoom);
+            roomList.add(participantComponentRoom);
+            getMatrixBridgeCache().addRoomFromMatrix(participantComponentRoom);
+            getMatrixSpaceAPI().addChildToSpace(spaceId, participantComponentRoom.getRoomID());
+        }
         getLogger().trace(".createProcessingPlantSpace(): [Add Rooms If Required] Finish...");
 
-        getLogger().debug(".createProcessingPlantSpace(): Exit, spaceId->{}", spaceId);
-        return(spaceId);
+        ProcessingPlantSpaceDetail processingPlantSpace = new ProcessingPlantSpaceDetail();
+        processingPlantSpace.setComponentSpaceId(participantComponentRoom.getRoomID());
+        processingPlantSpace.setComponentSpaceName(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_COMPONENTS.getDisplayName());
+        processingPlantSpace.setComponentSpaceAlias(participantComponentRoom.getCanonicalAlias());
+        processingPlantSpace.setParticipantSpaceId(spaceId);
+        processingPlantSpace.setParticipantName(processingPlantParticipantName);
+        processingPlantSpace.setParticipantAlias(participantRoom.getCanonicalAlias());
+
+        getLogger().debug(".createProcessingPlantSpace(): Exit, processingPlantSpace->{}", processingPlantSpace);
+        return(processingPlantSpace);
     }
 }
