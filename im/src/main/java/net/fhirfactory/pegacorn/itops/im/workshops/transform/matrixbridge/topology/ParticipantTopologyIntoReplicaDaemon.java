@@ -415,7 +415,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
                     getLogger().info(".topologyReplicationSynchronisationDaemon(): [AAuto Join Users to Added Rooms] Processing Space->{}", currentRoomAlias);
                     String roomId = currentRoom.getRoomID();
                     for (SynapseUser currentUser : userList) {
-                        if (currentUser.getName().contains(synapseAccessToken.getUserName())) {
+                        if (currentUser.getName().startsWith("@" + synapseAccessToken.getUserName())) {
                             // do nothing
                         } else {
                             getLogger().info(".topologyReplicationSynchronisationDaemon(): [Auto Join Users to Added Rooms] Processing User->{}", currentUser.getName());
