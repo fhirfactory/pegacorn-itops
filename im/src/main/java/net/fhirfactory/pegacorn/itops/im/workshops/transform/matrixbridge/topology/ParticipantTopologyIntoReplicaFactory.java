@@ -19,11 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.factories;
+package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.topology;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MCreationContent;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MStateEvent;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCreation;
@@ -51,7 +52,7 @@ public class ParticipantTopologyIntoReplicaFactory {
     private ObjectMapper jsonMapper;
 
     @Inject
-    private ITOpsReplicaLocalServerName localServiceName;
+    private MatrixAccessToken matrixAccessToken;
 
     //
     // Constructor(s)
@@ -89,7 +90,6 @@ public class ParticipantTopologyIntoReplicaFactory {
         // Initial State Events
         MStateEvent guestAccessEvent = new MStateEvent();
         guestAccessEvent.setType("m.room.guest_access");
-        guestAccessEvent.setStateKey("");
         JSONObject simpleObject = new JSONObject();
         simpleObject.put("guest_access", "can_join" );
         guestAccessEvent.setContent(simpleObject);
@@ -135,7 +135,7 @@ public class ParticipantTopologyIntoReplicaFactory {
         parent.setType("m.space.parent");
         JSONObject parentContent = new JSONObject();
         JSONArray parentContentVia = new JSONArray();
-        parentContentVia.put(localServiceName.getServerName());
+        parentContentVia.put(matrixAccessToken.getHomeServer());
         parentContent.put("via", parentContentVia);
         parentContent.put("canonical", true);
         parent.setContent(parentContent);
@@ -145,7 +145,6 @@ public class ParticipantTopologyIntoReplicaFactory {
 
         MStateEvent guestAccessEvent = new MStateEvent();
         guestAccessEvent.setType("m.room.guest_access");
-        guestAccessEvent.setStateKey("");
         JSONObject simpleObject = new JSONObject();
         simpleObject.put("guest_access", "can_join" );
         guestAccessEvent.setContent(simpleObject);
@@ -187,7 +186,7 @@ public class ParticipantTopologyIntoReplicaFactory {
         parent.setType("m.space.parent");
         JSONObject parentContent = new JSONObject();
         JSONArray parentContentVia = new JSONArray();
-        parentContentVia.put(localServiceName.getServerName());
+        parentContentVia.put(matrixAccessToken.getHomeServer());
         parentContent.put("via", parentContentVia);
         parentContent.put("canonical", true);
         parent.setContent(parentContent);

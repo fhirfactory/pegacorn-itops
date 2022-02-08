@@ -19,25 +19,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.topology;
+package net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories;
 
+import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCreation;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomPresetEnum;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVisibilityEnum;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.WorkshopSummary;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.topology.common.BaseParticipantReplicaServices;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.common.BaseParticipantReplicaServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.List;
 import java.util.Locale;
 
 @ApplicationScoped
-public class WorkshopParticipantReplicaServices extends BaseParticipantReplicaServices {
-    private static final Logger LOG = LoggerFactory.getLogger(WorkshopParticipantReplicaServices.class);
+public class WorkshopParticipantReplicaFactory extends BaseParticipantReplicaServices {
+    private static final Logger LOG = LoggerFactory.getLogger(WorkshopParticipantReplicaFactory.class);
 
     //
     // Constructor(s)
@@ -56,31 +56,36 @@ public class WorkshopParticipantReplicaServices extends BaseParticipantReplicaSe
     // Business Methods
     //
 
-    public String createSubSpace(String processingPlantSpaceId, List<SynapseRoom> roomList, WorkshopSummary workshopSummary) {
-        getLogger().debug(".createWorkUnitProcessorSpace(): Entry, processingPlantSpaceId->{}, roomList,  workshop->{}", processingPlantSpaceId,  workshopSummary.getTopologyNodeFDN());
+    public String createSubSpaceIfNotThere(String processingPlantSpaceId, MatrixRoom workshopSpace, WorkshopSummary workshopSummary) {
+        getLogger().debug(".createSubSpaceIfNotThere(): Entry, processingPlantSpaceId->{}, roomList,  workshop->{}", processingPlantSpaceId,  workshopSummary.getTopologyNodeFDN());
 
         String workshopName = workshopSummary.getParticipantName();
         String workshopDisplayName = workshopSummary.getParticipantDisplayName();
         String workshopId = null;
         String workshopAlias = OAMRoomTypeEnum.OAM_ROOM_TYPE_WORKSHOP.getAliasPrefix() + workshopName.toLowerCase(Locale.ROOT).replace(".", "-");
-        SynapseRoom workshopRoom = getMatrixBridgeCache().scanForExistingRoomWithAlias(roomList, workshopAlias);
-        if(workshopRoom != null){
-            workshopId = workshopRoom.getRoomID();
+        if(workshopSpace != null){
+            workshopId = workshopSpace.getRoomID();
         } else {
-            getLogger().trace(".createWorkUnitProcessorSpace(): Creating Space for ->{}", workshopAlias);
+            getLogger().trace(".createSubSpaceIfNotThere(): Creating Space for ->{}", workshopAlias);
             String workshopTopic = "Workshop, "+ workshopName;
             MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(workshopDisplayName, workshopAlias, workshopTopic, processingPlantSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-            SynapseRoom createdRoom = getMatrixSpaceAPI().createSpace(getSynapseAccessToken().getUserName(), mRoomCreation);
-            workshopId = createdRoom.getRoomID();
-            getLogger().trace(".createWorkUnitProcessorSpace(): Created Space ->{}", createdRoom);
-            getMatrixBridgeCache().addRoomFromMatrix(createdRoom);
-            roomList.add(createdRoom);
-            waitALittleBit();
+
+            SynapseRoom createdRoom = null;
+            createdRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
+            if(createdRoom == null){
+                createdRoom = getExistingRoom(workshopAlias);
+            }
+
+            if(createdRoom != null) {
+                workshopId = createdRoom.getRoomID();
+                getLogger().trace(".createSubSpaceIfNotThere(): Created Space ->{}", createdRoom);
+                MatrixRoom matrixRoom = new MatrixRoom(createdRoom);
+                getRoomCache().addRoom(matrixRoom);
+                getMatrixSpaceAPI().addChildToSpace(processingPlantSpaceId, workshopId);
+            }
         }
-        //
-        // Should Check to See if it already a child
-        getMatrixSpaceAPI().addChildToSpace(processingPlantSpaceId, workshopId);
-        getLogger().debug(".createWorkUnitProcessorSpace(): Exit, workshopId->{}", workshopId);
+
+        getLogger().debug(".createSubSpaceIfNotThere(): Exit, workshopId->{}", workshopId);
         return(workshopId);
     }
 

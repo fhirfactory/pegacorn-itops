@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.notifications;
+package net.fhirfactory.pegacorn.itops.im.workshops.issi.notifications;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixInstantMessageMethods;
@@ -33,10 +33,10 @@ import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComp
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsNotificationsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideMetricsDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideTopologyMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.OAMToMatrixBridgeCache;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.common.ParticipantRoomIdentityFactory;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.ParticipantNotificationEventFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
+import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.notifications.ParticipantNotificationEventFactory;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -90,7 +90,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     private MatrixAccessToken matrixAccessToken;
 
     @Inject
-    private ITOpsSystemWideTopologyMapDM systemWideTopologyMap;
+    private ITOpsSystemWideReportedTopologyMapDM systemWideTopologyMap;
 
     @Inject
     private ITOpsSystemWideMetricsDM systemWideMetrics;
@@ -105,7 +105,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     private ITOpsNotificationsDM notificationsDM;
 
     @Inject
-    private OAMToMatrixBridgeCache matrixBridgeCache;
+    private ITOpsKnownRoomAndSpaceMapDM matrixBridgeCache;
 
     //
     // Constructor(s)
@@ -225,7 +225,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
 
         String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
                 notification.getParticipantName(),
-                OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_EVENTS);
+                OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_CONSOLE);
 
         getLogger().trace(".forwardWUPNotification(): roomAlias for Events->{}", roomAlias);
 
@@ -238,7 +238,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
             MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
 
             try {
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), notificationEvent);
+                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
             } catch (Exception ex) {
                 getLogger().warn(".forwardWUPNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             }
@@ -251,7 +251,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     private void forwardProcessingPlantNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardProcessingPlantNotification(): Entry, notification->{}", notification);
 
-        String roomAlias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_EVENTS);
+        String roomAlias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_CONSOLE);
 
         getLogger().trace(".forwardProcessingPlantNotification(): roomAlias for Events->{}", roomAlias);
 
@@ -263,7 +263,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
             MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
 
             try{
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), notificationEvent);
+                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
             } catch(Exception ex){
                 getLogger().warn(".forwardProcessingPlantNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             }
@@ -276,7 +276,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     private void forwardEndpointNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardEndpointNotification(): Entry, notification->{}", notification);
 
-        String roomAlias = roomIdentityFactory.buildEndpointRoomAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_EVENTS);
+        String roomAlias = roomIdentityFactory.buildEndpointRoomAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_CONSOLE);
 
         getLogger().info(".forwardEndpointNotification(): roomAlias for Events->{}", roomAlias);
 
@@ -287,7 +287,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
         if(roomIdFromAlias != null){
             MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
             try{
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), notificationEvent);
+                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
                 getLogger().warn(".forwardEndpointNotification(): notification sent!");
             } catch(Exception ex){
                 getLogger().warn(".forwardEndpointNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));

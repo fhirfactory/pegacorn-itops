@@ -19,32 +19,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.topology.common;
+package net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.common;
 
+import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixRoomMethods;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixSpaceMethods;
+import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCreation;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomPresetEnum;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVisibilityEnum;
-import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.OAMToMatrixBridgeCache;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.common.ParticipantRoomIdentityFactory;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.ParticipantTopologyIntoReplicaFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.topology.ParticipantTopologyIntoReplicaFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Set;
 
 public abstract class BaseParticipantReplicaServices {
     private Long SHORT_GAPPING_PERIOD = 100L;
     private Long LONG_GAPPING_PERIOD = 1000L;
 
     @Inject
-    private OAMToMatrixBridgeCache matrixBridgeCache;
+    private ITOpsKnownRoomAndSpaceMapDM roomCache;
 
     @Inject
     private ParticipantRoomIdentityFactory roomIdentityFactory;
@@ -62,7 +65,8 @@ public abstract class BaseParticipantReplicaServices {
     private MatrixSpaceMethods matrixSpaceAPI;
 
     @Inject
-    private SynapseAdminAccessToken synapseAccessToken;
+    private MatrixAccessToken matrixAccessToken;
+
 
     //
     // Constructor(s)
@@ -74,8 +78,8 @@ public abstract class BaseParticipantReplicaServices {
 
     abstract protected Logger getLogger();
 
-    protected OAMToMatrixBridgeCache getMatrixBridgeCache(){
-        return(matrixBridgeCache);
+    protected ITOpsKnownRoomAndSpaceMapDM getRoomCache(){
+        return(roomCache);
     }
 
     protected ParticipantRoomIdentityFactory getRoomIdentityFactory(){
@@ -98,8 +102,8 @@ public abstract class BaseParticipantReplicaServices {
         return matrixSpaceAPI;
     }
 
-    protected SynapseAdminAccessToken getSynapseAccessToken() {
-        return synapseAccessToken;
+    protected MatrixAccessToken getMatrixAccessToken() {
+        return (matrixAccessToken);
     }
 
     //
@@ -110,7 +114,7 @@ public abstract class BaseParticipantReplicaServices {
         try {
             Thread.sleep(SHORT_GAPPING_PERIOD);
         } catch (Exception e) {
-            getLogger().info(".waitALittleBit():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
+            getLogger().debug(".waitALittleBit():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -118,34 +122,42 @@ public abstract class BaseParticipantReplicaServices {
         try {
             Thread.sleep(LONG_GAPPING_PERIOD);
         } catch (Exception e) {
-            getLogger().info(".waitALittleBitLonger():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
+            getLogger().debug(".waitALittleBitLonger():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
         }
 
     }
 
-    protected void installAnOAMRoom(String participantName, String participantDisplayName, String participantSpaceId, OAMRoomTypeEnum roomType, List<SynapseRoom> roomList) {
-        getLogger().info(".installAnOAMRoom(): Entry, participantName->{}, participantDisplayName->{}, participantSpaceId->{}, roomType->{}",participantName,participantDisplayName, participantSpaceId,roomType);
-        String roomAlias = getRoomIdentityFactory().buildEndpointRoomAlias(participantName, roomType);
-        getLogger().info(".installAnOAMRoom(): roomAlias->{}", roomAlias);
-        if (getMatrixBridgeCache().scanForExistingRoomWithAlias(roomList, roomAlias) == null) {
-            getLogger().info(".installAnOAMRoom(): Room doesn't appear to exist, so creating it");
-            String roomName = participantDisplayName + "." + roomType.getDisplayName();
-            getLogger().info(".installAnOAMRoom(): roomName->{}", roomName);
-            String roomTopic = roomType.getDisplayName();
-            getLogger().info(".installAnOAMRoom(): roomName->{}", roomTopic);
-            MRoomCreation mRoomCreation = getMatrixBridgeFactories().newRoomInSpaceCreationRequest(roomName, roomAlias, roomTopic, participantSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-            getLogger().info(".installAnOAMRoom(): mRoomCreation request->{}", mRoomCreation);
-            SynapseRoom createdRoom = getMatrixRoomAPI().createRoom(getSynapseAccessToken().getUserName(), mRoomCreation);
-            getLogger().info(".installAnOAMRoom(): Created Room ->{}", createdRoom);
-            roomList.add(createdRoom);
-            waitALittleBit();
-            getLogger().info(".installAnOAMRoom(): adding as child to participantSpaceId");
-            getMatrixSpaceAPI().addChildToSpace(participantSpaceId, createdRoom.getRoomID());
-            getMatrixBridgeCache().addRoomFromMatrix(createdRoom);
-            waitALittleBit();
+    protected void installAnOAMRoom(String participantName, String participantDisplayName, String participantSpaceId, OAMRoomTypeEnum roomType) {
+        getLogger().debug(".installAnOAMRoom(): Entry, participantName->{}, participantDisplayName->{}, participantSpaceId->{}, roomType->{}",participantName,participantDisplayName, participantSpaceId,roomType);
+
+        String roomAlias = getRoomIdentityFactory().buildOAMRoomAlias(participantName, roomType);
+        getLogger().trace(".installAnOAMRoom(): roomAlias->{}", roomAlias);
+        getLogger().trace(".installAnOAMRoom(): Room doesn't appear to exist, so creating it");
+        String roomName = participantDisplayName + "." + roomType.getDisplayName();
+        getLogger().trace(".installAnOAMRoom(): roomName->{}", roomName);
+        String roomTopic = roomType.getDisplayName();
+        getLogger().trace(".installAnOAMRoom(): roomName->{}", roomTopic);
+        MRoomCreation mRoomCreation = getMatrixBridgeFactories().newRoomInSpaceCreationRequest(roomName, roomAlias, roomTopic, participantSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+        getLogger().trace(".installAnOAMRoom(): mRoomCreation request->{}", mRoomCreation);
+        SynapseRoom createdRoom = getMatrixRoomAPI().createRoom(getMatrixAccessToken().getUserId(), mRoomCreation);
+        getLogger().trace(".installAnOAMRoom(): Created Room ->{}", createdRoom);
+        if(createdRoom == null){
+            createdRoom = getExistingRoom(roomAlias);
+        }
+        if(createdRoom != null) {
+            getLogger().trace(".installAnOAMRoom(): adding as child to participantSpaceId");
+            MatrixRoom matrixRoom = new MatrixRoom(createdRoom);
+            getMatrixSpaceAPI().addChildToSpace(participantSpaceId, matrixRoom.getRoomID());
+            getRoomCache().addRoom(matrixRoom);
         } else {
-            getLogger().info(".installAnOAMRoom(): Room Exists, not action required");
+            getLogger().warn(".installAnOAMRoom(): Could not create room -> {}", roomAlias);
         }
         getLogger().debug(".installAnOAMRoom(): Exit");
+    }
+
+
+    protected MatrixRoom getExistingRoom(String pseudoAlias){
+        MatrixRoom room = getRoomCache().getRoomFromPseudoAlias(pseudoAlias);
+        return(room);
     }
 }

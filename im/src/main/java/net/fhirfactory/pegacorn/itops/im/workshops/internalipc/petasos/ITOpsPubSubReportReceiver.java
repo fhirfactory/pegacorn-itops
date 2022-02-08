@@ -53,7 +53,7 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase implements Peta
 
     @Override
     public CapabilityUtilisationResponse executeTask(CapabilityUtilisationRequest request) {
-        getLogger().info(".executeTask(): Entry, request->{}", request);
+        getLogger().debug(".executeTask(): Entry, request->{}", request);
         if(request.getRequiredCapabilityName().contentEquals(WorkUnitProcessorCapabilityEnum.CAPABILITY_INFORMATION_MANAGEMENT_IT_OPS.getToken())) {
             PetasosPublisherSubscriptionSummary pubsubReport = extractPubSubReport(request);
             if (pubsubReport != null) {
@@ -101,7 +101,7 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase implements Peta
 
     @Override
     public Instant replicateSubscriptionSummaryReportHandler(PetasosSubscriptionSummaryReport summaryReport, JGroupsIntegrationPointSummary integrationPoint) {
-        getLogger().info(".replicateSubscriptionSummaryReportHandler(): Entry");
+        getLogger().debug(".replicateSubscriptionSummaryReportHandler(): Entry");
         if(summaryReport != null){
             for(PetasosWorkUnitProcessorSubscriptionSummary wupSummary: summaryReport.getWupSubscriptionSummarySet().values()){
                 subscriptionMapDM.addWorkUnitProcessorSubscriptionSummary(wupSummary);
@@ -110,7 +110,7 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase implements Peta
                 subscriptionMapDM.addProcessingPlantSubscriptionSummary(processingPlantSummary);
             }
         }
-        getLogger().info(".replicateSubscriptionSummaryReportHandler(): Exit");
+        getLogger().debug(".replicateSubscriptionSummaryReportHandler(): Exit");
         return(Instant.now());
     }
 

@@ -52,19 +52,19 @@ public class ITOpsNotificationsReceiver extends ITOpsReceiverBase implements Pet
 
     @Override
     public void sendNotification(PetasosComponentITOpsNotification notification) {
-        getLogger().info(".processNotification(): Entry, notification->{}", notification);
+        getLogger().debug(".processNotification(): Entry, notification->{}", notification);
         //
         // We don't want to send notifications for the ITOps framework itself, it would create a cyclical event
         //
         // notificationsDM.addNotification(notification);
-        getLogger().info(".processNotification(): Exit");
+        getLogger().debug(".processNotification(): Exit");
     }
 
     @Override
     public void processNotification(PetasosComponentITOpsNotification notification) {
-        getLogger().info(".processNotification(): Entry, notification->{}", notification);
+        getLogger().debug(".processNotification(): Entry, notification->{}", notification);
         notificationsDM.addNotification(notification);
-        getLogger().info(".processNotification(): Exit");
+        getLogger().debug(".processNotification(): Exit");
     }
 
     @Override

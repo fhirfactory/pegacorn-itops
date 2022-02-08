@@ -19,20 +19,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.reports.tasks;
+package net.fhirfactory.pegacorn.itops.im.workshops.issi.reports.tasks;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixInstantMessageMethods;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
-import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsTaskReportsDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.common.ParticipantRoomIdentityFactory;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.ParticipantTaskReportsEventFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.reports.tasks.ParticipantTaskReportsEventFactory;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -64,9 +63,6 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
     List<SynapseRoom> roomList;
     Instant lastRoomListUpdate;
     ConcurrentHashMap<String, String> roomIdMap;
-
-    @Inject
-    private SynapseAdminAccessToken synapseAccessToken;
 
     @Inject
     private MatrixInstantMessageMethods matrixInstantMessageAPI;
@@ -125,10 +121,6 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
 
     protected Logger getLogger() {
         return (LOG);
-    }
-
-    protected SynapseAdminAccessToken getSynapseAccessToken() {
-        return (synapseAccessToken);
     }
 
     protected boolean isStillRunning() {
@@ -215,7 +207,7 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
             MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
 
             try {
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), notificationEvent);
+                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
             } catch (Exception ex) {
                 getLogger().warn(".forwardWUPTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             }
@@ -241,7 +233,7 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
             MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
 
             try {
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), notificationEvent);
+                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
             } catch (Exception ex) {
                 getLogger().warn(".forwardProcessingPlantTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             }

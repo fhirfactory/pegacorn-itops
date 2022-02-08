@@ -19,10 +19,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.datagrid;
+package net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps;
 
+import net.fhirfactory.pegacorn.core.model.componentid.ComponentIdType;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.*;
-import org.apache.camel.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,17 +31,23 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
-public class ITOpsSystemWideTopologyMapDM {
-    private static final Logger LOG = LoggerFactory.getLogger(ITOpsSystemWideTopologyMapDM.class);
+public class ITOpsSystemWideReportedTopologyMapDM {
+    private static final Logger LOG = LoggerFactory.getLogger(ITOpsSystemWideReportedTopologyMapDM.class);
 
     // Map<componentId, componentSummary>
-    private Map<String, ProcessingPlantSummary> processingPlantMap;
+    private Map<String, ProcessingPlantSummary> reportedProcessingPlantMap;
 
     // Map<componentId, componentSummary>
-    private Map<String, SoftwareComponentSummary> nodeMap;
+    private Map<String, SoftwareComponentSummary> reportedSoftwareComponentMap;
+
+    // Map<subsystemParticipantName, MatrixSpace> replicaMap;
+
+    // Map<subsystemParticipantName, Set<subsystemComponentId>>
+    private Map<String, Set<ComponentIdType>> discoveredComponentMap;
 
     private ConcurrentHashMap<String, Instant> sourceUpdateInstantMap;
 
@@ -52,12 +58,12 @@ public class ITOpsSystemWideTopologyMapDM {
     // Constructor(s)
     //
 
-    public ITOpsSystemWideTopologyMapDM() {
+    public ITOpsSystemWideReportedTopologyMapDM() {
         LOG.debug(".ITOpsCollatedNodesDM(): Constructor initialisation");
         this.currentStateUpdateInstant = Instant.now();
-        this.nodeMap = new ConcurrentHashMap<>();
+        this.reportedSoftwareComponentMap = new ConcurrentHashMap<>();
         this.sourceUpdateInstantMap = new ConcurrentHashMap<>();
-        this.processingPlantMap = new ConcurrentHashMap<>();
+        this.reportedProcessingPlantMap = new ConcurrentHashMap<>();
         this.graphLock = new Object();
     }
 
@@ -73,12 +79,12 @@ public class ITOpsSystemWideTopologyMapDM {
         this.currentStateUpdateInstant = currentStateUpdateInstant;
     }
 
-    public static Logger getLOG() {
+    public static Logger getLogger() {
         return LOG;
     }
 
-    protected Map<String, SoftwareComponentSummary> getNodeMap() {
-        return nodeMap;
+    protected Map<String, SoftwareComponentSummary> getReportedSoftwareComponentMap() {
+        return reportedSoftwareComponentMap;
     }
 
     protected Object getGraphLock() {
@@ -90,7 +96,8 @@ public class ITOpsSystemWideTopologyMapDM {
     //
 
     public void addProcessingPlant(String forwardingAgentId, ProcessingPlantSummary processingPlant){
-        if(processingPlantMap.containsKey(processingPlant.getComponentID().getId())){
+        getLogger().debug(".addProcessingPlant(): Entry, processingPlant->{}", processingPlant.getComponentID());
+        if(reportedProcessingPlantMap.containsKey(processingPlant.getComponentID().getId())){
             removeProcessingPlant(processingPlant.getComponentID().getId());
         }
         addProcessingPlant(processingPlant);
@@ -99,6 +106,7 @@ public class ITOpsSystemWideTopologyMapDM {
             sourceUpdateInstantMap.remove(processingPlant.getComponentID().getId());
         }
         currentStateUpdateInstant = Instant.now();
+        getLogger().debug(".addProcessingPlant(): Exit");
     }
 
     //
@@ -107,14 +115,14 @@ public class ITOpsSystemWideTopologyMapDM {
     public void addProcessingPlant(ProcessingPlantSummary processingPlant){
         removeProcessingPlant(processingPlant);
         synchronized (graphLock) {
-            processingPlantMap.put(processingPlant.getComponentID().getId(), processingPlant);
-            nodeMap.put(processingPlant.getComponentID().getId(), processingPlant);
+            reportedProcessingPlantMap.put(processingPlant.getComponentID().getId(), processingPlant);
+            reportedSoftwareComponentMap.put(processingPlant.getComponentID().getId(), processingPlant);
             for(WorkshopSummary currentWorkshop: processingPlant.getWorkshops().values()){
-                nodeMap.put(currentWorkshop.getComponentID().getId(), currentWorkshop);
+                reportedSoftwareComponentMap.put(currentWorkshop.getComponentID().getId(), currentWorkshop);
                 for(WorkUnitProcessorSummary currentWUP: currentWorkshop.getWorkUnitProcessors().values()){
-                    nodeMap.put(currentWUP.getComponentID().getId(), currentWorkshop);
+                    reportedSoftwareComponentMap.put(currentWUP.getComponentID().getId(), currentWorkshop);
                     for(EndpointSummary currentEndpoint: currentWUP.getEndpoints().values()){
-                        nodeMap.put(currentEndpoint.getComponentID().getId(), currentEndpoint);
+                        reportedSoftwareComponentMap.put(currentEndpoint.getComponentID().getId(), currentEndpoint);
                     }
                 }
             }
@@ -127,16 +135,16 @@ public class ITOpsSystemWideTopologyMapDM {
 
     public void removeProcessingPlant(String componentID){
         synchronized (graphLock) {
-            ProcessingPlantSummary entry = processingPlantMap.get(componentID);
+            ProcessingPlantSummary entry = reportedProcessingPlantMap.get(componentID);
             if(entry != null){
-                processingPlantMap.remove(componentID);
-                nodeMap.remove(componentID);
+                reportedProcessingPlantMap.remove(componentID);
+                reportedSoftwareComponentMap.remove(componentID);
                 for(WorkshopSummary currentWorkshop: entry.getWorkshops().values()){
-                    nodeMap.remove(currentWorkshop.getComponentID());
+                    reportedSoftwareComponentMap.remove(currentWorkshop.getComponentID());
                     for(WorkUnitProcessorSummary currentWUP: currentWorkshop.getWorkUnitProcessors().values()){
-                        nodeMap.remove(currentWUP.getComponentID());
+                        reportedSoftwareComponentMap.remove(currentWUP.getComponentID());
                         for(EndpointSummary currentEndpoint: currentWUP.getEndpoints().values()){
-                            nodeMap.remove(currentEndpoint.getComponentID());
+                            reportedSoftwareComponentMap.remove(currentEndpoint.getComponentID());
                         }
                     }
                 }
@@ -154,15 +162,15 @@ public class ITOpsSystemWideTopologyMapDM {
 
     public void refreshNodeMap(){
         synchronized (graphLock){
-            nodeMap.clear();
-            for(ProcessingPlantSummary currentProcessingPlant: processingPlantMap.values()){
-                nodeMap.put(currentProcessingPlant.getComponentID().getId(), currentProcessingPlant);
+            reportedSoftwareComponentMap.clear();
+            for(ProcessingPlantSummary currentProcessingPlant: reportedProcessingPlantMap.values()){
+                reportedSoftwareComponentMap.put(currentProcessingPlant.getComponentID().getId(), currentProcessingPlant);
                 for(WorkshopSummary currentWorkshop: currentProcessingPlant.getWorkshops().values()){
-                    nodeMap.put(currentWorkshop.getComponentID().getId(), currentWorkshop);
+                    reportedSoftwareComponentMap.put(currentWorkshop.getComponentID().getId(), currentWorkshop);
                     for(WorkUnitProcessorSummary currentWUP: currentWorkshop.getWorkUnitProcessors().values()){
-                        nodeMap.put(currentWUP.getComponentID().getId(), currentWUP);
+                        reportedSoftwareComponentMap.put(currentWUP.getComponentID().getId(), currentWUP);
                         for(EndpointSummary currentEndpoint: currentWUP.getEndpoints().values()){
-                            nodeMap.put(currentEndpoint.getComponentID().getId(), currentEndpoint);
+                            reportedSoftwareComponentMap.put(currentEndpoint.getComponentID().getId(), currentEndpoint);
                         }
                     }
                 }
@@ -171,8 +179,8 @@ public class ITOpsSystemWideTopologyMapDM {
     }
 
     public SoftwareComponentSummary getNode(String componentID){
-        if(nodeMap.containsKey(componentID)){
-            return(nodeMap.get(componentID));
+        if(reportedSoftwareComponentMap.containsKey(componentID)){
+            return(reportedSoftwareComponentMap.get(componentID));
         } else {
             return(null);
         }
@@ -181,15 +189,15 @@ public class ITOpsSystemWideTopologyMapDM {
     public List<ProcessingPlantSummary> getProcessingPlants(){
         List<ProcessingPlantSummary> plantList = new ArrayList<>();
         synchronized(graphLock){
-            plantList.addAll(processingPlantMap.values());
+            plantList.addAll(reportedProcessingPlantMap.values());
         }
         return(plantList);
     }
 
     public void printMap(){
         synchronized (graphLock){
-            nodeMap.clear();
-            for(ProcessingPlantSummary currentProcessingPlant: processingPlantMap.values()){
+            reportedSoftwareComponentMap.clear();
+            for(ProcessingPlantSummary currentProcessingPlant: reportedProcessingPlantMap.values()){
                 LOG.info(".printMap(): ProcessingPlant->{}/{}", currentProcessingPlant.getComponentID(), currentProcessingPlant.getTopologyNodeFDN().getLeafRDN());
                 for(WorkshopSummary currentWorkshop: currentProcessingPlant.getWorkshops().values()){
                     LOG.info(".printMap(): Workshop->{}/{}", currentWorkshop.getComponentID(), currentWorkshop.getTopologyNodeFDN().getLeafRDN());

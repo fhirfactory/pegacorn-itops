@@ -19,13 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.reports.subscriptions;
+package net.fhirfactory.pegacorn.itops.im.workshops.issi.reports.subscriptions;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixInstantMessageMethods;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
-import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosProcessingPlantSubscriptionSummary;
@@ -34,8 +33,8 @@ import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.P
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideSubscriptionMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.ParticipantSubscriptionReportEventFactory;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.common.ParticipantRoomIdentityFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.reports.subscriptions.ParticipantSubscriptionReportEventFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -65,8 +64,6 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
     Instant lastRoomListUpdate;
     ConcurrentHashMap<String, String> roomIdMap;
 
-    @Inject
-    private SynapseAdminAccessToken synapseAccessToken;
 
     @Inject
     private MatrixInstantMessageMethods matrixInstantMessageAPI;
@@ -125,10 +122,6 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
 
     protected Logger getLogger() {
         return (LOG);
-    }
-
-    protected SynapseAdminAccessToken getSynapseAccessToken() {
-        return (synapseAccessToken);
     }
 
     protected boolean isStillRunning() {
@@ -200,7 +193,7 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
             getLogger().trace(".forwardProcessingPlantSubscriptionReport(): subscriberSummaryEvent->{}", subscriberSummaryEvent);
             if(subscriberSummaryEvent != null) {
                 try {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), subscriberSummaryEvent);
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), subscriberSummaryEvent);
                 } catch (Exception ex) {
                     getLogger().warn(".forwardProcessingPlantSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
                 }
@@ -211,7 +204,7 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
             getLogger().trace(".forwardProcessingPlantSubscriptionReport(): publisherSummaryEvent->{}", publisherSummaryEvent);
             if(publisherSummaryEvent != null) {
                 try {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), publisherSummaryEvent);
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), publisherSummaryEvent);
                 } catch (Exception ex) {
                     getLogger().warn(".forwardProcessingPlantSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
                 }
@@ -224,25 +217,25 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
     }
 
     private void forwardWorkUnitProcessorSubscriptionReport(PetasosWorkUnitProcessorSubscriptionSummary subscriptionSummary) {
-        getLogger().info(".forwardWorkUnitProcessorSubscriptionReport(): Entry, subscriptionSummary->{}", subscriptionSummary);
+        getLogger().debug(".forwardWorkUnitProcessorSubscriptionReport(): Entry, subscriptionSummary->{}", subscriptionSummary);
 
         String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
                 subscriptionSummary.getParticipantName(),
-                OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS);
+                OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS);
 
-        getLogger().info(".forwardWorkUnitProcessorSubscriptionReport(): roomAlias for Events->{}", roomAlias);
+        getLogger().trace(".forwardWorkUnitProcessorSubscriptionReport(): roomAlias for Events->{}", roomAlias);
 
         String roomIdFromAlias = getRoomId(roomAlias);
 
-        getLogger().info(".forwardWorkUnitProcessorSubscriptionReport(): roomId for Events->{}", roomIdFromAlias);
+        getLogger().trace(".forwardWorkUnitProcessorSubscriptionReport(): roomId for Events->{}", roomIdFromAlias);
 
         if (roomIdFromAlias != null) {
 
             MRoomTextMessageEvent subscriberSummaryEvent = subscriptionReportEventFactory.newWUPSubscriberSubscriptionReportEvent(roomIdFromAlias, subscriptionSummary);
-            getLogger().info(".forwardWorkUnitProcessorSubscriptionReport(): subscriberSummaryEvent->{}", subscriberSummaryEvent);
+            getLogger().trace(".forwardWorkUnitProcessorSubscriptionReport(): subscriberSummaryEvent->{}", subscriberSummaryEvent);
             if (subscriberSummaryEvent != null) {
                 try {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), subscriberSummaryEvent);
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), subscriberSummaryEvent);
                 } catch (Exception ex) {
                     getLogger().warn(".forwardWorkUnitProcessorSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
                 }

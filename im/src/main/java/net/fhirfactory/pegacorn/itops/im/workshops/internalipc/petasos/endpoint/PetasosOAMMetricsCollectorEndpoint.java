@@ -90,7 +90,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
     //
 
     public Instant captureMetric(String serviceProviderName, PetasosComponentMetric metric) {
-        getLogger().info(".captureMetric(): Entry, serviceProviderName->{}, metric->{}", serviceProviderName, metric);
+        getLogger().debug(".captureMetric(): Entry, serviceProviderName->{}, metric->{}", serviceProviderName, metric);
 
         Instant captureInstant = metricsHandler.replicateMetricToServerHandler(metric, createSummary(getJGroupsIntegrationPoint()));
 
@@ -186,7 +186,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
     //
 
     public void receiveNotification(PetasosComponentITOpsNotification notification, JGroupsIntegrationPointSummary integrationPoint){
-        getLogger().info(".topologyGraphHandler(): Entry, topologyGraph->{}, integrationPoint->{}", notification, integrationPoint);
+        getLogger().debug(".topologyGraphHandler(): Entry, topologyGraph->{}, integrationPoint->{}", notification, integrationPoint);
 
         if((notification != null) && (integrationPoint != null)) {
             notificationHandler.processNotification(notification);
@@ -202,13 +202,13 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
     //
 
     public void processTaskReport(PetasosComponentITOpsNotification taskReportNotification, JGroupsIntegrationPointSummary integrationPoint) {
-        getLogger().info(".processTaskReport(): Entry, taskReportNotification->{}", taskReportNotification);
+        getLogger().debug(".processTaskReport(): Entry, taskReportNotification->{}", taskReportNotification);
 
         if((taskReportNotification != null) && (integrationPoint != null)) {
             taskReportHandler.processTaskReport(taskReportNotification);
             getMetricsAgent().incrementRemoteProcedureCallHandledCount();
         }
 
-        getLogger().info(".processTaskReport(): Exit");
+        getLogger().debug(".processTaskReport(): Exit");
     }
 }

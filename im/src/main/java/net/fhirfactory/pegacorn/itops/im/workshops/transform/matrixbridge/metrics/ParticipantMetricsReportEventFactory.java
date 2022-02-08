@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.factories;
+package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.metrics;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
@@ -32,7 +32,7 @@ import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.Petasos
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.valuesets.PetasosComponentMetricTypeEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.valuesets.PetasosMonitoredComponentTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.datatypes.MetricsReportContentBase;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.common.DefaultMetricsReportContentBodyFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.DefaultMetricsReportContentBodyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ public class ParticipantMetricsReportEventFactory extends DefaultMetricsReportCo
     private RoomServerTransactionIDProvider transactionIdProvider;
 
     @Inject
-    private MatrixAccessToken accessToken;
+    private MatrixAccessToken matrixAccessToken;
 
     //
     // Constructor(s)
@@ -80,7 +80,7 @@ public class ParticipantMetricsReportEventFactory extends DefaultMetricsReportCo
         MRoomTextMessageEvent currentMetricEvent = new MRoomTextMessageEvent();
         currentMetricEvent.setRoomIdentifier(roomId);
         currentMetricEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
-        currentMetricEvent.setSender(accessToken.getMatrixUserId());
+        currentMetricEvent.setSender(matrixAccessToken.getUserId());
         currentMetricEvent.setEventType("m.room.message");
 
         MetricsReportContentBase content = newDefaultMetricsContentReport(metricSet);
@@ -111,7 +111,7 @@ public class ParticipantMetricsReportEventFactory extends DefaultMetricsReportCo
         MRoomTextMessageEvent currentMetricEvent = new MRoomTextMessageEvent();
         currentMetricEvent.setRoomIdentifier(roomId);
         currentMetricEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
-        currentMetricEvent.setSender(accessToken.getMatrixUserId());
+        currentMetricEvent.setSender(matrixAccessToken.getUserId());
         currentMetricEvent.setEventType("m.room.message");
 
         MetricsReportContentBase content = newDefaultMetricsContentReport(metricSet);
@@ -150,60 +150,6 @@ public class ParticipantMetricsReportEventFactory extends DefaultMetricsReportCo
             if(durationEvent != null){
                 metricsEventList.add(taskCountEvent);
             }
-        } else {
-
-
-
-            String metricTimestamp = timeFormatter.format(metricSet.getReportingInstant());
-            if (metricSet.getReportingInstant() != null) {
-                    metricTimestamp = getTimeFormatter().format(metricSet.getReportingInstant());
-            }
-            if (metricTimestamp == null) {
-                metricTimestamp = "Not Specified";
-            }
-
-            StringBuilder metricTextBodyBuilder = new StringBuilder();
-            metricTextBodyBuilder.append("Processing Plant Metric Report ("+metricTimestamp+") \n");
-
-            StringBuilder metricFormattedTextBodyBuilder = new StringBuilder();
-            metricFormattedTextBodyBuilder.append("<b> Processing Plant Metric Report ("+metricTimestamp+") </b> \n" );
-            metricFormattedTextBodyBuilder.append("<table style='width:100%'>");
-            metricFormattedTextBodyBuilder.append("<tr>");
-            metricFormattedTextBodyBuilder.append("<th>Metric Name</th>");
-            metricFormattedTextBodyBuilder.append("<th>Metric Type</th>");
-            metricFormattedTextBodyBuilder.append("<th>Metric Unit</th>");
-            metricFormattedTextBodyBuilder.append("<th>Metric Value</th>");
-            metricFormattedTextBodyBuilder.append("</tr>");
-            for (PetasosComponentMetric currentMetric : metricSet.getMetrics().values()) {
-                String metricName = currentMetric.getMetricName();
-                String metricType = null;
-                if (currentMetric.hasMetricType()) {
-                    metricType = currentMetric.getMetricType().getDisplayName();
-                } else {
-                    metricType = "Not Specified";
-                }
-                String metricUnit = null;
-                if (currentMetric.hasMetricUnit()) {
-                    metricUnit = currentMetric.getMetricUnit().getDisplayName();
-                } else {
-                    metricUnit = "Not Specified";
-                }
-
-                String metricValue = getMetricValueAsString(currentMetric.getMetricValue());
-
-                metricTextBodyBuilder.append(metricName + ":" + metricType + ":" + metricUnit + ":" + metricValue +"\n");
-
-                metricFormattedTextBodyBuilder.append("<tr>");
-                metricFormattedTextBodyBuilder.append("<td>" + metricName + "</td>");
-                metricFormattedTextBodyBuilder.append("<td>" + metricType + "</td>");
-                metricFormattedTextBodyBuilder.append("<td>" + metricUnit + "</td>");
-                metricFormattedTextBodyBuilder.append("<td>" + metricValue + "</td>");
-                metricFormattedTextBodyBuilder.append("</tr>");
-            }
-
-            metricFormattedTextBodyBuilder.append("</table>");
-
-
         }
 
         getLogger().debug(".createWorkUnitProcessorMetricsEvent(): Exit, metricsEventList->{}", metricsEventList);
@@ -221,7 +167,7 @@ public class ParticipantMetricsReportEventFactory extends DefaultMetricsReportCo
 
         currentMetricEvent.setRoomIdentifier(roomId);
         currentMetricEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
-        currentMetricEvent.setSender(accessToken.getMatrixUserId());
+        currentMetricEvent.setSender(matrixAccessToken.getUserId());
         currentMetricEvent.setEventType("m.room.message");
 
         PetasosComponentMetric lastTaskProcessingTimeMetric = metricSet.getMetric(PetasosComponentMetricTypeEnum.LAST_TASK_PROCESSING_TIME.getDisplayName());
@@ -286,7 +232,7 @@ public class ParticipantMetricsReportEventFactory extends DefaultMetricsReportCo
         MRoomTextMessageEvent currentMetricEvent = new MRoomTextMessageEvent();
         currentMetricEvent.setRoomIdentifier(roomId);
         currentMetricEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
-        currentMetricEvent.setSender(accessToken.getMatrixUserId());
+        currentMetricEvent.setSender(matrixAccessToken.getUserId());
         currentMetricEvent.setEventType("m.room.message");
 
         PetasosComponentMetric registrationCountMetric = metricSet.getMetric(PetasosComponentMetricTypeEnum.REGISTERED_TASK_COUNT.getDisplayName());

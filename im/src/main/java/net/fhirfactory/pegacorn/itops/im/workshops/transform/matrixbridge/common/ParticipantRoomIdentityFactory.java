@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.common;
+package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common;
 
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 
@@ -45,6 +45,11 @@ public class ParticipantRoomIdentityFactory {
         String alias = oamRoomTypeEnum.getAliasPrefix().toLowerCase(Locale.ROOT) + endpointParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
         return(alias);
 
+    }
+
+    public String buildOAMRoomAlias(String participantName, OAMRoomTypeEnum oamRoomTypeEnum){
+        String alias = oamRoomTypeEnum.getAliasPrefix().toLowerCase(Locale.ROOT) + participantName.toLowerCase(Locale.ROOT).replace(".", "-");
+        return(alias);
     }
 
 }

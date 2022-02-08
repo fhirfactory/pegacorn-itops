@@ -19,23 +19,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.factories;
+package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.notifications;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.contenttypes.MRoomMessageTypeEnum;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.contenttypes.MTextContentType;
 import net.fhirfactory.pegacorn.communicate.matrixbridge.workshops.matrixbridge.common.RoomServerTransactionIDProvider;
+import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
-public class ParticipantTaskReportsEventFactory {
-    private static final Logger LOG = LoggerFactory.getLogger(ParticipantTaskReportsEventFactory.class);
+public class ParticipantNotificationEventFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(ParticipantNotificationEventFactory.class);
 
     @Inject
     private RoomServerTransactionIDProvider transactionIdProvider;
@@ -47,30 +51,36 @@ public class ParticipantTaskReportsEventFactory {
     // Business Methods
     //
 
-    public MRoomTextMessageEvent newTaskReportEvent(String roomId, PetasosComponentITOpsNotification taskReportNotification){
-        getLogger().debug(".newTaskReportEvent(): Entry, taskReportNotification->{}", taskReportNotification);
-        if(taskReportNotification == null){
-            getLogger().debug(".newTaskReportEvent(): Exit, taskReportNotification is null, returning empty list");
+    public MRoomTextMessageEvent newNotificationEvent(String roomId, PetasosComponentITOpsNotification notification){
+        getLogger().debug(".newNotificationEvent(): Entry, notification->{}", notification);
+        if(notification == null){
+            getLogger().debug(".newNotificationEvent(): Exit, notification is null, returning empty list");
             return(null);
         }
 
-        MRoomTextMessageEvent taskReportMessage = new MRoomTextMessageEvent();
-        taskReportMessage.setRoomIdentifier(roomId);
-        taskReportMessage.setEventIdentifier(transactionIdProvider.getNextAvailableID());
-        taskReportMessage.setSender(accessToken.getMatrixUserId());
-        taskReportMessage.setEventType("m.room.message");
+        MRoomTextMessageEvent notificationEvent = new MRoomTextMessageEvent();
+        notificationEvent.setRoomIdentifier(roomId);
+        notificationEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
+        notificationEvent.setSender(accessToken.getUserId());
+        notificationEvent.setEventType("m.room.message");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of(PetasosPropertyConstants.DEFAULT_TIMEZONE));
 
         MTextContentType textContent = new MTextContentType();
-        textContent.setBody(taskReportNotification.getContent());
-        textContent.setMessageType(MRoomMessageTypeEnum.TEXT.getMsgtype());
-        textContent.setFormattedBody(taskReportNotification.getFormattedContent());
-        textContent.setMessageType(MRoomMessageTypeEnum.TEXT.getMsgtype());
-        textContent.setFormat("org.matrix.custom.html");
+        if(StringUtils.isNoneEmpty(notification.getFormattedContent())){
+            textContent.setBody(notification.getContent());
+            textContent.setFormattedBody(notification.getFormattedContent());
+            textContent.setMessageType(MRoomMessageTypeEnum.TEXT.getMsgtype());
+            textContent.setFormat("org.matrix.custom.html");
+        } else {
+            textContent.setBody(notification.getContent());
+            textContent.setMessageType(MRoomMessageTypeEnum.TEXT.getMsgtype());
+        }
 
-        taskReportMessage.setContent(textContent);
+        notificationEvent.setContent(textContent);
 
-        getLogger().debug(".newTaskReportEvent(): Exit, metricsEventList->{}", taskReportMessage);
-        return(taskReportMessage);
+        getLogger().debug(".newNotificationEvent(): Exit, metricsEventList->{}", notificationEvent);
+        return(notificationEvent);
     }
 
     //

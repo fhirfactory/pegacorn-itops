@@ -21,79 +21,42 @@
  */
 package net.fhirfactory.pegacorn.itops.im.datatypes;
 
+import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
+
 import java.io.Serializable;
 
 public class ProcessingPlantSpaceDetail implements Serializable {
-        private String participantName;
-        private String participantAlias;
-        private String participantSpaceId;
-        private String componentSpaceName;
-        private String componentSpaceAlias;
-        private String componentSpaceId;
+        MatrixRoom processingPlantSpace;
+        MatrixRoom processingPlantComponentSpace;
+
 
         //
         // Constructor(s)
         //
 
         public ProcessingPlantSpaceDetail(){
-                this.participantSpaceId = null;
-                this.participantName = null;
-                this.participantAlias = null;
-                this.componentSpaceAlias = null;
-                this.componentSpaceName = null;
-                this.componentSpaceId = null;
+                this.processingPlantComponentSpace = null;
+                this.processingPlantSpace = null;
         }
 
         //
         // Getters and Setters
         //
 
-        public String getParticipantName() {
-                return participantName;
+        public MatrixRoom getProcessingPlantSpace() {
+                return processingPlantSpace;
         }
 
-        public void setParticipantName(String participantName) {
-                this.participantName = participantName;
+        public void setProcessingPlantSpace(MatrixRoom processingPlantSpace) {
+                this.processingPlantSpace = processingPlantSpace;
         }
 
-        public String getParticipantAlias() {
-                return participantAlias;
+        public MatrixRoom getProcessingPlantComponentSpace() {
+                return processingPlantComponentSpace;
         }
 
-        public void setParticipantAlias(String participantAlias) {
-                this.participantAlias = participantAlias;
-        }
-
-        public String getParticipantSpaceId() {
-                return participantSpaceId;
-        }
-
-        public void setParticipantSpaceId(String participantSpaceId) {
-                this.participantSpaceId = participantSpaceId;
-        }
-
-        public String getComponentSpaceName() {
-                return componentSpaceName;
-        }
-
-        public void setComponentSpaceName(String componentSpaceName) {
-                this.componentSpaceName = componentSpaceName;
-        }
-
-        public String getComponentSpaceAlias() {
-                return componentSpaceAlias;
-        }
-
-        public void setComponentSpaceAlias(String componentSpaceAlias) {
-                this.componentSpaceAlias = componentSpaceAlias;
-        }
-
-        public String getComponentSpaceId() {
-                return componentSpaceId;
-        }
-
-        public void setComponentSpaceId(String componentSpaceId) {
-                this.componentSpaceId = componentSpaceId;
+        public void setProcessingPlantComponentSpace(MatrixRoom processingPlantComponentSpace) {
+                this.processingPlantComponentSpace = processingPlantComponentSpace;
         }
 
         //
@@ -103,12 +66,8 @@ public class ProcessingPlantSpaceDetail implements Serializable {
         @Override
         public String toString() {
                 return "ProcessingPlantSpaceDetail{" +
-                        "participantName='" + participantName + '\'' +
-                        ", participantAlias='" + participantAlias + '\'' +
-                        ", participantSpaceId='" + participantSpaceId + '\'' +
-                        ", componentSpaceName='" + componentSpaceName + '\'' +
-                        ", componentSpaceAlias='" + componentSpaceAlias + '\'' +
-                        ", componentSpaceId='" + componentSpaceId + '\'' +
+                        "processingPlantSpace=" + processingPlantSpace +
+                        ", processingPlantComponentSpace=" + processingPlantComponentSpace +
                         '}';
         }
 }

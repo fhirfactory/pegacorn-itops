@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.factories;
+package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.reports.subscriptions;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
@@ -87,7 +87,7 @@ public class ParticipantSubscriptionReportEventFactory {
         MRoomTextMessageEvent subscriptionReportNotificationEvent = new MRoomTextMessageEvent();
         subscriptionReportNotificationEvent.setRoomIdentifier(roomId);
         subscriptionReportNotificationEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
-        subscriptionReportNotificationEvent.setSender(accessToken.getMatrixUserId());
+        subscriptionReportNotificationEvent.setSender(accessToken.getUserId());
         subscriptionReportNotificationEvent.setEventType("m.room.message");
 
         MTextContentType textContent = new MTextContentType();
@@ -147,7 +147,7 @@ public class ParticipantSubscriptionReportEventFactory {
         MRoomTextMessageEvent publisherReportEvent = new MRoomTextMessageEvent();
         publisherReportEvent.setRoomIdentifier(roomId);
         publisherReportEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
-        publisherReportEvent.setSender(accessToken.getMatrixUserId());
+        publisherReportEvent.setSender(accessToken.getUserId());
         publisherReportEvent.setEventType("m.room.message");
 
         MTextContentType textContent = new MTextContentType();
@@ -202,7 +202,7 @@ public class ParticipantSubscriptionReportEventFactory {
         MRoomTextMessageEvent subscriptionReportNotificationEvent = new MRoomTextMessageEvent();
         subscriptionReportNotificationEvent.setRoomIdentifier(roomId);
         subscriptionReportNotificationEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
-        subscriptionReportNotificationEvent.setSender(accessToken.getMatrixUserId());
+        subscriptionReportNotificationEvent.setSender(accessToken.getUserId());
         subscriptionReportNotificationEvent.setEventType("m.room.message");
 
         MTextContentType textContent = new MTextContentType();

@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.metrics;
+package net.fhirfactory.pegacorn.itops.im.workshops.issi.metrics;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixInstantMessageMethods;
@@ -34,10 +34,10 @@ import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideMetricsDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideTopologyMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.OAMToMatrixBridgeCache;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.common.ParticipantRoomIdentityFactory;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.factories.ParticipantMetricsReportEventFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
+import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.metrics.ParticipantMetricsReportEventFactory;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -95,10 +95,10 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
     private MatrixAccessToken matrixAccessToken;
 
     @Inject
-    private OAMToMatrixBridgeCache matrixBridgeCache;
+    private ITOpsKnownRoomAndSpaceMapDM matrixBridgeCache;
 
     @Inject
-    private ITOpsSystemWideTopologyMapDM systemWideTopologyMap;
+    private ITOpsSystemWideReportedTopologyMapDM systemWideTopologyMap;
 
     @Inject
     private ITOpsSystemWideMetricsDM systemWideMetrics;
@@ -230,12 +230,12 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
             for (MRoomTextMessageEvent currentEvent : metricsEventSet) {
                 try {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), currentEvent);
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), currentEvent);
                     getLogger().debug(".forwardWUPMetrics(): Metrics Forwarded, mapiResponse->{}", mapiResponse);
                 } catch (Exception ex) {
                     getLogger().warn(".forwardWUPMetrics(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
                 }
-                waitALittleBit();
+                // waitALittleBit();
             }
         } else {
             getLogger().warn(".forwardWUPMetrics(): No room to forward work unit processor metrics into (WorkUnitProcessor->{}!", wupMetricSet.getMetricSourceComponentId());
@@ -260,12 +260,12 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
             for (MRoomTextMessageEvent currentEvent : metricsEventSet) {
                 try {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), currentEvent);
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), currentEvent);
                     getLogger().debug(".forwardProcessingPlantMetrics(): Metrics Forwarded, mapiResponse->{}", mapiResponse);
                 } catch (Exception ex) {
                     getLogger().warn(".forwardProcessingPlantMetrics(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
                 }
-                waitALittleBit();
+                // waitALittleBit();
             }
         } else {
             getLogger().warn(".forwardProcessingPlantMetrics(): No room to forward processing plant metrics into (ProcessingPlant->{}!", metricSet.getMetricSourceComponentId());
@@ -290,12 +290,13 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
             for (MRoomTextMessageEvent currentEvent : metricsEventSet) {
                 try {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserName(), currentEvent);
+                    getLogger().debug(".forwardEndpointMetrics(): Forward Metrics, currentEvent->{}", currentEvent);
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), currentEvent);
                     getLogger().info(".forwardEndpointMetrics(): Metrics Forwarded, mapiResponse->{}", mapiResponse);
                 } catch (Exception ex) {
                     getLogger().warn(".forwardEndpointMetrics(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
                 }
-                waitALittleBit();
+                // waitALittleBit();
             }
         } else {
             getLogger().warn(".forwardEndpointMetrics(): No room to forward processing plant metrics into (Endpoint->{}!", metricSet.getMetricSourceComponentId());

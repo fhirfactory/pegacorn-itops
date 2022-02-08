@@ -51,18 +51,18 @@ public class ITOpsTaskReportsReceiver extends ITOpsReceiverBase implements Petas
     //
 
     public void sendTaskReport(PetasosComponentITOpsNotification notification) {
-        getLogger().info(".sendTaskReport(): Entry, notification->{}", notification);
+        getLogger().debug(".sendTaskReport(): Entry, notification->{}", notification);
         //
         // We don't want to send taskReports for the ITOps framework itself, it would create a cyclical event
         //
         //  taskReportsDM.addTaskReport(notification);
-        getLogger().info(".sendTaskReport(): Exit");
+        getLogger().debug(".sendTaskReport(): Exit");
     }
 
     public void processTaskReport(PetasosComponentITOpsNotification notification) {
-        getLogger().info(".processTaskReport(): Entry, notification->{}", notification);
+        getLogger().debug(".processTaskReport(): Entry, notification->{}", notification);
         taskReportsDM.addTaskReport(notification);
-        getLogger().info(".processTaskReport(): Exit");
+        getLogger().debug(".processTaskReport(): Exit");
     }
 
     @Override

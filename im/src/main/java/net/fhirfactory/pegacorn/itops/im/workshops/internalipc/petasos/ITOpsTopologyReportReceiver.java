@@ -29,7 +29,7 @@ import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.WorkUnitProces
 import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.reporting.PetasosMonitoredTopologyGraph;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.jgroups.JGroupsIntegrationPointSummary;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideTopologyMapDM;
+import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos.common.ITOpsReceiverBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase implements Pe
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsTopologyReportReceiver.class);
 
     @Inject
-    private ITOpsSystemWideTopologyMapDM topologyMapDM;
+    private ITOpsSystemWideReportedTopologyMapDM topologyMapDM;
 
     @Override
     protected void registerCapabilities(){
@@ -90,12 +90,12 @@ public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase implements Pe
     @Override
     public Instant mergeTopologyGraph(JGroupsIntegrationPointSummary integrationPoint, PetasosMonitoredTopologyGraph topologyGraph) {
         getLogger().debug(".mergeTopologyGraph(): Entry, topologyGraph->{}", topologyGraph);
-       if(topologyGraph != null) {
+        if(topologyGraph != null) {
             for (ProcessingPlantSummary currentProcessingPlant : topologyGraph.getProcessingPlants().values()) {
                 topologyMapDM.addProcessingPlant(integrationPoint.getComponentId().getId(), currentProcessingPlant);
             }
         }
-       Instant nowIsTheTime = Instant.now();
+        Instant nowIsTheTime = Instant.now();
         getLogger().debug(".mergeTopologyGraph(): Exit, nowIsTheTime->{}", nowIsTheTime);
         return(nowIsTheTime);
     }

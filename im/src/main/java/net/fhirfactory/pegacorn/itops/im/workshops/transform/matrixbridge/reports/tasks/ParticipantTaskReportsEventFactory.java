@@ -19,26 +19,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.transform.factories;
+package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.reports.tasks;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.contenttypes.MRoomMessageTypeEnum;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.contenttypes.MTextContentType;
 import net.fhirfactory.pegacorn.communicate.matrixbridge.workshops.matrixbridge.common.RoomServerTransactionIDProvider;
-import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
-public class ParticipantNotificationEventFactory {
-    private static final Logger LOG = LoggerFactory.getLogger(ParticipantNotificationEventFactory.class);
+public class ParticipantTaskReportsEventFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(ParticipantTaskReportsEventFactory.class);
 
     @Inject
     private RoomServerTransactionIDProvider transactionIdProvider;
@@ -50,29 +47,30 @@ public class ParticipantNotificationEventFactory {
     // Business Methods
     //
 
-    public MRoomTextMessageEvent newNotificationEvent(String roomId, PetasosComponentITOpsNotification notification){
-        getLogger().debug(".newNotificationEvent(): Entry, notification->{}", notification);
-        if(notification == null){
-            getLogger().debug(".newNotificationEvent(): Exit, notification is null, returning empty list");
+    public MRoomTextMessageEvent newTaskReportEvent(String roomId, PetasosComponentITOpsNotification taskReportNotification){
+        getLogger().debug(".newTaskReportEvent(): Entry, taskReportNotification->{}", taskReportNotification);
+        if(taskReportNotification == null){
+            getLogger().debug(".newTaskReportEvent(): Exit, taskReportNotification is null, returning empty list");
             return(null);
         }
 
-        MRoomTextMessageEvent notificationEvent = new MRoomTextMessageEvent();
-        notificationEvent.setRoomIdentifier(roomId);
-        notificationEvent.setEventIdentifier(transactionIdProvider.getNextAvailableID());
-        notificationEvent.setSender(accessToken.getMatrixUserId());
-        notificationEvent.setEventType("m.room.message");
-
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of(PetasosPropertyConstants.DEFAULT_TIMEZONE));
+        MRoomTextMessageEvent taskReportMessage = new MRoomTextMessageEvent();
+        taskReportMessage.setRoomIdentifier(roomId);
+        taskReportMessage.setEventIdentifier(transactionIdProvider.getNextAvailableID());
+        taskReportMessage.setSender(accessToken.getUserId());
+        taskReportMessage.setEventType("m.room.message");
 
         MTextContentType textContent = new MTextContentType();
-        textContent.setBody(notification.getContent());
+        textContent.setBody(taskReportNotification.getContent());
         textContent.setMessageType(MRoomMessageTypeEnum.TEXT.getMsgtype());
+        textContent.setFormattedBody(taskReportNotification.getFormattedContent());
+        textContent.setMessageType(MRoomMessageTypeEnum.TEXT.getMsgtype());
+        textContent.setFormat("org.matrix.custom.html");
 
-        notificationEvent.setContent(textContent);
+        taskReportMessage.setContent(textContent);
 
-        getLogger().debug(".newNotificationEvent(): Exit, metricsEventList->{}", notificationEvent);
-        return(notificationEvent);
+        getLogger().debug(".newTaskReportEvent(): Exit, metricsEventList->{}", taskReportMessage);
+        return(taskReportMessage);
     }
 
     //
