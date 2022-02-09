@@ -29,6 +29,7 @@ import javax.inject.Inject;
 
 public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingPlant {
 
+
     //
     // Constructor(s)
     //
@@ -40,6 +41,10 @@ public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingP
     @Override
     public boolean isITOpsNode() {
         return (true);
+    }
+
+    @Override
+    protected void executePostConstructActivities() {
     }
 
     @Override
