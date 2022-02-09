@@ -29,9 +29,6 @@ import javax.inject.Inject;
 
 public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingPlant {
 
-    @Inject
-    private ITOpsReplicaLocalServerName replicaLocalServerName;
-
     //
     // Constructor(s)
     //
@@ -40,16 +37,9 @@ public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingP
     // Abstract Methods
     //
 
-    abstract protected String specifyITOpsReplicaLocalServiceName();
-
     @Override
     public boolean isITOpsNode() {
         return (true);
-    }
-
-    @Override
-    protected void executePostConstructActivities() {
-        replicaLocalServerName.setServerName(specifyITOpsReplicaLocalServiceName());
     }
 
     @Override
