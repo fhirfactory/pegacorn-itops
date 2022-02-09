@@ -28,6 +28,7 @@ import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixSpaceMethods;
 import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
 import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixUser;
 import net.fhirfactory.pegacorn.communicate.matrixbridge.workshops.matrixbridge.common.SynapseServerConnectionInitialisation;
+import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseUserMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
@@ -89,6 +90,9 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
 
     @Inject
     private MatrixAccessToken matrixAccessToken;
+
+    @Inject
+    private SynapseAdminAccessToken synapseAccessToken;
 
     @Inject
     private MatrixRoomMethods matrixRoomAPI;
@@ -364,7 +368,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
                         String roomId = currentRoom.getRoomID();
                         List<String> roomMembers = synapseRoomAPI.getRoomMembers(roomId);
                         for (SynapseUser currentUser : userList) {
-                            if (roomMembers.contains(currentUser) || currentUser.getName().contains(matrixAccessToken.getUserName())) {
+                            if (roomMembers.contains(currentUser) || currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
                                 // do nothing
                             } else {
                                 getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Auto Join Users to Added Rooms] Processing User->{}", currentUser.getName());
@@ -394,7 +398,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
                         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
                         String roomId = currentRoom.getRoomID();
                         for (SynapseUser currentUser : addedUserSet) {
-                            if (currentUser.getName().contains(matrixAccessToken.getUserName())) {
+                            if (currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
                                 // do nothing
                             } else {
                                 getLogger().info(".topologyReplicationSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing User->{}", currentUser.getName());
@@ -421,7 +425,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
                         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
                         String roomId = currentRoom.getRoomID();
                         for (MatrixUser currentUser : fullUserSet) {
-                            if (currentUser.getName().contains(matrixAccessToken.getUserName())) {
+                            if (currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
                                 // do nothing
                             } else {
                                 getLogger().trace(".topologyReplicationSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing User->{}", currentUser.getName());
