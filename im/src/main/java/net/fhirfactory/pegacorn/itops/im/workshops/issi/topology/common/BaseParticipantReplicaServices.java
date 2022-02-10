@@ -132,23 +132,31 @@ public abstract class BaseParticipantReplicaServices {
 
         String roomAlias = getRoomIdentityFactory().buildOAMRoomAlias(participantName, roomType);
         getLogger().trace(".installAnOAMRoom(): roomAlias->{}", roomAlias);
-        getLogger().trace(".installAnOAMRoom(): Room doesn't appear to exist, so creating it");
-        String roomName = participantDisplayName + "." + roomType.getDisplayName();
-        getLogger().trace(".installAnOAMRoom(): roomName->{}", roomName);
-        String roomTopic = roomType.getDisplayName();
-        getLogger().trace(".installAnOAMRoom(): roomName->{}", roomTopic);
-        MRoomCreation mRoomCreation = getMatrixBridgeFactories().newRoomInSpaceCreationRequest(roomName, roomAlias, roomTopic, participantSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-        getLogger().trace(".installAnOAMRoom(): mRoomCreation request->{}", mRoomCreation);
-        SynapseRoom createdRoom = getMatrixRoomAPI().createRoom(getMatrixAccessToken().getUserId(), mRoomCreation);
-        getLogger().trace(".installAnOAMRoom(): Created Room ->{}", createdRoom);
-        if(createdRoom == null){
-            createdRoom = getExistingRoom(roomAlias);
+
+        getLogger().trace(".installAnOAMRoom(): First double-checking the room isn't already create ->{}", roomAlias);
+        MatrixRoom oamRoom = null;
+        MatrixRoom existingRoom = getRoomCache().getRoomFromPseudoAlias(roomAlias);
+        if(existingRoom != null){
+            getLogger().trace(".installAnOAMRoom(): Room already exists ->{}", roomAlias);
+            oamRoom = existingRoom;
+        } else {
+            getLogger().trace(".installAnOAMRoom(): Room doesn't appear to exist, so creating it");
+            String roomName = participantDisplayName + "." + roomType.getDisplayName();
+            getLogger().trace(".installAnOAMRoom(): roomName->{}", roomName);
+            String roomTopic = roomType.getDisplayName();
+            getLogger().trace(".installAnOAMRoom(): roomName->{}", roomTopic);
+            MRoomCreation mRoomCreation = getMatrixBridgeFactories().newRoomInSpaceCreationRequest(roomName, roomAlias, roomTopic, participantSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+            getLogger().trace(".installAnOAMRoom(): mRoomCreation request->{}", mRoomCreation);
+            SynapseRoom createdRoom = getMatrixRoomAPI().createRoom(getMatrixAccessToken().getUserId(), mRoomCreation);
+            if(createdRoom != null){
+                getLogger().trace(".installAnOAMRoom(): Created Room ->{}", createdRoom);
+                MatrixRoom matrixRoom = new MatrixRoom(createdRoom);
+                getRoomCache().addRoom(matrixRoom);
+                oamRoom = matrixRoom;
+            }
         }
-        if(createdRoom != null) {
-            getLogger().trace(".installAnOAMRoom(): adding as child to participantSpaceId");
-            MatrixRoom matrixRoom = new MatrixRoom(createdRoom);
-            getMatrixSpaceAPI().addChildToSpace(participantSpaceId, matrixRoom.getRoomID());
-            getRoomCache().addRoom(matrixRoom);
+        if(oamRoom != null) {
+            getMatrixSpaceAPI().addChildToSpace(participantSpaceId, oamRoom.getRoomID());
         } else {
             getLogger().warn(".installAnOAMRoom(): Could not create room -> {}", roomAlias);
         }

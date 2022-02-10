@@ -29,6 +29,7 @@ import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.WorkshopSummary;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.common.BaseParticipantReplicaServices;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,35 +59,45 @@ public class WorkshopParticipantReplicaFactory extends BaseParticipantReplicaSer
 
     public String createSubSpaceIfNotThere(String processingPlantSpaceId, MatrixRoom workshopSpace, WorkshopSummary workshopSummary) {
         getLogger().debug(".createSubSpaceIfNotThere(): Entry, processingPlantSpaceId->{}, roomList,  workshop->{}", processingPlantSpaceId,  workshopSummary.getTopologyNodeFDN());
+        try {
+            String workshopName = workshopSummary.getParticipantName();
+            String workshopDisplayName = workshopSummary.getParticipantDisplayName();
+            String workshopId = null;
+            String workshopAlias = OAMRoomTypeEnum.OAM_ROOM_TYPE_WORKSHOP.getAliasPrefix() + workshopName.toLowerCase(Locale.ROOT).replace(".", "-");
+            if (workshopSpace != null) {
+                workshopId = workshopSpace.getRoomID();
+            } else {
+                getLogger().trace(".createSubSpaceIfNotThere(): Creating Space for ->{}", workshopAlias);
+                String workshopTopic = "Workshop, " + workshopName;
 
-        String workshopName = workshopSummary.getParticipantName();
-        String workshopDisplayName = workshopSummary.getParticipantDisplayName();
-        String workshopId = null;
-        String workshopAlias = OAMRoomTypeEnum.OAM_ROOM_TYPE_WORKSHOP.getAliasPrefix() + workshopName.toLowerCase(Locale.ROOT).replace(".", "-");
-        if(workshopSpace != null){
-            workshopId = workshopSpace.getRoomID();
-        } else {
-            getLogger().trace(".createSubSpaceIfNotThere(): Creating Space for ->{}", workshopAlias);
-            String workshopTopic = "Workshop, "+ workshopName;
-            MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(workshopDisplayName, workshopAlias, workshopTopic, processingPlantSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+                getLogger().trace(".createSubSpaceIfNotThere(): First double-checking the room isn't already create ->{}", workshopAlias);
+                MatrixRoom workshopRoom = null;
+                MatrixRoom existingRoom = getRoomCache().getRoomFromPseudoAlias(workshopAlias);
+                if (existingRoom != null) {
+                    getLogger().trace(".createSubSpaceIfNotThere(): Room already exists ->{}", workshopAlias);
+                    workshopRoom = existingRoom;
+                } else {
+                    MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(workshopDisplayName, workshopAlias, workshopTopic, processingPlantSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+                    MatrixRoom createdRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
+                    if (createdRoom != null) {
+                        workshopRoom = createdRoom;
+                        getRoomCache().addRoom(createdRoom);
+                    }
+                }
 
-            SynapseRoom createdRoom = null;
-            createdRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
-            if(createdRoom == null){
-                createdRoom = getExistingRoom(workshopAlias);
+                if (workshopRoom != null) {
+                    workshopId = workshopRoom.getRoomID();
+                    getLogger().trace(".createSubSpaceIfNotThere(): Space ->{}", workshopRoom);
+                    getMatrixSpaceAPI().addChildToSpace(processingPlantSpaceId, workshopId);
+                }
             }
 
-            if(createdRoom != null) {
-                workshopId = createdRoom.getRoomID();
-                getLogger().trace(".createSubSpaceIfNotThere(): Created Space ->{}", createdRoom);
-                MatrixRoom matrixRoom = new MatrixRoom(createdRoom);
-                getRoomCache().addRoom(matrixRoom);
-                getMatrixSpaceAPI().addChildToSpace(processingPlantSpaceId, workshopId);
-            }
+            getLogger().debug(".createSubSpaceIfNotThere(): Exit, workshopId->{}", workshopId);
+            return (workshopId);
+        } catch (Exception ex){
+            getLogger().error(".createSubSpaceIfNotThere(): Error Creating WUP Space/Room, message->{}, stacktrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+            return(null);
         }
-
-        getLogger().debug(".createSubSpaceIfNotThere(): Exit, workshopId->{}", workshopId);
-        return(workshopId);
     }
 
 }

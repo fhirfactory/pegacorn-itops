@@ -370,13 +370,12 @@ public class ITOpsKnownRoomAndSpaceMapDM {
                         addedRoomSet.add(currentKnownRoom);
                     }
                 }
-            }
-        }
-        getLastUsedRoomSet().clear();
-        synchronized (getKnownRoomsLock()){
-            Collection<MatrixRoom> currentKnownRoomSet = getKnownRooms().values();
-            for (MatrixRoom currentKnownRoom : currentKnownRoomSet) {
-                getLastUsedRoomSet().put(currentKnownRoom.getRoomID(),currentKnownRoom);
+                getLastUsedRoomSet().clear();
+                synchronized (getKnownRoomsLock()){
+                    for (MatrixRoom currentKnownRoom : currentKnownRoomSet) {
+                        getLastUsedRoomSet().put(currentKnownRoom.getRoomID(),currentKnownRoom);
+                    }
+                }
             }
         }
         return(addedRoomSet);

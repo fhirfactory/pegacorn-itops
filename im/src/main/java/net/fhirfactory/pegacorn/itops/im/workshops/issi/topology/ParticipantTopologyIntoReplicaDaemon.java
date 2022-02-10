@@ -66,8 +66,11 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
 
     private boolean firstRunComplete;
 
-    private boolean daemonIsStillRunning;
-    private Instant daemonLastRunTime;
+    private boolean topologySynchronisationDaemonIsStillRunning;
+    private Instant topologySynchronisationDaemonLastRunTime;
+
+    private boolean userRoomSynchronisationDaemonIsStillRunning;
+    private Instant userRoomSynchronisationDaemonLastRunTime;
 
     private Instant lastFullUserUpdate;
 
@@ -144,8 +147,8 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         super();
         this.initialised = false;
         this.firstRunComplete = false;
-        this.daemonIsStillRunning = false;
-        this.daemonLastRunTime = Instant.EPOCH;
+        this.topologySynchronisationDaemonIsStillRunning = false;
+        this.topologySynchronisationDaemonLastRunTime = Instant.EPOCH;
         this.lastFullUserUpdate = Instant.EPOCH;
     }
 
@@ -163,6 +166,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         getLogger().info(".initialise(): Initialisation Start...");
 
         scheduleTopologyReplicationSynchronisation();
+        scheduleUserRoomSynchronisation();
 
         this.initialised = true;
 
@@ -177,12 +181,12 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         return (LOG);
     }
 
-    protected Instant getDaemonLastRunTime() {
-        return (daemonLastRunTime);
+    protected Instant getTopologySynchronisationDaemonLastRunTime() {
+        return (topologySynchronisationDaemonLastRunTime);
     }
 
-    protected void setDaemonLastRunTime(Instant instant){
-        this.daemonLastRunTime = instant;
+    protected void setTopologySynchronisationDaemonLastRunTime(Instant instant){
+        this.topologySynchronisationDaemonLastRunTime = instant;
     }
 
     protected Long getRoomSynchronisationWatchdogResetPeriod() {
@@ -237,8 +241,24 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         return(this.systemWideTopologyMap);
     }
 
+    public boolean isUserRoomSynchronisationDaemonIsStillRunning() {
+        return userRoomSynchronisationDaemonIsStillRunning;
+    }
+
+    public void setUserRoomSynchronisationDaemonIsStillRunning(boolean userRoomSynchronisationDaemonIsStillRunning) {
+        this.userRoomSynchronisationDaemonIsStillRunning = userRoomSynchronisationDaemonIsStillRunning;
+    }
+
+    public Instant getUserRoomSynchronisationDaemonLastRunTime() {
+        return userRoomSynchronisationDaemonLastRunTime;
+    }
+
+    public void setUserRoomSynchronisationDaemonLastRunTime(Instant userRoomSynchronisationDaemonLastRunTime) {
+        this.userRoomSynchronisationDaemonLastRunTime = userRoomSynchronisationDaemonLastRunTime;
+    }
+
     //
-    // Scheduler
+    // Topology Synchronisation Scheduler
     //
 
     private void scheduleTopologyReplicationSynchronisation() {
@@ -246,11 +266,11 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         TimerTask topologyReplicationSynchronisationTask = new TimerTask() {
             public void run() {
                 getLogger().debug(".topologyReplicationSynchronisationTask(): Entry");
-                if (!daemonIsStillRunning) {
+                if (!topologySynchronisationDaemonIsStillRunning) {
                     topologyReplicationSynchronisationDaemon();
-                    setDaemonLastRunTime(Instant.now());
+                    setTopologySynchronisationDaemonLastRunTime(Instant.now());
                 } else {
-                    Long ageSinceRun = Instant.now().getEpochSecond() - getDaemonLastRunTime().getEpochSecond();
+                    Long ageSinceRun = Instant.now().getEpochSecond() - getTopologySynchronisationDaemonLastRunTime().getEpochSecond();
                     if (ageSinceRun > getRoomSynchronisationWatchdogResetPeriod()) {
                         topologyReplicationSynchronisationDaemon();
                     }
@@ -264,16 +284,157 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     }
 
     //
+    // User Synchronisation Scheduler
     //
+
+    private void scheduleUserRoomSynchronisation() {
+        getLogger().debug(".scheduleUserRoomSynchronisation(): Entry");
+        TimerTask userRoomSynchronisationTask = new TimerTask() {
+            public void run() {
+                getLogger().debug(".userRoomSynchronisationTask(): Entry");
+                if (!userRoomSynchronisationDaemonIsStillRunning) {
+                    userRoomSynchronisationDaemon();
+                    setUserRoomSynchronisationDaemonLastRunTime(Instant.now());
+                } else {
+                    Long ageSinceRun = Instant.now().getEpochSecond() - getUserRoomSynchronisationDaemonLastRunTime().getEpochSecond();
+                    if (ageSinceRun > getRoomSynchronisationWatchdogResetPeriod()) {
+                        userRoomSynchronisationDaemon();
+                    }
+                }
+                getLogger().debug(".userRoomSynchronisationTask(): Exit");
+            }
+        };
+        Timer timer = new Timer("UserRoomSynchronisationTaskTimer");
+        timer.schedule(userRoomSynchronisationTask, ROOM_SYNCHRONISATION_WATCHDOG_STARTUP_DELAY, ROOM_SYNCHRONISATION_WATCHDOG_CHECK_PERIOD);
+        getLogger().debug(".scheduleUserRoomSynchronisation(): Exit");
+    }
+
     //
+    // User Synchronisation Task
+    //
+
+    private void userRoomSynchronisationDaemon(){
+        getLogger().debug(".userRoomSynchronisationDaemon(): Entry");
+
+        setUserRoomSynchronisationDaemonIsStillRunning(true);
+        setUserRoomSynchronisationDaemonLastRunTime(Instant.now());
+
+        if(StringUtils.isEmpty(synapseAccessToken.getSessionAccessToken()) || StringUtils.isEmpty(matrixAccessToken.getSessionAccessToken())){
+            getLogger().debug(".userRoomSynchronisationDaemon(): Exit, access tokens not yet set");
+            setUserRoomSynchronisationDaemonIsStillRunning(false);
+            return;
+        }
+
+        //
+        // Check to see if Rooms were added
+        Set<MatrixRoom> addedRoomSet = getRoomCache().getRecentlyAddedRooms();
+
+        //
+        // Add all users to the new rooms
+        List<SynapseUser> userList = synapseUserAPI.getALLAccounts();
+        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join Users to Added Rooms] Start...");
+        for (SynapseUser currentUser : userList) {
+            MatrixUser matrixUser = new MatrixUser(currentUser);
+            getUserCache().addMatrixUser(matrixUser);
+        }
+        try {
+            for (SynapseRoom currentRoom : addedRoomSet) {
+                String currentRoomAlias = currentRoom.getCanonicalAlias();
+                if (StringUtils.isNotEmpty(currentRoomAlias)) {
+                    if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
+                        getLogger().debug(".userRoomSynchronisationDaemon(): [AAuto Join Users to Added Rooms] Processing Space->{}", currentRoomAlias);
+                        String roomId = currentRoom.getRoomID();
+                        List<String> roomMembers = synapseRoomAPI.getRoomMembers(roomId);
+                        for (SynapseUser currentUser : userList) {
+                            if (roomMembers.contains(currentUser) || currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
+                                // do nothing
+                            } else {
+                                getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join Users to Added Rooms] Processing User->{}", currentUser.getName());
+                                synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex){
+            getLogger().warn(".userRoomSynchronisationDaemon(): Failure to Add Users to New Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+        }
+
+        //
+        // See if there are new Users
+        Set<MatrixUser> addedUserSet = getUserCache().getRecentAddedUsers();
+
+        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join New Users to the Older Rooms] Start...");
+        try {
+            for (MatrixRoom currentRoom : getRoomCache().getFullRoomSet()) {
+                String currentRoomAlias = currentRoom.getCanonicalAlias();
+                if (StringUtils.isNotEmpty(currentRoomAlias)) {
+                    if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
+
+                        getLogger().debug(".userRoomSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
+                        String roomId = currentRoom.getRoomID();
+                        for (SynapseUser currentUser : addedUserSet) {
+                            if (currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
+                                // do nothing
+                            } else {
+                                getLogger().info(".userRoomSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing User->{}", currentUser.getName());
+                                synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
+                            }
+                        }
+                    }
+                }
+            }
+        } catch(Exception ex){
+            getLogger().warn(".userRoomSynchronisationDaemon(): Failure to add New Users to Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+        }
+        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to the Older Rooms] Finished...");
+
+        Long secondsSinceLastFullUserUpdate = Instant.now().getEpochSecond() - this.lastFullUserUpdate.getEpochSecond();
+        try{
+            Set<MatrixRoom> fullRoomSet = getRoomCache().getFullRoomSet();
+            Set<MatrixUser> fullUserSet = getUserCache().getKnownUsers();
+            if(secondsSinceLastFullUserUpdate > this.USER_SYNCHRONISATION_OVERRIDE_PERIOD){
+                for (MatrixRoom currentRoom : fullRoomSet) {
+                    String currentRoomAlias = currentRoom.getCanonicalAlias();
+                    if (StringUtils.isNotEmpty(currentRoomAlias)) {
+                        if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
+                            getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Processing Room/Space->{}", currentRoomAlias);
+                            String roomId = currentRoom.getRoomID();
+                            for (MatrixUser currentUser : fullUserSet) {
+                                if (currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
+                                    // do nothing
+                                } else {
+                                    getLogger().trace(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Processing User->{}", currentUser.getName());
+                                    synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
+                                }
+                            }
+                        }
+                    }
+                }
+                this.lastFullUserUpdate = Instant.now();
+            }
+        } catch(Exception ex){
+            getLogger().warn(".userRoomSynchronisationDaemon(): Failure to add All Users to Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+        }
+        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to Added Rooms] Finish...");
+
+        setUserRoomSynchronisationDaemonIsStillRunning(false);
+        getLogger().debug(".userRoomSynchronisationDaemon(): Exit");
+    }
+
+
+    //
+    // Topology Synchronisation Task
+    //
+
 
     private void topologyReplicationSynchronisationDaemon() {
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): Entry");
 
         systemWideTopologyMap.printMap();
 
-        daemonIsStillRunning = true;
-        this.daemonLastRunTime = Instant.now();
+        topologySynchronisationDaemonIsStillRunning = true;
+        this.topologySynchronisationDaemonLastRunTime = Instant.now();
 
         List<SynapseRoom> roomList = new ArrayList<>();
 
@@ -286,7 +447,6 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             }
         } catch (Exception ex){
             getLogger().error(".topologyReplicationSynchronisationDaemon(): Failure to initialise Application-Services Connection, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-            return;
         }
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Application-Services Connection Initialisation] Finish");
 
@@ -317,7 +477,6 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             }
         } catch(Exception ex){
             getLogger().warn(".topologyReplicationSynchronisationDaemon(): Failure to synchronise room list, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-            return;
         }
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Room List] Finish...");
 
@@ -327,7 +486,6 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             itopsSubsystemParticipantTasks.updateParticipantListUsingReportedMetrics();
         } catch(Exception ex){
             getLogger().error(".topologyReplicationSynchronisationDaemon(): Failure to synchronise participant list, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-            return;
         }
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Participant List] Finish...");
 
@@ -343,102 +501,10 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             }
         } catch(Exception ex){
             getLogger().error(".topologyReplicationSynchronisationDaemon(): Failure to Add Spaces/Rooms to Synapse, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-            return;
         }
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Add Space(s) As Required & Rooms As Required] Finish...");
 
-        //
-        // Check to see if Rooms were added
-        Set<MatrixRoom> addedRoomSet = getRoomCache().getRecentlyAddedRooms();
-
-        //
-        // Add all users to the new rooms
-        List<SynapseUser> userList = synapseUserAPI.getALLAccounts();
-        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Auto Join Users to Added Rooms] Start...");
-        for (SynapseUser currentUser : userList) {
-            MatrixUser matrixUser = new MatrixUser(currentUser);
-            getUserCache().addMatrixUser(matrixUser);
-        }
-        try {
-            for (SynapseRoom currentRoom : addedRoomSet) {
-                String currentRoomAlias = currentRoom.getCanonicalAlias();
-                if (StringUtils.isNotEmpty(currentRoomAlias)) {
-                    if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
-                        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [AAuto Join Users to Added Rooms] Processing Space->{}", currentRoomAlias);
-                        String roomId = currentRoom.getRoomID();
-                        List<String> roomMembers = synapseRoomAPI.getRoomMembers(roomId);
-                        for (SynapseUser currentUser : userList) {
-                            if (roomMembers.contains(currentUser) || currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
-                                // do nothing
-                            } else {
-                                getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Auto Join Users to Added Rooms] Processing User->{}", currentUser.getName());
-                                synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception ex){
-            getLogger().warn(".topologyReplicationSynchronisationDaemon(): Failure to Add Users to New Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-            return;
-        }
-        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Auto Join Users to Added Rooms] Finish...");
-
-        //
-        // See if there are new Users
-        Set<MatrixUser> addedUserSet = getUserCache().getRecentAddedUsers();
-
-        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Auto Join New Users to the Older Rooms] Start...");
-        try {
-            for (MatrixRoom currentRoom : getRoomCache().getFullRoomSet()) {
-                String currentRoomAlias = currentRoom.getCanonicalAlias();
-                if (StringUtils.isNotEmpty(currentRoomAlias)) {
-                    if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
-
-                        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
-                        String roomId = currentRoom.getRoomID();
-                        for (SynapseUser currentUser : addedUserSet) {
-                            if (currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
-                                // do nothing
-                            } else {
-                                getLogger().info(".topologyReplicationSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing User->{}", currentUser.getName());
-                                synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
-                            }
-                        }
-                    }
-                }
-            }
-        } catch(Exception ex){
-            getLogger().warn(".topologyReplicationSynchronisationDaemon(): Failure to add New Users to Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-            return;
-        }
-        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Auto Join New Users to the Older Rooms] Finished...");
-
-        Long secondsSinceLastFullUserUpdate = Instant.now().getEpochSecond() - this.lastFullUserUpdate.getEpochSecond();
-        Set<MatrixRoom> fullRoomSet = getRoomCache().getFullRoomSet();
-        Set<MatrixUser> fullUserSet = getUserCache().getKnownUsers();
-        if(secondsSinceLastFullUserUpdate > this.USER_SYNCHRONISATION_OVERRIDE_PERIOD){
-            for (MatrixRoom currentRoom : fullRoomSet) {
-                String currentRoomAlias = currentRoom.getCanonicalAlias();
-                if (StringUtils.isNotEmpty(currentRoomAlias)) {
-                    if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
-                        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
-                        String roomId = currentRoom.getRoomID();
-                        for (MatrixUser currentUser : fullUserSet) {
-                            if (currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
-                                // do nothing
-                            } else {
-                                getLogger().trace(".topologyReplicationSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing User->{}", currentUser.getName());
-                                synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
-                            }
-                        }
-                    }
-                }
-            }
-            this.lastFullUserUpdate = Instant.now();
-        }
-
-        daemonIsStillRunning = false;
+        topologySynchronisationDaemonIsStillRunning = false;
 
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): Exit");
     }

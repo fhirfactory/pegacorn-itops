@@ -119,20 +119,19 @@ public class ITOpsKnownUserMapDM {
             synchronized (knownUserSetLock){
                 addedUsers.addAll(knownUserSet.values());
             }
-        } else{
-            synchronized (knownUserSetLock){
+        } else {
+            synchronized (knownUserSetLock) {
                 Collection<MatrixUser> knownUsers = knownUserSet.values();
-                for(MatrixUser currentKnownUser: knownUsers){
-                    if(!previousKnownUserSet.containsKey(currentKnownUser.getName())){
+                for (MatrixUser currentKnownUser : knownUsers) {
+                    if (!previousKnownUserSet.containsKey(currentKnownUser.getName())) {
                         addedUsers.add(currentKnownUser);
                     }
                 }
+                previousKnownUserSet.clear();
+                for (MatrixUser currentKnownUser : knownUsers) {
+                    previousKnownUserSet.put(currentKnownUser.getName(), currentKnownUser);
+                }
             }
-        }
-        previousKnownUserSet.clear();
-        Collection<MatrixUser> knownUsers = knownUserSet.values();
-        for(MatrixUser currentKnownUser: knownUsers){
-            previousKnownUserSet.put(currentKnownUser.getName(), currentKnownUser);
         }
         return(addedUsers);
     }

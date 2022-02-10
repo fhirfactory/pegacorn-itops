@@ -99,20 +99,27 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
                 getLogger().trace(".createEndpointSpaceIfRequired(): Checking to see if all the OAM and Sub-Component Rooms exist: Finish");
             } else {
                 getLogger().trace(".createEndpointSpaceIfRequired(): Creating Space for Endpoint ->{}", endpointParticipantAlias);
-                String endpointTopic = "Endpoint, " + endpointSummary.getComponentID().getId() + ", " + parentParticipantName;
-                MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(endpointParticipantName, endpointParticipantAlias, endpointTopic, parentSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
 
-                SynapseRoom createdRoom = null;
-                createdRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
-                if(createdRoom == null) {
-                    createdRoom = getExistingRoom(endpointParticipantAlias);
+                MatrixRoom endpointRoom = null;
+                MatrixRoom existingRoom = getRoomCache().getRoomFromPseudoAlias(endpointParticipantAlias);
+                if(existingRoom != null){
+                    getLogger().trace(".createEndpointSpaceIfRequired(): Room already exists ->{}", endpointParticipantAlias);
+                    endpointRoom = existingRoom;
+                } else {
+                    String endpointTopic = "Endpoint, " + endpointSummary.getComponentID().getId() + ", " + parentParticipantName;
+                    MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(endpointParticipantName, endpointParticipantAlias, endpointTopic, parentSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+                    SynapseRoom createdRoom = null;
+                    createdRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
+                    if(createdRoom != null){
+                        getLogger().trace(".createEndpointSpaceIfRequired(): Created Space ->{}", createdRoom);
+                        MatrixRoom matrixRoom = new MatrixRoom(createdRoom);
+                        getRoomCache().addRoom(matrixRoom);
+                        endpointRoom = matrixRoom;
+                    }
                 }
 
-                if(createdRoom != null) {
-                    endpointSpaceId = createdRoom.getRoomID();
-                    getLogger().trace(".createEndpointSpaceIfRequired(): Created Space ->{}", createdRoom);
-                    MatrixRoom matrixRoom = new MatrixRoom(createdRoom);
-                    getRoomCache().addRoom(matrixRoom);
+                if(endpointRoom != null) {
+                    endpointSpaceId = endpointRoom.getRoomID();
                     getMatrixSpaceAPI().addChildToSpace(parentSpaceId, endpointSpaceId);
                 }
             }

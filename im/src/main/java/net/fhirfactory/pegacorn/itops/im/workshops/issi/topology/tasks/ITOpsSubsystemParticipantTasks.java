@@ -140,41 +140,49 @@ public class ITOpsSubsystemParticipantTasks {
     public void createParticipantSpacesAndRoomsIfNotThere(ProcessingPlantSummary processingPlant, MatrixRoom processingPlantMatrixRoom){
         getLogger().debug(".createParticipantSpacesAndRoomsIfNotThere(): Entry, processingPlant->{}, processingPlantMatrixRoom->{}", processingPlant, processingPlantMatrixRoom);
 
-        ProcessingPlantSpaceDetail processingPlantSpace = processingPlantSpace = getProcessingPlantReplicaServices().createProcessingPlantSpaceIfNotThere(processingPlant.getParticipantName(), processingPlantMatrixRoom);
-        getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processingPlantSpace->{}", processingPlantSpace);
-        for (WorkshopSummary currentWorkshop : processingPlant.getWorkshops().values()) {
-            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: currentWorkshop->{}", currentWorkshop);
-            MatrixRoom currentWorkshopSpace = resolveMatrixRoomFromParticipantName(processingPlantSpace.getProcessingPlantComponentSpace().getContainedRooms(), currentWorkshop.getParticipantName());
-            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: currentWorkshopSpace->{}", currentWorkshopSpace);
-            String workshopId = getWorkshopReplicaServices().createSubSpaceIfNotThere(processingPlantSpace.getProcessingPlantComponentSpace().getRoomID(),currentWorkshopSpace, currentWorkshop);
-            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: workshopId->{}", workshopId);
-            for (WorkUnitProcessorSummary currentWUPSummary : currentWorkshop.getWorkUnitProcessors().values()) {
-                getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: currentWUPSummary->{}", currentWUPSummary);
-                MatrixRoom currentWUPSpace = null;
-                if(currentWorkshopSpace != null) {
-                    currentWUPSpace = resolveMatrixRoomFromParticipantName(currentWorkshopSpace.getContainedRooms(), currentWUPSummary.getParticipantName());
-                    getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: currentWUPSpace->{}", currentWUPSpace);
-                    String wupSpaceId = getWupReplicaServices().createWorkUnitProcessorSpaceIfNotThere(workshopId, currentWUPSpace, currentWUPSummary);
-                    getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: wupSpaceId->{}", wupSpaceId);
-                    for (EndpointSummary currentEndpointSummary : currentWUPSummary.getEndpoints().values()) {
-                        getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoint: currentEndpointSummary->{}", currentEndpointSummary);
-                        MatrixRoom currentEndpointSpace = null;
-                        if (currentWUPSpace != null) {
-                            currentEndpointSpace = resolveMatrixRoomFromParticipantName(currentWUPSpace.getContainedRooms(), currentEndpointSummary.getParticipantName());
-                            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoint: currentEndpointSpace->{}", currentEndpointSpace);
-                            String endPointId = getEndpointReplicaServices().createEndpointSpaceIfRequired(currentEndpointSummary.getParticipantName(), wupSpaceId, currentEndpointSpace, currentEndpointSummary);
-                            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoint: endPointId->{}", endPointId);
-                            boolean isMLLPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_CLIENT);
-                            boolean isMLLPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_SERVER);
-                            boolean isHTTPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_CLIENT);
-                            boolean isHTTPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_SERVER);
-                            if (isHTTPClient || isHTTPServer || isMLLPClient || isMLLPServer) {
-                                getMatrixSpaceAPI().addChildToSpace(processingPlantSpace.getProcessingPlantSpace().getRoomID(), endPointId);
+        ProcessingPlantSpaceDetail processingPlantSpace = getProcessingPlantReplicaServices().createProcessingPlantSpaceIfNotThere(processingPlant.getParticipantName(), processingPlantMatrixRoom);
+        if(processingPlantSpace != null) {
+            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processingPlantSpace->{}", processingPlantSpace);
+            for (WorkshopSummary currentWorkshop : processingPlant.getWorkshops().values()) {
+                getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: currentWorkshop->{}", currentWorkshop);
+                MatrixRoom currentWorkshopSpace = resolveMatrixRoomFromParticipantName(processingPlantSpace.getProcessingPlantComponentSpace().getContainedRooms(), currentWorkshop.getParticipantName());
+                getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: currentWorkshopSpace->{}", currentWorkshopSpace);
+                String workshopId = getWorkshopReplicaServices().createSubSpaceIfNotThere(processingPlantSpace.getProcessingPlantComponentSpace().getRoomID(), currentWorkshopSpace, currentWorkshop);
+                if(StringUtils.isNotEmpty(workshopId)) {
+                    getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: workshopId->{}", workshopId);
+                    for (WorkUnitProcessorSummary currentWUPSummary : currentWorkshop.getWorkUnitProcessors().values()) {
+                        getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: currentWUPSummary->{}", currentWUPSummary);
+                        MatrixRoom currentWUPSpace = null;
+                        if (currentWorkshopSpace != null) {
+                            currentWUPSpace = resolveMatrixRoomFromParticipantName(currentWorkshopSpace.getContainedRooms(), currentWUPSummary.getParticipantName());
+                            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: currentWUPSpace->{}", currentWUPSpace);
+                            String wupSpaceId = getWupReplicaServices().createWorkUnitProcessorSpaceIfNotThere(workshopId, currentWUPSpace, currentWUPSummary);
+                            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: wupSpaceId->{}", wupSpaceId);
+                            for (EndpointSummary currentEndpointSummary : currentWUPSummary.getEndpoints().values()) {
+                                getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoint: currentEndpointSummary->{}", currentEndpointSummary);
+                                MatrixRoom currentEndpointSpace = null;
+                                if (currentWUPSpace != null) {
+                                    currentEndpointSpace = resolveMatrixRoomFromParticipantName(currentWUPSpace.getContainedRooms(), currentEndpointSummary.getParticipantName());
+                                    getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoint: currentEndpointSpace->{}", currentEndpointSpace);
+                                    String endPointId = getEndpointReplicaServices().createEndpointSpaceIfRequired(currentEndpointSummary.getParticipantName(), wupSpaceId, currentEndpointSpace, currentEndpointSummary);
+                                    getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoint: endPointId->{}", endPointId);
+                                    boolean isMLLPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_CLIENT);
+                                    boolean isMLLPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_SERVER);
+                                    boolean isHTTPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_CLIENT);
+                                    boolean isHTTPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_SERVER);
+                                    if (isHTTPClient || isHTTPServer || isMLLPClient || isMLLPServer) {
+                                        getMatrixSpaceAPI().addChildToSpace(processingPlantSpace.getProcessingPlantSpace().getRoomID(), endPointId);
+                                    }
+                                }
                             }
                         }
                     }
+                } else {
+                    getLogger().error(".createParticipantSpacesAndRoomsIfNotThere(): Cannot create Workshop Room for {}",currentWorkshop.getParticipantName());
                 }
             }
+        } else {
+            getLogger().error(".createParticipantSpacesAndRoomsIfNotThere(): Cannot create Participant Room for {}",processingPlant.getParticipantName());
         }
         getLogger().debug(".createParticipantSpacesAndRoomsIfNotThere(): Exit");
     }
