@@ -342,12 +342,12 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
                 String currentRoomAlias = currentRoom.getCanonicalAlias();
                 if (StringUtils.isNotEmpty(currentRoomAlias)) {
                     if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
-                        getLogger().debug(".userRoomSynchronisationDaemon(): [AAuto Join Users to Added Rooms] Processing Space->{}", currentRoomAlias);
+                        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join Users to Added Rooms] Processing Space->{}", currentRoomAlias);
                         String roomId = currentRoom.getRoomID();
                         List<String> roomMembers = synapseRoomAPI.getRoomMembers(roomId);
                         for (SynapseUser currentUser : userList) {
-                            if (roomMembers.contains(currentUser) || currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
-                                // do nothing
+                            if (currentUser.getName().contentEquals(matrixAccessToken.getUserId()) || currentUser.getName().contentEquals(synapseAccessToken.getUserId())) {
+                                getLogger().trace(".userRoomSynchronisationDaemon(): [Auto Join Users to Added Rooms] Not Adding User->{}", currentUser.getName());
                             } else {
                                 getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join Users to Added Rooms] Processing User->{}", currentUser.getName());
                                 synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
@@ -371,13 +371,13 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
                 if (StringUtils.isNotEmpty(currentRoomAlias)) {
                     if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
 
-                        getLogger().debug(".userRoomSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
+                        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
                         String roomId = currentRoom.getRoomID();
                         for (SynapseUser currentUser : addedUserSet) {
-                            if (currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
-                                // do nothing
+                            if (currentUser.getName().contentEquals(matrixAccessToken.getUserId()) || currentUser.getName().contentEquals(synapseAccessToken.getUserId())) {
+                                getLogger().trace(".userRoomSynchronisationDaemon(): [Auto Join New Users to the Older Rooms] Not Adding User->{}", currentUser.getName());
                             } else {
-                                getLogger().info(".userRoomSynchronisationDaemon(): [uto Join New Users to the Older Rooms] Processing User->{}", currentUser.getName());
+                                getLogger().info(".userRoomSynchronisationDaemon(): [Auto Join New Users to the Older Rooms] Processing User->{}", currentUser.getName());
                                 synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
                             }
                         }
@@ -387,13 +387,15 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         } catch(Exception ex){
             getLogger().warn(".userRoomSynchronisationDaemon(): Failure to add New Users to Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
         }
-        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to the Older Rooms] Finished...");
+        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto New Users to the Older Rooms] Finish...");
 
+        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Start...");
         Long secondsSinceLastFullUserUpdate = Instant.now().getEpochSecond() - this.lastFullUserUpdate.getEpochSecond();
         try{
             Set<MatrixRoom> fullRoomSet = getRoomCache().getFullRoomSet();
             Set<MatrixUser> fullUserSet = getUserCache().getKnownUsers();
             if(secondsSinceLastFullUserUpdate > this.USER_SYNCHRONISATION_OVERRIDE_PERIOD){
+                getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Starting... more than USER_SYNCHRONISATION_OVERRIDE_PERIOD since last full update");
                 for (MatrixRoom currentRoom : fullRoomSet) {
                     String currentRoomAlias = currentRoom.getCanonicalAlias();
                     if (StringUtils.isNotEmpty(currentRoomAlias)) {
@@ -401,8 +403,8 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
                             getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Processing Room/Space->{}", currentRoomAlias);
                             String roomId = currentRoom.getRoomID();
                             for (MatrixUser currentUser : fullUserSet) {
-                                if (currentUser.getName().contains(matrixAccessToken.getUserName()) || currentUser.getName().startsWith("@"+synapseAccessToken.getUserName())) {
-                                    // do nothing
+                                if (currentUser.getName().contentEquals(matrixAccessToken.getUserId()) || currentUser.getName().contentEquals(synapseAccessToken.getUserId())) {
+                                    getLogger().trace(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Not Adding User->{}", currentUser.getName());
                                 } else {
                                     getLogger().trace(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Processing User->{}", currentUser.getName());
                                     synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
@@ -416,7 +418,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         } catch(Exception ex){
             getLogger().warn(".userRoomSynchronisationDaemon(): Failure to add All Users to Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
         }
-        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to Added Rooms] Finish...");
+        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Finish...");
 
         setUserRoomSynchronisationDaemonIsStillRunning(false);
         getLogger().debug(".userRoomSynchronisationDaemon(): Exit");

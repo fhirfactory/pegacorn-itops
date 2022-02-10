@@ -99,7 +99,7 @@ public class ParticipantSubscriptionReportEventFactory {
             for(TaskWorkItemSubscriptionType currentTopic: currentSummary.getSubscribedTaskWorkItems()) {
                 descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
                 if(currentTopic.hasContainerDescriptor()) {
-                    descriptionBuilder.append("*** ContainerDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
+                    descriptionBuilder.append("*** ContainerDescriptor --> " + currentTopic.getContainerDescriptor().toDotString() + "\n");
                 }
                 if(currentTopic.hasNormalisationStatus()) {
                     descriptionBuilder.append("*** Normalisation --> " + currentTopic.getNormalisationStatus().getDisplayName() + "\n");
@@ -160,7 +160,7 @@ public class ParticipantSubscriptionReportEventFactory {
             for(TaskWorkItemSubscriptionType currentTopic: currentSummary.getSubscribedTaskWorkItems()) {
                 descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
                 if(currentTopic.hasContainerDescriptor()) {
-                    descriptionBuilder.append("*** ContainerDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
+                    descriptionBuilder.append("*** ContainerDescriptor --> " + currentTopic.getContainerDescriptor().toDotString() + "\n");
                 }
                 if(currentTopic.hasNormalisationStatus()) {
                     descriptionBuilder.append("*** Normalisation --> " + currentTopic.getNormalisationStatus().getDisplayName() + "\n");
