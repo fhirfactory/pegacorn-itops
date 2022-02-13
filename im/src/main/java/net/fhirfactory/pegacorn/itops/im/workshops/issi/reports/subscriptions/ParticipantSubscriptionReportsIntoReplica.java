@@ -158,12 +158,12 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
         List<PetasosProcessingPlantSubscriptionSummary> processingPlantSubscriptionSummaries = subscriptionMapDM.getProcessingPlantSubscriptionSummaries();
         for (PetasosProcessingPlantSubscriptionSummary currentReport: processingPlantSubscriptionSummaries) {
             getLogger().trace(".subscriptionReportForwarder(): Entry");
-            forwardProcessingPlantSubscriptionReport(currentReport);
+//            forwardProcessingPlantSubscriptionReport(currentReport);
         }
         List<PetasosWorkUnitProcessorSubscriptionSummary> wupSubscriptionSummaries = subscriptionMapDM.getWorkUnitProcessorSubscriptionSummaries();
         for (PetasosWorkUnitProcessorSubscriptionSummary currentReport: wupSubscriptionSummaries) {
             getLogger().trace(".subscriptionReportForwarder(): Entry");
-            forwardWorkUnitProcessorSubscriptionReport(currentReport);
+//            forwardWorkUnitProcessorSubscriptionReport(currentReport);
         }
         stillRunning = false;
         getLogger().debug(".notificationForwarder(): Exit");
