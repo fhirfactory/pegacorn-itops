@@ -58,14 +58,15 @@ public class WorkUnitProcessorParticipantReplicaFactory extends BaseParticipantR
     // Business Methods
     //
 
-    public String createWorkUnitProcessorSpaceIfNotThere(String workshopId, MatrixRoom wupMatrixRoom, WorkUnitProcessorSummary wupSummary) {
+    public MatrixRoom createWorkUnitProcessorSpaceIfNotThere(String workshopId, MatrixRoom wupMatrixRoom, WorkUnitProcessorSummary wupSummary) {
         getLogger().debug(".createWorkUnitProcessorSpace(): Entry, workshopId->{}, wupMatrixRoom->{}, wup->{}", workshopId, wupMatrixRoom, wupSummary);
 
         try {
             String wupParticipantName = wupSummary.getParticipantName();
             String wupParticipantDisplayName = wupSummary.getParticipantDisplayName();
             String wupAlias = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP.getAliasPrefix() + wupParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
-            String wupRoomId = null;
+            MatrixRoom wupRoom = null;
+            String wupRoomId= null;
 
             boolean foundSubsystemEventsRoom = false;
             boolean foundSubsystemMetricsRoom = false;
@@ -75,7 +76,7 @@ public class WorkUnitProcessorParticipantReplicaFactory extends BaseParticipantR
             if (wupMatrixRoom != null) {
                 getLogger().trace(".createWorkUnitProcessorSpace(): Room Found, no action required");
                 getLogger().trace(".createWorkUnitProcessorSpace(): Checking to see if all the OAM and Sub-Component Rooms exist: Start");
-                wupRoomId = wupMatrixRoom.getRoomID();
+                wupRoom = wupMatrixRoom;
                 if (!wupMatrixRoom.getContainedRooms().isEmpty()) {
                     for (MatrixRoom currentRoom : wupMatrixRoom.getContainedRooms()) {
                         if (StringUtils.isNotEmpty(currentRoom.getCanonicalAlias())) {
@@ -94,12 +95,12 @@ public class WorkUnitProcessorParticipantReplicaFactory extends BaseParticipantR
                         }
                     }
                 }
+                wupRoomId = wupRoom.getRoomID();
                 getLogger().trace(".createWorkUnitProcessorSpace(): Checking to see if all the OAM and Sub-Component Rooms exist: Finish");
             } else {
                 getLogger().debug(".createWorkUnitProcessorSpace(): [Add Space(s) For WUP As Required] Creating Space for WUP ->{}", wupAlias);
 
                 getLogger().trace(".createSubSpaceIfNotThere(): First double-checking the room isn't already create ->{}", wupAlias);
-                MatrixRoom wupRoom = null;
                 MatrixRoom existingRoom = getRoomCache().getRoomFromPseudoAlias(wupAlias);
                 if (existingRoom != null) {
                     getLogger().trace(".createSubSpaceIfNotThere(): Room already exists ->{}", wupAlias);
@@ -114,14 +115,13 @@ public class WorkUnitProcessorParticipantReplicaFactory extends BaseParticipantR
                         getRoomCache().addRoom(createdRoom);
                     }
                 }
-
                 if (wupRoom != null) {
                     wupRoomId = wupRoom.getRoomID();
                     getMatrixSpaceAPI().addChildToSpace(workshopId, wupRoomId);
                 }
             }
 
-            if (StringUtils.isNotEmpty(wupRoomId)) {
+            if (wupRoom != null) {
                 getLogger().debug(".createWorkUnitProcessorSpace(): [Add Rooms If Required] Start...");
                 if (!foundSubsystemEventsRoom) {
                     installAnOAMRoom(wupParticipantName, wupParticipantDisplayName, wupRoomId, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_CONSOLE);
@@ -139,7 +139,7 @@ public class WorkUnitProcessorParticipantReplicaFactory extends BaseParticipantR
             }
 
             getLogger().debug(".createWorkUnitProcessorSpace(): Exit, wupRoomId->{}", wupRoomId);
-            return (wupRoomId);
+            return (wupRoom);
         } catch(Exception ex){
             getLogger().error(".createWorkUnitProcessorSpace(): Error Creating WUP Space/Room, message->{}, stacktrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             return(null);

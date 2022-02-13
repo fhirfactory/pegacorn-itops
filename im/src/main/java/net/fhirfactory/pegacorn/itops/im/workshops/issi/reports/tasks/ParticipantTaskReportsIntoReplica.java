@@ -192,55 +192,52 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
     private void forwardWUPTaskReport(PetasosComponentITOpsNotification notification) {
         getLogger().info(".forwardWUPTaskReport(): Entry, notification->{}", notification);
 
-        String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
-                notification.getParticipantName(),
-                OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS);
+        try {
 
-        getLogger().trace(".forwardWUPTaskReport(): roomAlias for Events->{}", roomAlias);
+            String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
+                    notification.getParticipantName(),
+                    OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS);
 
-        String roomIdFromAlias = getRoomId(roomAlias);
+            getLogger().trace(".forwardWUPTaskReport(): roomAlias for Events->{}", roomAlias);
 
-        getLogger().trace(".forwardWUPTaskReport(): roomId for Events->{}", roomIdFromAlias);
+            String roomIdFromAlias = getRoomId(roomAlias);
 
-        if (roomIdFromAlias != null) {
+            getLogger().trace(".forwardWUPTaskReport(): roomId for Events->{}", roomIdFromAlias);
 
-            MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
-
-            try {
+            if (roomIdFromAlias != null) {
+                MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
                 MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
-            } catch (Exception ex) {
+            } else {
+                getLogger().warn(".forwardWUPTaskReport(): No room to forward work unit processor task reports into (WorkUnitProcessor->{})!", notification.getParticipantName());
+                // TODO either re-queue or send to DeadLetter
+            }
+        } catch (Exception ex) {
                 getLogger().warn(".forwardWUPTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             }
-
-        } else {
-            getLogger().warn(".forwardWUPTaskReport(): No room to forward work unit processor task reports into (WorkUnitProcessor->{})!", notification.getParticipantName());
-            // TODO either re-queue or send to DeadLetter
-        }
     }
 
     private void forwardProcessingPlantTaskReport(PetasosComponentITOpsNotification notification) {
         getLogger().debug(".forwardProcessingPlantTaskReport(): Entry, notification->{}", notification);
 
-        String roomAlias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS);
+        try {
+            String roomAlias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS);
 
-        getLogger().trace(".forwardProcessingPlantTaskReport(): roomAlias for Events->{}", roomAlias);
+            getLogger().trace(".forwardProcessingPlantTaskReport(): roomAlias for Events->{}", roomAlias);
 
-        String roomIdFromAlias = getRoomId(roomAlias);
+            String roomIdFromAlias = getRoomId(roomAlias);
 
-        getLogger().trace(".forwardProcessingPlantTaskReport(): roomId for Events->{}", roomIdFromAlias);
+            getLogger().trace(".forwardProcessingPlantTaskReport(): roomId for Events->{}", roomIdFromAlias);
 
-        if (roomIdFromAlias != null) {
-            MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
-
-            try {
+            if (roomIdFromAlias != null) {
+                MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
                 MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
-            } catch (Exception ex) {
+            } else {
+                getLogger().warn(".forwardProcessingPlantTaskReport(): No room to forward processing plant notifications into (ProcessingPlant->{}!", notification.getParticipantName());
+                // TODO either re-queue or send to DeadLetter
+            }
+        } catch (Exception ex) {
                 getLogger().warn(".forwardProcessingPlantTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             }
-        } else {
-            getLogger().warn(".forwardProcessingPlantTaskReport(): No room to forward processing plant notifications into (ProcessingPlant->{}!", notification.getParticipantName());
-            // TODO either re-queue or send to DeadLetter
-        }
     }
 
     //

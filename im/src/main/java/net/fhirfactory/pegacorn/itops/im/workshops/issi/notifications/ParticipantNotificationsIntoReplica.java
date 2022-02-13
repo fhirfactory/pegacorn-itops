@@ -222,29 +222,28 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
 
     private void forwardWUPNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardWUPNotification(): Entry, notification->{}",notification);
+        try {
+            String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
+                    notification.getParticipantName(),
+                    OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_CONSOLE);
 
-        String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
-                notification.getParticipantName(),
-                OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_CONSOLE);
+            getLogger().trace(".forwardWUPNotification(): roomAlias for Events->{}", roomAlias);
 
-        getLogger().trace(".forwardWUPNotification(): roomAlias for Events->{}", roomAlias);
+            String roomIdFromAlias = getRoomId(roomAlias);
 
-        String roomIdFromAlias = getRoomId(roomAlias);
+            getLogger().trace(".forwardWUPNotification(): roomId for Events->{}", roomIdFromAlias);
 
-        getLogger().trace(".forwardWUPNotification(): roomId for Events->{}", roomIdFromAlias);
+            if(roomIdFromAlias != null) {
 
-        if(roomIdFromAlias != null) {
+                MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
 
-            MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
-
-            try {
                 MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
-            } catch (Exception ex) {
-                getLogger().warn(".forwardWUPNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+            } else {
+                getLogger().warn(".forwardWUPNotification(): No room to forward work unit processor notifications into (WorkUnitProcessor->{})!", notification.getParticipantName());
+                // TODO either re-queue or send to DeadLetter
             }
-        } else {
-            getLogger().warn(".forwardWUPNotification(): No room to forward work unit processor notifications into (WorkUnitProcessor->{})!", notification.getParticipantName());
-            // TODO either re-queue or send to DeadLetter
+        } catch (Exception ex) {
+            getLogger().warn(".forwardWUPNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
         }
     }
 

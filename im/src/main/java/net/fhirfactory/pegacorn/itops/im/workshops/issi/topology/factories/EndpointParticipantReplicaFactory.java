@@ -62,13 +62,14 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
     // Business Methods
     //
 
-    public String createEndpointSpaceIfRequired(String parentParticipantName, String parentSpaceId, MatrixRoom endpointSpace, EndpointSummary endpointSummary) {
-        getLogger().debug(".createEndpointSpaceIfRequired(): Entry, parentSpaceId->{}, endpoint->{}", parentSpaceId, endpointSummary);
+    public MatrixRoom createEndpointSpaceIfRequired(String parentParticipantName, String parentSpaceId, MatrixRoom endpointSpace, EndpointSummary endpointSummary) {
+        getLogger().info(".createEndpointSpaceIfRequired(): Entry, parentSpaceId->{}, endpoint->{}", parentSpaceId, endpointSummary);
         try {
             String endpointParticipantDisplayName = endpointSummary.getParticipantDisplayName();
             String endpointParticipantName = endpointSummary.getParticipantName();
             String endpointParticipantAlias = identityFactory.buildEndpointRoomAlias(endpointParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT);
             String endpointSpaceId = null;
+            MatrixRoom endpointRoom = null;
 
             boolean foundSubsystemEventsRoom = false;
             boolean foundSubsystemMetricsRoom = false;
@@ -76,7 +77,6 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
 
             if (endpointSpace != null) {
                 getLogger().trace(".createEndpointSpaceIfRequired(): Room Exists, no action required");
-                endpointSpaceId = endpointSpace.getRoomID();
                 getLogger().trace(".createEndpointSpaceIfRequired(): Checking to see if all the OAM and Sub-Component Rooms exist: Start");
                 if(!endpointSpace.getContainedRooms().isEmpty()){
                     for(MatrixRoom currentRoom: endpointSpace.getContainedRooms()){
@@ -96,11 +96,12 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
                         }
                     }
                 }
+                endpointRoom = endpointSpace;
+                endpointSpaceId = endpointSpace.getRoomID();
                 getLogger().trace(".createEndpointSpaceIfRequired(): Checking to see if all the OAM and Sub-Component Rooms exist: Finish");
             } else {
                 getLogger().trace(".createEndpointSpaceIfRequired(): Creating Space for Endpoint ->{}", endpointParticipantAlias);
 
-                MatrixRoom endpointRoom = null;
                 MatrixRoom existingRoom = getRoomCache().getRoomFromPseudoAlias(endpointParticipantAlias);
                 if(existingRoom != null){
                     getLogger().trace(".createEndpointSpaceIfRequired(): Room already exists ->{}", endpointParticipantAlias);
@@ -127,21 +128,21 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
             if(StringUtils.isNotEmpty(endpointSpaceId)) {
                 getLogger().trace(".createEndpointSpaceIfRequired(): [Add Rooms If Required] Start...");
                 if (!foundSubsystemEventsRoom) {
-                    getLogger().trace(".createEndpointSpaceIfRequired(): Creating {} Console/Events Room", endpointParticipantName);
+                    getLogger().info(".createEndpointSpaceIfRequired(): Creating {} Console/Events Room", endpointParticipantName);
                     installAnOAMRoom(endpointParticipantName, endpointParticipantDisplayName, endpointSpaceId, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_CONSOLE);
                 }
                 if (!foundSubsystemMetricsRoom) {
-                    getLogger().trace(".createEndpointSpaceIfRequired(): Creating {} Metrics Room", endpointParticipantName);
+                    getLogger().info(".createEndpointSpaceIfRequired(): Creating {} Metrics Room", endpointParticipantName);
                     installAnOAMRoom(endpointParticipantName, endpointParticipantDisplayName, endpointSpaceId, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_METRICS);
                 }
                 if (!foundSubsystemTasksRoom) {
-                    getLogger().trace(".createEndpointSpaceIfRequired(): Creating {} Task/Activity-Reports Room", endpointParticipantName);
+                    getLogger().info(".createEndpointSpaceIfRequired(): Creating {} Task/Activity-Reports Room", endpointParticipantName);
                     installAnOAMRoom(endpointParticipantName, endpointParticipantDisplayName, endpointSpaceId, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_TASKS);
                 }
                 getLogger().trace(".createEndpointSpaceIfRequired(): [Add Rooms If Required] Finish...");
             }
             getLogger().debug(".createEndpointSpaceIfRequired(): Exit, endpointSpaceId->{}", endpointSpaceId);
-            return (endpointSpaceId);
+            return (endpointRoom);
         } catch (Exception ex){
             getLogger().error(".createEndpointSpaceIfRequired(): Error Creating Endpoint Space/Room, message->{}, stacktrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             return(null);

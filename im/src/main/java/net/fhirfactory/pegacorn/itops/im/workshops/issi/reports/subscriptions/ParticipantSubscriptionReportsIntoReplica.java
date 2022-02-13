@@ -176,73 +176,76 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
     private void forwardProcessingPlantSubscriptionReport(PetasosProcessingPlantSubscriptionSummary subscriptionSummary) {
         getLogger().debug(".forwardProcessingPlantSubscriptionReport(): Entry, subscriptionSummary->{}", subscriptionSummary);
 
-        String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
-                subscriptionSummary.getParticipantName(),
-                OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS);
+        try {
 
-        getLogger().trace(".forwardProcessingPlantSubscriptionReport(): roomAlias for Events->{}", roomAlias);
+            String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
+                    subscriptionSummary.getParticipantName(),
+                    OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS);
 
-        String roomIdFromAlias = getRoomId(roomAlias);
+            getLogger().trace(".forwardProcessingPlantSubscriptionReport(): roomAlias for Events->{}", roomAlias);
 
-        getLogger().trace(".forwardProcessingPlantSubscriptionReport(): roomId for Events->{}", roomIdFromAlias);
+            String roomIdFromAlias = getRoomId(roomAlias);
 
-        if (roomIdFromAlias != null) {
+            getLogger().trace(".forwardProcessingPlantSubscriptionReport(): roomId for Events->{}", roomIdFromAlias);
 
-            Collection<PetasosSubscriberSubscriptionSummary> asASubscriberValues = subscriptionSummary.getAsSubscriber().values();
-            MRoomTextMessageEvent subscriberSummaryEvent = subscriptionReportEventFactory.newAsASubscriberSubscriptionReportEvent(roomIdFromAlias, asASubscriberValues);
-            getLogger().trace(".forwardProcessingPlantSubscriptionReport(): subscriberSummaryEvent->{}", subscriberSummaryEvent);
-            if(subscriberSummaryEvent != null) {
-                try {
+            if (roomIdFromAlias != null) {
+
+                Collection<PetasosSubscriberSubscriptionSummary> asASubscriberValues = subscriptionSummary.getAsSubscriber().values();
+                MRoomTextMessageEvent subscriberSummaryEvent = subscriptionReportEventFactory.newAsASubscriberSubscriptionReportEvent(roomIdFromAlias, asASubscriberValues);
+                getLogger().trace(".forwardProcessingPlantSubscriptionReport(): subscriberSummaryEvent->{}", subscriberSummaryEvent);
+                if (subscriberSummaryEvent != null) {
                     MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), subscriberSummaryEvent);
-                } catch (Exception ex) {
-                    getLogger().warn(".forwardProcessingPlantSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
                 }
-            }
 
-            Collection<PetasosPublisherSubscriptionSummary> asAPublisherValues = subscriptionSummary.getAsPublisher().values();
-            MRoomTextMessageEvent publisherSummaryEvent = subscriptionReportEventFactory.newAsAPublisherSubscriptionReportEvent(roomIdFromAlias, asAPublisherValues);
-            getLogger().trace(".forwardProcessingPlantSubscriptionReport(): publisherSummaryEvent->{}", publisherSummaryEvent);
-            if(publisherSummaryEvent != null) {
-                try {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), publisherSummaryEvent);
-                } catch (Exception ex) {
-                    getLogger().warn(".forwardProcessingPlantSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                Collection<PetasosPublisherSubscriptionSummary> asAPublisherValues = subscriptionSummary.getAsPublisher().values();
+                MRoomTextMessageEvent publisherSummaryEvent = subscriptionReportEventFactory.newAsAPublisherSubscriptionReportEvent(roomIdFromAlias, asAPublisherValues);
+                getLogger().trace(".forwardProcessingPlantSubscriptionReport(): publisherSummaryEvent->{}", publisherSummaryEvent);
+                if (publisherSummaryEvent != null) {
+                    try {
+                        MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), publisherSummaryEvent);
+                    } catch (Exception ex) {
+                        getLogger().warn(".forwardProcessingPlantSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                    }
                 }
-            }
 
-        } else {
-            getLogger().warn(".forwardWUPTaskReport(): No room to forward work unit processor task reports into (WorkUnitProcessor->{})!", subscriptionSummary.getParticipantName());
-            // TODO either re-queue or send to DeadLetter
+            } else {
+                getLogger().warn(".forwardWUPTaskReport(): No room to forward work unit processor task reports into (WorkUnitProcessor->{})!", subscriptionSummary.getParticipantName());
+                // TODO either re-queue or send to DeadLetter
+            }
+        }
+        catch (Exception ex) {
+            getLogger().warn(".forwardProcessingPlantSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
         }
     }
 
     private void forwardWorkUnitProcessorSubscriptionReport(PetasosWorkUnitProcessorSubscriptionSummary subscriptionSummary) {
         getLogger().debug(".forwardWorkUnitProcessorSubscriptionReport(): Entry, subscriptionSummary->{}", subscriptionSummary);
 
-        String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
-                subscriptionSummary.getParticipantName(),
-                OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS);
+        try{
 
-        getLogger().trace(".forwardWorkUnitProcessorSubscriptionReport(): roomAlias for Events->{}", roomAlias);
+            String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
+                    subscriptionSummary.getParticipantName(),
+                    OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS);
 
-        String roomIdFromAlias = getRoomId(roomAlias);
+            getLogger().trace(".forwardWorkUnitProcessorSubscriptionReport(): roomAlias for Events->{}", roomAlias);
 
-        getLogger().trace(".forwardWorkUnitProcessorSubscriptionReport(): roomId for Events->{}", roomIdFromAlias);
+            String roomIdFromAlias = getRoomId(roomAlias);
 
-        if (roomIdFromAlias != null) {
+            getLogger().trace(".forwardWorkUnitProcessorSubscriptionReport(): roomId for Events->{}", roomIdFromAlias);
 
-            MRoomTextMessageEvent subscriberSummaryEvent = subscriptionReportEventFactory.newWUPSubscriberSubscriptionReportEvent(roomIdFromAlias, subscriptionSummary);
-            getLogger().trace(".forwardWorkUnitProcessorSubscriptionReport(): subscriberSummaryEvent->{}", subscriberSummaryEvent);
-            if (subscriberSummaryEvent != null) {
-                try {
+            if (roomIdFromAlias != null) {
+
+                MRoomTextMessageEvent subscriberSummaryEvent = subscriptionReportEventFactory.newWUPSubscriberSubscriptionReportEvent(roomIdFromAlias, subscriptionSummary);
+                getLogger().trace(".forwardWorkUnitProcessorSubscriptionReport(): subscriberSummaryEvent->{}", subscriberSummaryEvent);
+                if (subscriberSummaryEvent != null) {
                     MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), subscriberSummaryEvent);
-                } catch (Exception ex) {
-                    getLogger().warn(".forwardWorkUnitProcessorSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                } else {
+                    getLogger().warn(".forwardWorkUnitProcessorSubscriptionReport(): No room to forward work unit processor task reports into (WorkUnitProcessor->{})!", subscriptionSummary.getParticipantName());
+                    // TODO either re-queue or send to DeadLetter
                 }
-            } else {
-                getLogger().warn(".forwardWorkUnitProcessorSubscriptionReport(): No room to forward work unit processor task reports into (WorkUnitProcessor->{})!", subscriptionSummary.getParticipantName());
-                // TODO either re-queue or send to DeadLetter
             }
+        } catch (Exception ex) {
+            getLogger().warn(".forwardWorkUnitProcessorSubscriptionReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
         }
     }
 

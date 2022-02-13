@@ -37,13 +37,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @ApplicationScoped
 public class ITOpsSystemWideMetricsDM {
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsSystemWideMetricsDM.class);
-    private ConcurrentHashMap<String, PetasosComponentMetricSet> currentStateComponentMetricSetMap;
+    private ConcurrentHashMap<String, PetasosComponentMetricSet> currentStateMetricSetMap;
     private ConcurrentHashMap<String, String> endpointRouteToSourceMap;
     private ConcurrentHashMap<String, Instant> sourceUpdateInstantMap;
     private Instant lastUpdate;
 
     public ITOpsSystemWideMetricsDM(){
-        this.currentStateComponentMetricSetMap = new ConcurrentHashMap<>();
+        this.currentStateMetricSetMap = new ConcurrentHashMap<>();
         this.endpointRouteToSourceMap = new ConcurrentHashMap<>();
         this.sourceUpdateInstantMap = new ConcurrentHashMap<>();
         this.lastUpdate = Instant.now();
@@ -53,12 +53,12 @@ public class ITOpsSystemWideMetricsDM {
     // Getters (and Setters)
     //
 
-    public ConcurrentHashMap<String, PetasosComponentMetricSet> getCurrentStateComponentMetricSetMap() {
-        return currentStateComponentMetricSetMap;
+    public ConcurrentHashMap<String, PetasosComponentMetricSet> getCurrentStateMetricSetMap() {
+        return currentStateMetricSetMap;
     }
 
-    public void setCurrentStateComponentMetricSetMap(ConcurrentHashMap<String, PetasosComponentMetricSet> currentStateComponentMetricSetMap) {
-        this.currentStateComponentMetricSetMap = currentStateComponentMetricSetMap;
+    public void setCurrentStateMetricSetMap(ConcurrentHashMap<String, PetasosComponentMetricSet> currentStateMetricSetMap) {
+        this.currentStateMetricSetMap = currentStateMetricSetMap;
     }
 
     public ConcurrentHashMap<String, String> getEndpointRouteToSourceMap() {
@@ -91,10 +91,10 @@ public class ITOpsSystemWideMetricsDM {
             getLogger().debug(".addComponentMetricSet(): Exit, either componentID or metricSet is empty");
             return;
         }
-        if(getCurrentStateComponentMetricSetMap().containsKey(metricsSet.getMetricSourceComponentId())){
-             getCurrentStateComponentMetricSetMap().remove(metricsSet.getMetricSourceComponentId());
+        if(getCurrentStateMetricSetMap().containsKey(metricsSet.getMetricSourceComponentId())){
+             getCurrentStateMetricSetMap().remove(metricsSet.getMetricSourceComponentId());
         }
-        getCurrentStateComponentMetricSetMap().put(metricsSet.getMetricSourceComponentId().getId(), metricsSet);
+        getCurrentStateMetricSetMap().put(metricsSet.getMetricSourceComponentId().getId(), metricsSet);
         if(!this.endpointRouteToSourceMap.containsKey(metricsSet.getMetricSourceComponentId())){
             this.endpointRouteToSourceMap.remove(metricsSet.getMetricSourceComponentId());
         }
@@ -106,39 +106,41 @@ public class ITOpsSystemWideMetricsDM {
         getLogger().debug(".addComponentMetricsSet():Exit");
     }
 
+    /*
     public PetasosComponentMetricSet getComponentMetricSetForDisplay(String metricSourceComponentId){
         getLogger().debug(".getComponentMetricSetForPublishing(): Entry, componentID->{}", metricSourceComponentId);
-        if(getCurrentStateComponentMetricSetMap().containsKey(metricSourceComponentId)){
+        if(getCurrentStateMetricSetMap().containsKey(metricSourceComponentId)){
             return(new PetasosComponentMetricSet());
         }
-        PetasosComponentMetricSet currentMetricsSet = getCurrentStateComponentMetricSetMap().get(metricSourceComponentId);
+        PetasosComponentMetricSet currentMetricsSet = getCurrentStateMetricSetMap().get(metricSourceComponentId);
         PetasosComponentMetricSet publishedMetricsSet = SerializationUtils.clone(currentMetricsSet);
         getLogger().debug(".getComponentMetricSetForPublishing(): Exit, publishedMetricSet->{}", publishedMetricsSet);
         return(publishedMetricsSet);
     }
+
+     */
 
     public PetasosComponentMetricSet getComponentMetricsSet(String metricSourceComponentId){
         getLogger().debug(".getComponentMetricsSet(): Entry, metricSourceComponentId->{}", metricSourceComponentId);
         if(StringUtils.isEmpty(metricSourceComponentId)){
             return(null);
         }
-        PetasosComponentMetricSet currentState = getCurrentStateComponentMetricSetMap().get(metricSourceComponentId);
+        PetasosComponentMetricSet currentState = getCurrentStateMetricSetMap().get(metricSourceComponentId);
         getLogger().debug(".getComponentMetricsSet(): Exit, currentState->{}", currentState);
         return(currentState);
     }
 
     public List<PetasosComponentMetricSet> getUpdatedMetricSets(){
         List<PetasosComponentMetricSet> currentStateMetricsSets = new ArrayList<>();
-        if(currentStateComponentMetricSetMap.isEmpty()){
+        if(currentStateMetricSetMap.isEmpty()){
             return(currentStateMetricsSets);
         }
         Enumeration<String> updateInstanceKeys = sourceUpdateInstantMap.keys();
-        Instant currentTime = Instant.now();
         while(updateInstanceKeys.hasMoreElements()){
             String currentUpdateKey = updateInstanceKeys.nextElement();
             Instant lastUpdateForSourceId = sourceUpdateInstantMap.get(currentUpdateKey);
             if(lastUpdateForSourceId.isAfter(lastUpdate)){
-                currentStateMetricsSets.add(currentStateComponentMetricSetMap.get(currentUpdateKey));
+                currentStateMetricsSets.add(currentStateMetricSetMap.get(currentUpdateKey));
             }
         }
         lastUpdate = Instant.now();
