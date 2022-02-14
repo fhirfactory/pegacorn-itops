@@ -141,10 +141,10 @@ public abstract class BaseParticipantReplicaServices {
             oamRoom = existingRoom;
         } else {
             getLogger().trace(".installAnOAMRoom(): Room doesn't appear to exist, so creating it");
-            String roomName = participantDisplayName + "." + roomType.getDisplayName();
+            String roomTopic = participantDisplayName + "." + roomType.getDisplayName();
+            getLogger().trace(".installAnOAMRoom(): roomTopic->{}", roomTopic);
+            String roomName = roomType.getDisplayName();
             getLogger().trace(".installAnOAMRoom(): roomName->{}", roomName);
-            String roomTopic = roomType.getDisplayName();
-            getLogger().trace(".installAnOAMRoom(): roomName->{}", roomTopic);
             MRoomCreation mRoomCreation = getMatrixBridgeFactories().newRoomInSpaceCreationRequest(roomName, roomAlias, roomTopic, participantSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
             getLogger().trace(".installAnOAMRoom(): mRoomCreation request->{}", mRoomCreation);
             SynapseRoom createdRoom = getMatrixRoomAPI().createRoom(getMatrixAccessToken().getUserId(), mRoomCreation);

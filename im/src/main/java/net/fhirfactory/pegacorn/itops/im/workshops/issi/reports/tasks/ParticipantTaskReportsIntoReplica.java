@@ -30,6 +30,7 @@ import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsTaskReportsDM;
+import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.reports.tasks.ParticipantTaskReportsEventFactory;
 import org.apache.camel.LoggingLevel;
@@ -81,6 +82,9 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
 
     @Inject
     private ITOpsTaskReportsDM taskReportsDM;
+
+    @Inject
+    private ITOpsKnownRoomAndSpaceMapDM roomCache;
 
     //
     // Constructor(s)
@@ -154,32 +158,41 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
     private void taskReportForward() {
         getLogger().debug(".taskReportForward(): Entry");
         stillRunning = true;
+        List<PetasosComponentITOpsNotification> failedToSendList = new ArrayList<>();
         while (taskReportsDM.hasMoreTaskReports()) {
             getLogger().trace(".taskReportForward(): Entry");
             PetasosComponentITOpsNotification nextNotification = taskReportsDM.getNextTaskReport();
+            boolean successfullySent = false;
             switch (nextNotification.getComponentType()) {
                 case PETASOS_MONITORED_COMPONENT_SUBSYSTEM:
                     getLogger().trace(".notificationForwarder(): Processing ProcessorPlant Metrics");
-                    forwardProcessingPlantTaskReport(nextNotification);
+                    successfullySent = forwardProcessingPlantTaskReport(nextNotification);
                     break;
                 case PETASOS_MONITORED_COMPONENT_SERVICE:
                     break;
                 case PETASOS_MONITORED_COMPONENT_PROCESSING_PLANT:
                     getLogger().trace(".taskReportForward(): Processing ProcessorPlant Metrics");
-                    forwardProcessingPlantTaskReport(nextNotification);
+                    successfullySent = forwardProcessingPlantTaskReport(nextNotification);
                     break;
                 case PETASOS_MONITORED_COMPONENT_WORKSHOP:
                     break;
                 case PETASOS_MONITORED_COMPONENT_WORK_UNIT_PROCESSOR:
                     getLogger().trace(".taskReportForward(): Processing WorkUnitProcessor Metrics");
-                    forwardWUPTaskReport(nextNotification);
+                    successfullySent = forwardWUPTaskReport(nextNotification);
                     break;
                 case PETASOS_MONITORED_COMPONENT_WORK_UNIT_PROCESSOR_COMPONENT:
                     break;
                 case PETASOS_MONITORED_COMPONENT_ENDPOINT:
+                    getLogger().trace(".taskReportForward(): Processing WorkUnitProcessor Metrics");
+                    successfullySent = forwardEndpointTaskReport(nextNotification);
                     break;
             }
-            waitALittleBit();
+            if(!successfullySent){
+                failedToSendList.add(nextNotification);
+            }
+        }
+        for(PetasosComponentITOpsNotification currentNotification: failedToSendList){
+            taskReportsDM.addTaskReport(currentNotification);
         }
         stillRunning = false;
         getLogger().debug(".notificationForwarder(): Exit");
@@ -189,8 +202,42 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
     // Per Metric/Reporting Type Helpers
     //
 
-    private void forwardWUPTaskReport(PetasosComponentITOpsNotification notification) {
-        getLogger().info(".forwardWUPTaskReport(): Entry, notification->{}", notification);
+    private boolean forwardEndpointTaskReport(PetasosComponentITOpsNotification notification) {
+        getLogger().info(".forwardEndpointTaskReport(): Entry, notification->{}", notification);
+
+        try {
+
+            String roomAlias = roomIdentityFactory.buildEndpointRoomAlias(
+                    notification.getParticipantName(),
+                    OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_TASKS);
+
+            getLogger().trace(".forwardEndpointTaskReport(): roomAlias for Events->{}", roomAlias);
+
+            String roomIdFromAlias = roomCache.getRoomIdFromPseudoAlias(roomAlias);
+
+            getLogger().trace(".forwardEndpointTaskReport(): roomId for Events->{}", roomIdFromAlias);
+
+            if (roomIdFromAlias != null) {
+                MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
+                try {
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                    return(true);
+                } catch(Exception ex){
+                    getLogger().warn(".forwardEndpointTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                    return(false);
+                }
+            } else {
+                getLogger().warn(".forwardEndpointTaskReport(): No room to forward endpoint task reports into (WorkUnitProcessor->{})!", notification.getParticipantName());
+                return(false);
+            }
+        } catch (Exception ex) {
+            getLogger().warn(".forwardEndpointTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+            return(false);
+        }
+    }
+
+    private boolean forwardWUPTaskReport(PetasosComponentITOpsNotification notification) {
+        getLogger().info(".forwardEndpointTaskReport(): Entry, notification->{}", notification);
 
         try {
 
@@ -200,23 +247,30 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
 
             getLogger().trace(".forwardWUPTaskReport(): roomAlias for Events->{}", roomAlias);
 
-            String roomIdFromAlias = getRoomId(roomAlias);
+            String roomIdFromAlias =  roomCache.getRoomIdFromPseudoAlias(roomAlias);
 
             getLogger().trace(".forwardWUPTaskReport(): roomId for Events->{}", roomIdFromAlias);
 
             if (roomIdFromAlias != null) {
                 MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                try{
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                    return(true);
+                } catch(Exception ex){
+                    getLogger().warn(".forwardWUPTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                    return(false);
+                }
             } else {
                 getLogger().warn(".forwardWUPTaskReport(): No room to forward work unit processor task reports into (WorkUnitProcessor->{})!", notification.getParticipantName());
-                // TODO either re-queue or send to DeadLetter
+                return(false);
             }
         } catch (Exception ex) {
-                getLogger().warn(".forwardWUPTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-            }
+            getLogger().warn(".forwardWUPTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+            return(false);
+        }
     }
 
-    private void forwardProcessingPlantTaskReport(PetasosComponentITOpsNotification notification) {
+    private boolean forwardProcessingPlantTaskReport(PetasosComponentITOpsNotification notification) {
         getLogger().debug(".forwardProcessingPlantTaskReport(): Entry, notification->{}", notification);
 
         try {
@@ -224,20 +278,27 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
 
             getLogger().trace(".forwardProcessingPlantTaskReport(): roomAlias for Events->{}", roomAlias);
 
-            String roomIdFromAlias = getRoomId(roomAlias);
+            String roomIdFromAlias =  roomCache.getRoomIdFromPseudoAlias(roomAlias);
 
             getLogger().trace(".forwardProcessingPlantTaskReport(): roomId for Events->{}", roomIdFromAlias);
 
             if (roomIdFromAlias != null) {
                 MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                try {
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                    return(true);
+                } catch(Exception ex){
+                    getLogger().warn(".forwardProcessingPlantTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                    return(false);
+                }
             } else {
                 getLogger().warn(".forwardProcessingPlantTaskReport(): No room to forward processing plant notifications into (ProcessingPlant->{}!", notification.getParticipantName());
-                // TODO either re-queue or send to DeadLetter
+                return(false);
             }
         } catch (Exception ex) {
-                getLogger().warn(".forwardProcessingPlantTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-            }
+            getLogger().warn(".forwardProcessingPlantTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+            return(false);
+        }
     }
 
     //
@@ -265,34 +326,4 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
         }
     }
 
-    public String getRoomId(String alias) {
-        if (roomIdMap.containsKey(alias)) {
-            return (roomIdMap.get(alias));
-        }
-        List<SynapseRoom> currentStateRoomList = getCurrentStateRoomList();
-        for (SynapseRoom currentRoom : currentStateRoomList) {
-            if (StringUtils.isNotEmpty(currentRoom.getCanonicalAlias())) {
-                String aliasFromRoom = currentRoom.getCanonicalAlias();
-                if (aliasFromRoom.contains(alias)) {
-                    roomIdMap.put(alias, currentRoom.getRoomID());
-                    return (currentRoom.getRoomID());
-                }
-            }
-        }
-        return (null);
-    }
-
-    public List<SynapseRoom> getCurrentStateRoomList() {
-        getLogger().debug(".getCurrentStateRoomList(): [Synchronise Room List] Start...");
-        Long listAge = Instant.now().getEpochSecond() - this.lastRoomListUpdate.getEpochSecond();
-        if (listAge > 10) {
-            List<SynapseRoom> newRoomList = synapseRoomAPI.getRooms("*");
-            getLogger().trace(".getCurrentStateRoomList(): [Synchronise Room List] RoomList->{}", newRoomList);
-            this.roomList.clear();
-            this.roomList.addAll(newRoomList);
-            this.lastRoomListUpdate = Instant.now();
-            getLogger().debug(".getCurrentStateRoomList(): [Synchronise Room List] Finish...");
-        }
-        return (roomList);
-    }
 }

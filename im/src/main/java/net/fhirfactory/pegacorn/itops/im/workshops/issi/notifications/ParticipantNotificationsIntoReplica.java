@@ -183,34 +183,41 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     private void notificationForwarder(){
         getLogger().debug(".notificationForwarder(): Entry");
         stillRunning = true;
+        List<PetasosComponentITOpsNotification> failedToSend = new ArrayList<>();
         while(notificationsDM.hasMoreNotifications()) {
             getLogger().trace(".notificationForwarder(): Entry");
             PetasosComponentITOpsNotification nextNotification = notificationsDM.getNextNotification();
+            boolean successfullySent = false;
             switch (nextNotification.getComponentType()) {
                 case PETASOS_MONITORED_COMPONENT_SUBSYSTEM:
                     getLogger().trace(".notificationForwarder(): Processing ProcessorPlant Metrics");
-                    forwardProcessingPlantNotification(nextNotification);
+                    successfullySent = forwardProcessingPlantNotification(nextNotification);
                     break;
                 case PETASOS_MONITORED_COMPONENT_SERVICE:
                     break;
                 case PETASOS_MONITORED_COMPONENT_PROCESSING_PLANT:
                     getLogger().trace(".notificationForwarder(): Processing ProcessorPlant Metrics");
-                    forwardProcessingPlantNotification(nextNotification);
+                    successfullySent = forwardProcessingPlantNotification(nextNotification);
                     break;
                 case PETASOS_MONITORED_COMPONENT_WORKSHOP:
                     break;
                 case PETASOS_MONITORED_COMPONENT_WORK_UNIT_PROCESSOR:
                     getLogger().trace(".notificationForwarder(): Processing WorkUnitProcessor Metrics");
-                    forwardWUPNotification(nextNotification);
+                    successfullySent = forwardWUPNotification(nextNotification);
                     break;
                 case PETASOS_MONITORED_COMPONENT_WORK_UNIT_PROCESSOR_COMPONENT:
                     break;
                 case PETASOS_MONITORED_COMPONENT_ENDPOINT:
                     getLogger().info(".notificationForwarder(): Processing Endpoint Metrics");
-                    forwardEndpointNotification(nextNotification);
+                    successfullySent = forwardEndpointNotification(nextNotification);
                     break;
             }
-            waitALittleBit();
+            if (!successfullySent) {
+                failedToSend.add(nextNotification);
+            }
+        }
+        for(PetasosComponentITOpsNotification currentNotification: failedToSend){
+            notificationsDM.addNotification(currentNotification);
         }
         stillRunning = false;
         getLogger().debug(".notificationForwarder(): Exit");
@@ -220,7 +227,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     // Per Metric/Reporting Type Helpers
     //
 
-    private void forwardWUPNotification(PetasosComponentITOpsNotification notification){
+    private boolean forwardWUPNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardWUPNotification(): Entry, notification->{}",notification);
         try {
             String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
@@ -237,17 +244,25 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
 
                 MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
 
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                try {
+                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                    return(true);
+                } catch(Exception ex){
+                    getLogger().warn(".forwardWUPNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                    return(false);
+                }
             } else {
                 getLogger().warn(".forwardWUPNotification(): No room to forward work unit processor notifications into (WorkUnitProcessor->{})!", notification.getParticipantName());
                 // TODO either re-queue or send to DeadLetter
+                return(false);
             }
         } catch (Exception ex) {
             getLogger().warn(".forwardWUPNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+            return(false);
         }
     }
 
-    private void forwardProcessingPlantNotification(PetasosComponentITOpsNotification notification){
+    private boolean forwardProcessingPlantNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardProcessingPlantNotification(): Entry, notification->{}", notification);
 
         String roomAlias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_CONSOLE);
@@ -263,16 +278,19 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
 
             try{
                 MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                return(true);
             } catch(Exception ex){
                 getLogger().warn(".forwardProcessingPlantNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                return(false);
             }
         } else {
             getLogger().warn(".forwardProcessingPlantNotification(): No room to forward processing plant notifications into (ProcessingPlant->{}!", notification.getParticipantName());
             // TODO either re-queue or send to DeadLetter
+            return(false);
         }
     }
 
-    private void forwardEndpointNotification(PetasosComponentITOpsNotification notification){
+    private boolean forwardEndpointNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardEndpointNotification(): Entry, notification->{}", notification);
 
         String roomAlias = roomIdentityFactory.buildEndpointRoomAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_CONSOLE);
@@ -287,13 +305,15 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
             MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
             try{
                 MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
-                getLogger().warn(".forwardEndpointNotification(): notification sent!");
+                getLogger().debug(".forwardEndpointNotification(): notification sent!");
+                return(true);
             } catch(Exception ex){
                 getLogger().warn(".forwardEndpointNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                return(false);
             }
         } else {
             getLogger().warn(".forwardEndpointNotification(): No room to forward endpoint notifications into (EndpointRoom->{}!", notification.getParticipantName());
-            // TODO either re-queue or send to DeadLetter
+            return(false);
         }
     }
 
