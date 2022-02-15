@@ -440,7 +440,8 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         boolean isSubsystemTaskRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS.getAliasPrefix());
         boolean isSubsystemConsoleRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_CONSOLE.getAliasPrefix());
         boolean isSubsystemMetricsRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS.getAliasPrefix());
-        if(isSubsystemRoom || isSubsystemSubscriptionRoom || isSubsystemTaskRoom || isSubsystemConsoleRoom || isSubsystemMetricsRoom){
+        boolean isSubsystemComponentRom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_COMPONENTS.getAliasPrefix());
+        if(isSubsystemComponentRom || isSubsystemRoom || isSubsystemSubscriptionRoom || isSubsystemTaskRoom || isSubsystemConsoleRoom || isSubsystemMetricsRoom){
             return(true);
         }
         boolean isEndpointRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT.getAliasPrefix());
