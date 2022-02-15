@@ -435,6 +435,8 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     //
 
     public boolean allShouldJoin(String roomAlias){
+        //
+        // Do this check first
         boolean isSubsystemComponentRom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_COMPONENTS.getAliasPrefix());
         if(isSubsystemComponentRom) {
             return (false);
