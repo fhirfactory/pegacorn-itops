@@ -435,12 +435,16 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     //
 
     public boolean allShouldJoin(String roomAlias){
+        boolean isSubsystemComponentRom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_COMPONENTS.getAliasPrefix());
+        if(isSubsystemComponentRom) {
+            return (false);
+        }
         boolean isSubsystemRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM.getAliasPrefix());
         boolean isSubsystemSubscriptionRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS.getAliasPrefix());
         boolean isSubsystemTaskRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS.getAliasPrefix());
         boolean isSubsystemConsoleRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_CONSOLE.getAliasPrefix());
         boolean isSubsystemMetricsRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS.getAliasPrefix());
-        if(isSubsystemRoom || isSubsystemSubscriptionRoom || isSubsystemTaskRoom || isSubsystemConsoleRoom || isSubsystemMetricsRoom){
+        if( isSubsystemRoom || isSubsystemSubscriptionRoom || isSubsystemTaskRoom || isSubsystemConsoleRoom || isSubsystemMetricsRoom){
             return(true);
         }
         boolean isEndpointRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT.getAliasPrefix());
