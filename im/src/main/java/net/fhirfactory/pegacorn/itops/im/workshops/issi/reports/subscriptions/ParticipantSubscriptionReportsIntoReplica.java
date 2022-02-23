@@ -155,15 +155,19 @@ public class ParticipantSubscriptionReportsIntoReplica extends RouteBuilder {
     private void subscriptionReportForwarder() {
         getLogger().debug(".subscriptionReportForwarder(): Entry");
         stillRunning = true;
-        List<PetasosProcessingPlantSubscriptionSummary> processingPlantSubscriptionSummaries = subscriptionMapDM.getProcessingPlantSubscriptionSummaries();
-        for (PetasosProcessingPlantSubscriptionSummary currentReport: processingPlantSubscriptionSummaries) {
-            getLogger().trace(".subscriptionReportForwarder(): Entry");
-//            forwardProcessingPlantSubscriptionReport(currentReport);
-        }
-        List<PetasosWorkUnitProcessorSubscriptionSummary> wupSubscriptionSummaries = subscriptionMapDM.getWorkUnitProcessorSubscriptionSummaries();
-        for (PetasosWorkUnitProcessorSubscriptionSummary currentReport: wupSubscriptionSummaries) {
-            getLogger().trace(".subscriptionReportForwarder(): Entry");
-//            forwardWorkUnitProcessorSubscriptionReport(currentReport);
+        if(subscriptionMapDM.isUpdated()) {
+        	getLogger().trace(".subscriptionReportForwarder(): is updating subscriptions");
+	        List<PetasosProcessingPlantSubscriptionSummary> processingPlantSubscriptionSummaries = subscriptionMapDM.getProcessingPlantSubscriptionSummaries();
+	        for (PetasosProcessingPlantSubscriptionSummary currentReport: processingPlantSubscriptionSummaries) {
+	            getLogger().trace(".subscriptionReportForwarder(): Entry");
+	            forwardProcessingPlantSubscriptionReport(currentReport);
+	        }
+	        List<PetasosWorkUnitProcessorSubscriptionSummary> wupSubscriptionSummaries = subscriptionMapDM.getWorkUnitProcessorSubscriptionSummaries();
+	        for (PetasosWorkUnitProcessorSubscriptionSummary currentReport: wupSubscriptionSummaries) {
+	            getLogger().trace(".subscriptionReportForwarder(): Entry");
+	            forwardWorkUnitProcessorSubscriptionReport(currentReport);
+	        }
+	        subscriptionMapDM.setUpdated(false);
         }
         stillRunning = false;
         getLogger().debug(".notificationForwarder(): Exit");
