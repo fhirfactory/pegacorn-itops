@@ -154,7 +154,7 @@ public class ParticipantSubscriptionReportEventFactory {
 
         StringBuilder descriptionBuilder = new StringBuilder();
         for(PetasosPublisherSubscriptionSummary currentSummary: publisherSummary){
-            getLogger().info(".newAsAPublisherSubscriptionReportEvent(): Processing currentSummary->{}", currentSummary);
+            getLogger().trace(".newAsAPublisherSubscriptionReportEvent(): Processing currentSummary->{}", currentSummary);
             descriptionBuilder.append("Publisher --> "+ currentSummary.getParticipantName()+ "\n");
             descriptionBuilder.append("Subscriber --> "+ currentSummary.getSubscriberParticipantName() + "\n");
             for(TaskWorkItemSubscriptionType currentTopic: currentSummary.getSubscribedTaskWorkItems()) {
@@ -193,7 +193,9 @@ public class ParticipantSubscriptionReportEventFactory {
     }
 
     public MRoomTextMessageEvent newWUPSubscriberSubscriptionReportEvent(String roomId, PetasosWorkUnitProcessorSubscriptionSummary subscriptionSummary){
-        getLogger().info(".newAsASubscriberSubscriptionReportEvent(): Entry, publisherSummary->{}", subscriptionSummary);
+        getLogger().info(".newAsASubscriberSubscriptionReportEvent(): Entry");
+        getLogger().trace(".newAsASubscriberSubscriptionReportEvent(): publisherSummary->{}", subscriptionSummary);
+
         if(subscriptionSummary == null){
             getLogger().debug(".newAsASubscriberSubscriptionReportEvent(): Exit, publisherSummary is null, returning -null-");
             return(null);
@@ -240,7 +242,8 @@ public class ParticipantSubscriptionReportEventFactory {
 
         subscriptionReportNotificationEvent.setContent(textContent);
 
-        getLogger().info(".newAsASubscriberSubscriptionReportEvent(): Exit, subscriptionReportNotificationEvent->{}", subscriptionReportNotificationEvent);
+        getLogger().info(".newAsASubscriberSubscriptionReportEvent(): Exit");
+        getLogger().trace(".newAsASubscriberSubscriptionReportEvent(): Exit, subscriptionReportNotificationEvent->{}", subscriptionReportNotificationEvent);
         return(subscriptionReportNotificationEvent);
     }
 

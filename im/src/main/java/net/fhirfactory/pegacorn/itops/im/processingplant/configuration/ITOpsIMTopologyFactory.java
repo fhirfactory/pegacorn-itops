@@ -78,7 +78,8 @@ public class ITOpsIMTopologyFactory extends MatrixBridgeTopologyFactory {
         if(configurationFileName == null){
             throw(new RuntimeException("Cannot load configuration file!!!! (SUBSYSTEM-CONFIG_FILE="+configurationFileName+")"));
         }
-        LOG.info(".specifyPropertyFileName(): Exit, filename->{}", configurationFileName);
+        LOG.trace(".specifyPropertyFileName(): Exit, filename->{}", configurationFileName);
+        LOG.info(".specifyPropertyFileName(): Exit");
         return configurationFileName;
     }
 }

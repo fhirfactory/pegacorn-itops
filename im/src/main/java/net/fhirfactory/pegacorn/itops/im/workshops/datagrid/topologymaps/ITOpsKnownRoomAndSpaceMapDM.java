@@ -136,7 +136,8 @@ public class ITOpsKnownRoomAndSpaceMapDM {
     //
 
     public void addRoom(MatrixRoom room){
-        getLogger().info(".addRoomFromMatrix(): Entry, room->{}", room);
+        getLogger().info(".addRoomFromMatrix(): Entry");
+        getLogger().trace(".addRoomFromMatrix(): room->{}", room);
         if(room == null){
             getLogger().debug(".addRoomFromMatrix(): Exit, synapseRoom is null");
             return;
@@ -255,7 +256,8 @@ public class ITOpsKnownRoomAndSpaceMapDM {
     }
 
     public MatrixRoom getRoomFromPseudoAlias(String pseudoAlias){
-        getLogger().info(".getRoomFromPseudoAlias(): Entry, pseudoAlias->{}", pseudoAlias);
+        getLogger().info(".getRoomFromPseudoAlias(): Entry");
+        getLogger().trace(".getRoomFromPseudoAlias(): Entry, pseudoAlias->{}", pseudoAlias);
         MatrixRoom room = null;
         String roomId = null;
         if(StringUtils.isNotEmpty(pseudoAlias)) {
@@ -272,7 +274,8 @@ public class ITOpsKnownRoomAndSpaceMapDM {
                 }
             }
         }
-        getLogger().info(".getRoomFromPseudoAlias(): Exit, room->{}", room);
+        getLogger().trace(".getRoomFromPseudoAlias(): room->{}", room);
+        getLogger().info(".getRoomFromPseudoAlias(): Exit");
         return(room);
     }
 
