@@ -237,7 +237,7 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
     }
 
     private boolean forwardWUPTaskReport(PetasosComponentITOpsNotification notification) {
-        getLogger().info(".forwardEndpointTaskReport(): Entry, notification->{}", notification);
+        getLogger().info(".forwardWUPTaskReport(): Entry, notification->{}", notification);
 
         try {
 
