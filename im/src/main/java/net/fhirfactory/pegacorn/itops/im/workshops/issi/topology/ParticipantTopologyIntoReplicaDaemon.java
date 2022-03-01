@@ -511,7 +511,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             }
             // add if absent
             for (SynapseRoom currentRoom : roomList) {
-                getLogger().info(".topologyReplicationSynchronisationDaemon(): [Synchronise Room List] Processing Room ->{}", currentRoom);
+                getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Synchronise Room List] Processing Room ->{}", currentRoom);
                 MatrixRoom matrixRoom = new MatrixRoom(currentRoom);
                 roomCache.addRoom(matrixRoom);
             }
@@ -536,7 +536,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             for (ProcessingPlantSummary currentProcessingPlant : processingPlants) {
                 getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] Processing ->{}", currentProcessingPlant.getParticipantName());
                 MatrixRoom subsystemParticipantSpace = itopsSubsystemParticipantTasks.getSpaceRoomSetForSubsystemParticipant(currentProcessingPlant.getParticipantName());
-                getLogger().info(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] subsystemParticipantSpace ->{}", subsystemParticipantSpace);
+                getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] subsystemParticipantSpace ->{}", subsystemParticipantSpace);
                 itopsSubsystemParticipantTasks.createParticipantSpacesAndRoomsIfNotThere(currentProcessingPlant, subsystemParticipantSpace);
             }
         } catch(Exception ex){

@@ -108,8 +108,8 @@ public class TransformMetricsUpdateIntoMessageWUP extends MOAStandardWUP {
 
     @Override
     public void configure() throws Exception {
-        getLogger().info("{}:: ingresFeed() --> {}", getClass().getName(), ingresFeed());
-        getLogger().info("{}:: egressFeed() --> {}", getClass().getName(), egressFeed());
+        getLogger().trace("{}:: ingresFeed() --> {}", getClass().getName(), ingresFeed());
+        getLogger().trace("{}:: egressFeed() --> {}", getClass().getName(), egressFeed());
 
         fromIncludingPetasosServices(ingresFeed())
                 .routeId(getNameSet().getRouteCoreWUP())
