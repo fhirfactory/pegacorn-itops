@@ -196,7 +196,9 @@ public class ITOpsSubsystemParticipantTasks {
                                     boolean isMLLPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_SERVER);
                                     boolean isHTTPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_CLIENT);
                                     boolean isHTTPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_SERVER);
-                                    if (isHTTPClient || isHTTPServer || isMLLPClient || isMLLPServer) {
+                                    boolean isFileShareSink = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.FILE_SHARE_SINK);
+                                    boolean isFileShareSource = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.FILE_SHARE_SOURCE);
+                                    if (isHTTPClient || isHTTPServer || isMLLPClient || isMLLPServer || isFileShareSink || isFileShareSource) {
                                         getMatrixSpaceAPI().addChildToSpace(processingPlantSpace.getProcessingPlantSpace().getRoomID(), endPointId);
                                     }
                                 } else {

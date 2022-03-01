@@ -456,7 +456,8 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         if(isEndpointRoom || isEndpointTaskRoom || isEndpointConsoleRoom || isEndpointMetricsRoom){
             boolean isMLLP = roomAlias.contains("mllp");
             boolean isHTTP = roomAlias.contains("http");
-            if(isMLLP || isHTTP){
+            boolean isFILE = roomAlias.contains("file");
+            if(isMLLP || isHTTP || isFILE){
                 return(true);
             }
         }
