@@ -63,7 +63,8 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
     //
 
     public MatrixRoom createEndpointSpaceIfRequired(String parentParticipantName, String parentSpaceId, MatrixRoom endpointSpace, EndpointSummary endpointSummary) {
-        getLogger().info(".createEndpointSpaceIfRequired(): Entry, parentSpaceId->{}, endpoint->{}", parentSpaceId, endpointSummary);
+        getLogger().info(".createEndpointSpaceIfRequired(): Entry");
+        getLogger().trace(".createEndpointSpaceIfRequired(): parentSpaceId->{}, endpoint->{}", parentSpaceId, endpointSummary);
         try {
             String endpointParticipantDisplayName = endpointSummary.getParticipantDisplayName();
             String endpointParticipantName = endpointSummary.getParticipantName();

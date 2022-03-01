@@ -142,7 +142,7 @@ public class ITOpsSubsystemParticipantTasks {
 
         ProcessingPlantSpaceDetail processingPlantSpace = getProcessingPlantReplicaServices().createProcessingPlantSpaceIfNotThere(processingPlant.getParticipantName(), processingPlantMatrixRoom);
         if(processingPlantSpace != null) {
-            getLogger().info(".createParticipantSpacesAndRoomsIfNotThere(): processingPlantSpace->{}", processingPlantSpace);
+            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processingPlantSpace->{}", processingPlantSpace);
             for (WorkshopSummary currentWorkshop : processingPlant.getWorkshops().values()) {
                 getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: currentWorkshop->{}", currentWorkshop);
                 MatrixRoom currentWorkshopSpace = resolveMatrixRoomFromParticipantName(processingPlantSpace.getProcessingPlantComponentSpace().getContainedRooms(), currentWorkshop.getParticipantName());
@@ -177,7 +177,7 @@ public class ITOpsSubsystemParticipantTasks {
                         if(StringUtils.isNotEmpty(wupSpaceId)) {
                             getLogger().info(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: wupSpaceAliasId->{}", wupSpaceAliasId);
                             for (EndpointSummary currentEndpointSummary : currentWUPSummary.getEndpoints().values()) {
-                                getLogger().info(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: currentEndpointSummary->{}", currentEndpointSummary);
+                                getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: currentEndpointSummary->{}", currentEndpointSummary);
                                 MatrixRoom currentEndpointSpace = resolveMatrixRoomFromParticipantName(currentWUPSpace.getContainedRooms(), currentEndpointSummary.getParticipantName());
                                 getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: currentEndpointSpace->{}", currentEndpointSpace);
                                 if(currentEndpointSpace == null){

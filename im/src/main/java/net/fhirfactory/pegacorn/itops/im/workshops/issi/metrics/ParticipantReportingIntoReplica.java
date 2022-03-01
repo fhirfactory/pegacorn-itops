@@ -265,7 +265,7 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
                 for (MRoomTextMessageEvent currentEvent : metricsEventSet) {
                     getLogger().debug(".forwardEndpointMetrics(): Forward Metrics, currentEvent->{}", currentEvent);
                     MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), currentEvent);
-                    getLogger().info(".forwardEndpointMetrics(): Metrics Forwarded, mapiResponse->{}", mapiResponse);
+                    getLogger().trace(".forwardEndpointMetrics(): Metrics Forwarded, mapiResponse->{}", mapiResponse);
                 }
             } else {
                 getLogger().warn(".forwardEndpointMetrics(): No room to forward processing plant metrics into (Endpoint->{}!", metricSet.getMetricSourceComponentId());

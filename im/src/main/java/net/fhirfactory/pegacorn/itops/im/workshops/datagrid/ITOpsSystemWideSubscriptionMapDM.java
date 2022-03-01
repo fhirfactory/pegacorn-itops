@@ -41,6 +41,7 @@ public class ITOpsSystemWideSubscriptionMapDM {
     // ConcurrentHashMap<componentID, WorkUnitProcessorSubscriptionSummary>
     private ConcurrentHashMap<String, PetasosWorkUnitProcessorSubscriptionSummary> workUnitProcessorSubscriptionSummarySet;
     private Object publisherSubscriptionMapLock;
+    private boolean updated;
 
     public ITOpsSystemWideSubscriptionMapDM(){
         this.processingPlantSubscriptionSummarySet = new ConcurrentHashMap<>();
@@ -55,8 +56,12 @@ public class ITOpsSystemWideSubscriptionMapDM {
     public void addProcessingPlantSubscriptionSummary(PetasosProcessingPlantSubscriptionSummary summary){
         LOG.debug(".addProcessingPlantSubscriptionSummary(): Entry, summary->{}", summary);
         synchronized (publisherSubscriptionMapLock) {
-            if (processingPlantSubscriptionSummarySet.containsKey(summary.getComponentID())) {
-                processingPlantSubscriptionSummarySet.remove(summary.getComponentID());
+			if (processingPlantSubscriptionSummarySet.containsKey(summary.getComponentID().getId())) {
+				LOG.debug(".addProcessingPlantSubscriptionSummary(): Summary is NOT unique, summary->{}", summary);
+				processingPlantSubscriptionSummarySet.remove(summary.getComponentID().getId());
+			} else {
+            	 LOG.debug(".addProcessingPlantSubscriptionSummary(): Summary is unique, summary->{}", summary);
+            	updated = true;
             }
             processingPlantSubscriptionSummarySet.put(summary.getComponentID().getId(), summary);
         }
@@ -66,8 +71,12 @@ public class ITOpsSystemWideSubscriptionMapDM {
     public void addWorkUnitProcessorSubscriptionSummary(PetasosWorkUnitProcessorSubscriptionSummary summary){
         LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Entry, summary->{}", summary);
         synchronized (publisherSubscriptionMapLock) {
-            if (workUnitProcessorSubscriptionSummarySet.containsKey(summary.getComponentID())) {
-                workUnitProcessorSubscriptionSummarySet.remove(summary.getComponentID());
+            if (workUnitProcessorSubscriptionSummarySet.containsKey(summary.getComponentID().getId())) {
+           	 	LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Summary is NOT unique, summary->{}", summary);
+                workUnitProcessorSubscriptionSummarySet.remove(summary.getComponentID().getId());
+            } else {
+           	 	LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Summary is unique, summary->{}", summary);
+            	updated = true;
             }
             workUnitProcessorSubscriptionSummarySet.put(summary.getComponentID().getId(), summary);
         }
@@ -121,4 +130,12 @@ public class ITOpsSystemWideSubscriptionMapDM {
         }
         return(subscriptionReportList);
     }
+
+	public boolean isUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(boolean updated) {
+		this.updated = updated;
+	}
 }
