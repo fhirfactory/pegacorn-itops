@@ -203,7 +203,7 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
     //
 
     private boolean forwardEndpointTaskReport(PetasosComponentITOpsNotification notification) {
-        getLogger().info(".forwardEndpointTaskReport(): Entry");
+        getLogger().debug(".forwardEndpointTaskReport(): Entry");
         getLogger().trace(".forwardEndpointTaskReport(): notification->{}", notification);
 
         try {
@@ -238,8 +238,7 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
     }
 
     private boolean forwardWUPTaskReport(PetasosComponentITOpsNotification notification) {
-        getLogger().info(".forwardEndpointTaskReport(): Entry");
-        getLogger().trace(".forwardEndpointTaskReport(): notification->{}", notification);
+        getLogger().debug(".forwardEndpointTaskReport(): notification->{}", notification);
 
         try {
 
@@ -324,7 +323,7 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
         try {
             Thread.sleep(100);
         } catch (Exception e) {
-            getLogger().info(".waitALittleBit():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
+            getLogger().debug(".waitALittleBit():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
         }
     }
 

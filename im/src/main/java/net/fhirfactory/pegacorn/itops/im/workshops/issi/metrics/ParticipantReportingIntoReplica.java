@@ -150,8 +150,8 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
         getLogger().debug(".reportsAndMetricsForwarder(): Entry");
         List<PetasosComponentMetricSet> metricSets = systemWideMetricsCache.getUpdatedMetricSets();
         for(PetasosComponentMetricSet currentMetricSet: metricSets){
-            if(getLogger().isInfoEnabled()) {
-                getLogger().info(".reportsAndMetricsForwarder(): Processing Metrics From -->{}", currentMetricSet.getSourceParticipantName());
+            if(getLogger().isDebugEnabled()) {
+                getLogger().debug(".reportsAndMetricsForwarder(): Processing Metrics From -->{}", currentMetricSet.getSourceParticipantName());
             }
             switch (currentMetricSet.getComponentType()) {
                 case PETASOS_MONITORED_COMPONENT_SUBSYSTEM:
@@ -252,11 +252,11 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
             String roomAlias = roomIdentityFactory.buildEndpointRoomAlias(metricSet.getSourceParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_METRICS);
 
-            getLogger().info(".forwardEndpointMetrics(): roomAlias for Metric->{}", roomAlias);
+            getLogger().trace(".forwardEndpointMetrics(): roomAlias for Metric->{}", roomAlias);
 
             String roomIdFromAlias = getRoomIdFromPseudoAlias(roomAlias);
 
-            getLogger().info(".forwardEndpointMetrics(): roomId for Metric->{}", roomIdFromAlias);
+            getLogger().trace(".forwardEndpointMetrics(): roomId for Metric->{}", roomIdFromAlias);
 
             if (roomIdFromAlias != null) {
 

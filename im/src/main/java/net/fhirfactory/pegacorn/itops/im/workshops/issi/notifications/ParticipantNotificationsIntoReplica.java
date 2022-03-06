@@ -30,6 +30,8 @@ import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInterface;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.valuesets.PetasosComponentITOpsNotificationTypeEnum;
+import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsNotificationsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideMetricsDM;
@@ -37,6 +39,7 @@ import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSy
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.notifications.ParticipantNotificationEventFactory;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -70,6 +73,9 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     List<SynapseRoom> roomList;
     Instant lastRoomListUpdate;
     ConcurrentHashMap<String, String> roomIdMap;
+
+    @Inject
+    private ITOpsIMNames itOpsIMNames;
 
     @Inject
     private SynapseAdminAccessToken synapseAccessToken;
@@ -204,12 +210,18 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
                 case PETASOS_MONITORED_COMPONENT_WORK_UNIT_PROCESSOR:
                     getLogger().trace(".notificationForwarder(): Processing WorkUnitProcessor Metrics");
                     successfullySent = forwardWUPNotification(nextNotification);
+                    if(nextNotification.getNotificationType().equals(PetasosComponentITOpsNotificationTypeEnum.FAILURE_NOTIFICATION_TYPE)){
+                        camelRouteInjector.sendBody(itOpsIMNames.getITOpsNotificationToCommunicateMessageIngresFeed(), ExchangePattern.InOnly, nextNotification);
+                    }
                     break;
                 case PETASOS_MONITORED_COMPONENT_WORK_UNIT_PROCESSOR_COMPONENT:
                     break;
                 case PETASOS_MONITORED_COMPONENT_ENDPOINT:
-                    getLogger().info(".notificationForwarder(): Processing Endpoint Metrics");
+                    getLogger().debug(".notificationForwarder(): Processing Endpoint Metrics");
                     successfullySent = forwardEndpointNotification(nextNotification);
+                    if(nextNotification.getNotificationType().equals(PetasosComponentITOpsNotificationTypeEnum.FAILURE_NOTIFICATION_TYPE)){
+                        camelRouteInjector.sendBody(itOpsIMNames.getITOpsNotificationToCommunicateMessageIngresFeed(), ExchangePattern.InOnly, nextNotification);
+                    }
                     break;
             }
             if (!successfullySent) {
@@ -295,11 +307,11 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
 
         String roomAlias = roomIdentityFactory.buildEndpointRoomAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_CONSOLE);
 
-        getLogger().info(".forwardEndpointNotification(): roomAlias for Events->{}", roomAlias);
+        getLogger().debug(".forwardEndpointNotification(): roomAlias for Events->{}", roomAlias);
 
         String roomIdFromAlias = getRoomId(roomAlias);
 
-        getLogger().info(".forwardEndpointNotification(): roomId for Events->{}", roomIdFromAlias);
+        getLogger().debug(".forwardEndpointNotification(): roomId for Events->{}", roomIdFromAlias);
 
         if(roomIdFromAlias != null){
             MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
@@ -338,7 +350,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
         try {
             Thread.sleep(100);
         } catch (Exception e) {
-            getLogger().info(".waitALittleBit():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
+            getLogger().debug(".waitALittleBit():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
         }
     }
 
