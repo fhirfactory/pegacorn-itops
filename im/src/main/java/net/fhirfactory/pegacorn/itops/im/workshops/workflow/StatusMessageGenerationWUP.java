@@ -52,13 +52,13 @@ public class StatusMessageGenerationWUP extends StimuliTriggeredWorkflowWUP {
     private IngresActivityBeginRegistration ingresActivityBeginRegistration;
 
     @Inject
-    private ITOpsNotificationCapture notificationCapture;
+    private ITOpsNotificationCapture notificationCaptureBean;
 
     @Inject
-    private ITOpsNotificationToCommunicateEmailMessage emailMessageGenerator;
+    private ITOpsNotificationToCommunicateEmailMessage emailMessageGeneratorBean;
 
     @Inject
-    private ITOpsNotificationToCommunicateSMSMessage smsMessageGenerator;
+    private ITOpsNotificationToCommunicateSMSMessage smsMessageGeneratorBean;
 
     @Inject
     private IngresActivityBeginRegistration activityBeginRegistration;
@@ -99,13 +99,13 @@ public class StatusMessageGenerationWUP extends StimuliTriggeredWorkflowWUP {
         getLogger().info("{}({})->{}", getMeAsAPetasosParticipant().getParticipantName(), getClass().getSimpleName(), egressFeed());
 
         fromIncludingPetasosServices(ingresFeed())
-                .to("direct:"+itopsNames.getITOpsNotificationToCommunicateMessageIngresFeed());
+                .to(itopsNames.getITOpsNotificationToCommunicateMessageIngresFeed());
 
-        fromIncludingPetasosServices("direct:"+itopsNames.getITOpsNotificationToCommunicateMessageIngresFeed())
-                .bean(notificationCapture, "captureNotification(*, Exchange)")
+        fromIncludingPetasosServices(itopsNames.getITOpsNotificationToCommunicateMessageIngresFeed())
+                .bean(notificationCaptureBean, "captureNotification(*, Exchange)")
                 .bean(activityBeginRegistration, "registerActivityStart(*,  Exchange)")
-                .bean(emailMessageGenerator, "transformNotificationIntoCommunicateEmail(*, Exchange)")
-                .bean(smsMessageGenerator,"transformNotificationIntoCommunicateSMS(*, Exchange)")
+                .bean(emailMessageGeneratorBean, "transformNotificationIntoCommunicateEmail(*, Exchange)")
+                .bean(smsMessageGeneratorBean,"transformNotificationIntoCommunicateSMS(*, Exchange)")
                 .to(egressFeed());
     }
 }

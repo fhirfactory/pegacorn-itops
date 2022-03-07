@@ -49,6 +49,6 @@ public class ITOpsIMNames {
     }
 
     public String getITOpsNotificationToCommunicateMessageIngresFeed(){
-        return("ITOpsNotification.To.CommunicateMessage.Ingres");
+        return("direct:ITOpsNotification.To.CommunicateMessage.Ingres");
     }
 }

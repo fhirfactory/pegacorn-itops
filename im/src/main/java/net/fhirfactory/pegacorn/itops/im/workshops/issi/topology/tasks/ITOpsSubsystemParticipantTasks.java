@@ -25,15 +25,14 @@ import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixRoomMethods;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixSpaceMethods;
 import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
-import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.petasos.endpoint.valuesets.PetasosEndpointTopologyTypeEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.participant.PetasosParticipantFulfillmentStatusEnum;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.*;
 import net.fhirfactory.pegacorn.itops.im.datatypes.ProcessingPlantSpaceDetail;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownParticipantMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
+import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.EndpointParticipantReplicaFactory;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.ProcessingPlantParticipantReplicaFactory;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.WorkUnitProcessorParticipantReplicaFactory;
@@ -48,7 +47,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 @ApplicationScoped
 public class ITOpsSubsystemParticipantTasks {
@@ -158,7 +156,7 @@ public class ITOpsSubsystemParticipantTasks {
                     workshopId = currentWorkshopSpace.getRoomID();
                 }
                 if(StringUtils.isNotEmpty(workshopId)) {
-                    getLogger().info(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: workshopId->{}", workshopId);
+                    getLogger().debug(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: workshopId->{}", workshopId);
                     for (WorkUnitProcessorSummary currentWUPSummary : currentWorkshop.getWorkUnitProcessors().values()) {
                         getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: currentWUPSummary->{}", currentWUPSummary);
                         MatrixRoom currentWUPSpace = null;
@@ -173,9 +171,9 @@ public class ITOpsSubsystemParticipantTasks {
                             wupSpaceId = currentWUPSpace.getRoomID();
                             wupSpaceAliasId = currentWUPSpace.getCanonicalAlias();
                         }
-                        getLogger().info(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: wupSpaceAliasId->{}", wupSpaceAliasId);
+                        getLogger().debug(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: wupSpaceAliasId->{}", wupSpaceAliasId);
                         if(StringUtils.isNotEmpty(wupSpaceId)) {
-                            getLogger().info(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: wupSpaceAliasId->{}", wupSpaceAliasId);
+                            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: wupSpaceAliasId->{}", wupSpaceAliasId);
                             for (EndpointSummary currentEndpointSummary : currentWUPSummary.getEndpoints().values()) {
                                 getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: currentEndpointSummary->{}", currentEndpointSummary);
                                 MatrixRoom currentEndpointSpace = resolveMatrixRoomFromParticipantName(currentWUPSpace.getContainedRooms(), currentEndpointSummary.getParticipantName());
@@ -189,9 +187,9 @@ public class ITOpsSubsystemParticipantTasks {
                                     endPointId = currentEndpointSpace.getRoomID();
                                     endpointAliasId = currentEndpointSpace.getCanonicalAlias();
                                 }
-                                getLogger().info(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: endpointAliasId->{}", endpointAliasId);
+                                getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: endpointAliasId->{}", endpointAliasId);
                                 if(StringUtils.isNotEmpty(endPointId)) {
-                                    getLogger().info(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: endpointAliasId->{}", endpointAliasId);
+                                    getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: endpointAliasId->{}", endpointAliasId);
                                     boolean isMLLPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_CLIENT);
                                     boolean isMLLPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_SERVER);
                                     boolean isHTTPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_CLIENT);

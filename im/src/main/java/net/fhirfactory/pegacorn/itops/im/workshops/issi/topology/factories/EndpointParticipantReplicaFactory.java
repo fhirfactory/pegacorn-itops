@@ -63,8 +63,7 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
     //
 
     public MatrixRoom createEndpointSpaceIfRequired(String parentParticipantName, String parentSpaceId, MatrixRoom endpointSpace, EndpointSummary endpointSummary) {
-        getLogger().info(".createEndpointSpaceIfRequired(): Entry");
-        getLogger().trace(".createEndpointSpaceIfRequired(): parentSpaceId->{}, endpoint->{}", parentSpaceId, endpointSummary);
+        getLogger().debug(".createEndpointSpaceIfRequired(): Entry, parentSpaceId->{}, endpoint->{}", parentSpaceId, endpointSummary);
         try {
             String endpointParticipantDisplayName = endpointSummary.getParticipantDisplayName();
             String endpointParticipantName = endpointSummary.getParticipantName();
@@ -129,15 +128,15 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
             if(StringUtils.isNotEmpty(endpointSpaceId)) {
                 getLogger().trace(".createEndpointSpaceIfRequired(): [Add Rooms If Required] Start...");
                 if (!foundSubsystemEventsRoom) {
-                    getLogger().info(".createEndpointSpaceIfRequired(): Creating {} Console/Events Room", endpointParticipantName);
+                    getLogger().trace(".createEndpointSpaceIfRequired(): Creating {} Console/Events Room", endpointParticipantName);
                     installAnOAMRoom(endpointParticipantName, endpointParticipantDisplayName, endpointSpaceId, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_CONSOLE);
                 }
                 if (!foundSubsystemMetricsRoom) {
-                    getLogger().info(".createEndpointSpaceIfRequired(): Creating {} Metrics Room", endpointParticipantName);
+                    getLogger().trace(".createEndpointSpaceIfRequired(): Creating {} Metrics Room", endpointParticipantName);
                     installAnOAMRoom(endpointParticipantName, endpointParticipantDisplayName, endpointSpaceId, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_METRICS);
                 }
                 if (!foundSubsystemTasksRoom) {
-                    getLogger().info(".createEndpointSpaceIfRequired(): Creating {} Task/Activity-Reports Room", endpointParticipantName);
+                    getLogger().trace(".createEndpointSpaceIfRequired(): Creating {} Task/Activity-Reports Room", endpointParticipantName);
                     installAnOAMRoom(endpointParticipantName, endpointParticipantDisplayName, endpointSpaceId, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_TASKS);
                 }
                 getLogger().trace(".createEndpointSpaceIfRequired(): [Add Rooms If Required] Finish...");

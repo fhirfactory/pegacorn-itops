@@ -220,6 +220,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
                     getLogger().debug(".notificationForwarder(): Processing Endpoint Metrics");
                     successfullySent = forwardEndpointNotification(nextNotification);
                     if(nextNotification.getNotificationType().equals(PetasosComponentITOpsNotificationTypeEnum.FAILURE_NOTIFICATION_TYPE)){
+                        getLogger().info(".notificationForwarder(): Is Failure, generating Email/SMS Message");
                         camelRouteInjector.sendBody(itOpsIMNames.getITOpsNotificationToCommunicateMessageIngresFeed(), ExchangePattern.InOnly, nextNotification);
                     }
                     break;

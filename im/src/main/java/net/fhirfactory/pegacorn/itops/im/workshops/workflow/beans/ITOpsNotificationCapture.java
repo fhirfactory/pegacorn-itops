@@ -65,8 +65,6 @@ public class ITOpsNotificationCapture extends ITOpsNotificationToCommunicateMess
     public UoW captureNotification(PetasosComponentITOpsNotification notification, Exchange camelExchange){
         getLogger().info(".captureNotification(): Entry, notification->{}", notification);
 
-        UoW uow = new UoW();
-
         String errorCondition = null;
         String notificationAsString = null;
         try{
@@ -91,7 +89,7 @@ public class ITOpsNotificationCapture extends ITOpsNotificationToCommunicateMess
         manifest.setContentDescriptor(descriptor);
         manifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getSubsystemParticipantName());
         ingresPayload.setPayloadManifest(manifest);
-        uow.setIngresContent(ingresPayload);
+        UoW uow = new UoW(ingresPayload);
 
         if((StringUtils.isEmpty(notificationAsString))){
             uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
