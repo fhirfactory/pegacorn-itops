@@ -41,7 +41,7 @@ import javax.enterprise.context.ApplicationScoped;
 
 import java.util.UUID;
 
-import static net.fhirfactory.pegacorn.internals.communicate.entities.message.valuesets.CommunicateSMSStatusEnum.CREATED;
+import static net.fhirfactory.pegacorn.internals.communicate.entities.message.valuesets.CommunicateSMSStatus.CREATED;
 
 @ApplicationScoped
 public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationToCommunicateMessage{
