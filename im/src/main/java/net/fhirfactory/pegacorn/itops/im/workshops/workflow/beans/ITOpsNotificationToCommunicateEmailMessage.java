@@ -117,7 +117,7 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
             uow.setFailureDescription("No UoW Maintained in camelExchange");
         }
 
-        if(uow.getProcessingOutcome().equals(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS)) {
+        if(!uow.getProcessingOutcome().equals(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED)) {
             if (emailSource.contentEquals(UNDEFINED_ADDRESS) || (emailTarget.contentEquals(UNDEFINED_ADDRESS))) {
                 uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
                 StringBuilder errorMessageBuilder = new StringBuilder();
@@ -169,7 +169,7 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
             }
         }
 
-        getLogger().info(".transformNotificationIntoCommunicateEmail(): Exit, uow->{}", uow);
+        getLogger().warn(".transformNotificationIntoCommunicateEmail(): Exit, uow->{}", uow);
         return(uow);
     }
 }

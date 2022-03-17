@@ -102,7 +102,7 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
             uow.setFailureDescription("No UoW Maintained in camelExchange");
         }
 
-        if (uow.getProcessingOutcome().equals(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS)) {
+        if (!uow.getProcessingOutcome().equals(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED)) {
             if (targetPhone.contentEquals(UNDEFINED_PHONE_NUMBER)) {
                 uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
                 StringBuilder errorMessageBuilder = new StringBuilder();
