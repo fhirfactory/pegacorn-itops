@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories;
+package net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.subtasks;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCreation;
@@ -37,10 +37,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.List;
 
 @ApplicationScoped
-public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaServices {
-    private static final Logger LOG = LoggerFactory.getLogger(EndpointParticipantReplicaFactory.class);
+public class EndpointParticipantReplicaTasks extends BaseParticipantReplicaServices {
+    private static final Logger LOG = LoggerFactory.getLogger(EndpointParticipantReplicaTasks.class);
 
     @Inject
     private ParticipantRoomIdentityFactory identityFactory;
@@ -67,7 +68,7 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
         try {
             String endpointParticipantDisplayName = endpointSummary.getParticipantDisplayName();
             String endpointParticipantName = endpointSummary.getParticipantName();
-            String endpointParticipantAlias = identityFactory.buildEndpointRoomAlias(endpointParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT);
+            String endpointParticipantAlias = identityFactory.buildEndpointSpacePseudoAlias(endpointParticipantName);
             String endpointSpaceId = null;
             MatrixRoom endpointRoom = null;
 
@@ -81,15 +82,15 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
                 if(!endpointSpace.getContainedRooms().isEmpty()){
                     for(MatrixRoom currentRoom: endpointSpace.getContainedRooms()){
                         if(StringUtils.isNotEmpty(currentRoom.getCanonicalAlias())) {
-                            if (currentRoom.getCanonicalAlias().startsWith("#"+getRoomIdentityFactory().buildEndpointRoomAlias(endpointParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_CONSOLE))) {
+                            if (currentRoom.getCanonicalAlias().startsWith("#"+getRoomIdentityFactory().buildEndpointRoomPseudoAlias(endpointParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_CONSOLE))) {
                                 getLogger().trace(".createEndpointSpaceIfRequired(): {} Events Room Exists", endpointParticipantName);
                                 foundSubsystemEventsRoom = true;
                             }
-                            if (currentRoom.getCanonicalAlias().startsWith("#"+getRoomIdentityFactory().buildEndpointRoomAlias(endpointParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_METRICS))) {
+                            if (currentRoom.getCanonicalAlias().startsWith("#"+getRoomIdentityFactory().buildEndpointRoomPseudoAlias(endpointParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_METRICS))) {
                                 getLogger().trace(".createEndpointSpaceIfRequired(): {} Metrics Room Exists", endpointParticipantName);
                                 foundSubsystemMetricsRoom = true;
                             }
-                            if (currentRoom.getCanonicalAlias().startsWith("#"+getRoomIdentityFactory().buildEndpointRoomAlias(endpointParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_TASKS))) {
+                            if (currentRoom.getCanonicalAlias().startsWith("#"+getRoomIdentityFactory().buildEndpointRoomPseudoAlias(endpointParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_TASKS))) {
                                 getLogger().trace(".createEndpointSpaceIfRequired(): {} Task/Activity-Reports Room Exists", endpointParticipantName);
                                 foundSubsystemTasksRoom = true;
                             }
@@ -100,28 +101,51 @@ public class EndpointParticipantReplicaFactory extends BaseParticipantReplicaSer
                 endpointSpaceId = endpointSpace.getRoomID();
                 getLogger().trace(".createEndpointSpaceIfRequired(): Checking to see if all the OAM and Sub-Component Rooms exist: Finish");
             } else {
-                getLogger().trace(".createEndpointSpaceIfRequired(): Creating Space for Endpoint ->{}", endpointParticipantAlias);
-
-                MatrixRoom existingRoom = getRoomCache().getRoomFromPseudoAlias(endpointParticipantAlias);
-                if(existingRoom != null){
+                MatrixRoom roomFromPseudoAlias = getRoomCache().getRoomFromPseudoAlias(endpointParticipantAlias);
+                if (roomFromPseudoAlias != null) {
                     getLogger().trace(".createEndpointSpaceIfRequired(): Room already exists ->{}", endpointParticipantAlias);
-                    endpointRoom = existingRoom;
-                } else {
+                    endpointRoom = roomFromPseudoAlias;
+                }
+
+                if (endpointRoom == null) {
+                    List<SynapseRoom> roomList = getSynapseRoomAPI().getRooms(endpointParticipantAlias);
+                    if (!roomList.isEmpty()) {
+                        getLogger().trace(".createEndpointSpaceIfRequired(): Room already exists in Synapse server->{}", endpointParticipantAlias);
+                        endpointRoom = new MatrixRoom(roomList.get(0));
+                        getRoomCache().addRoom(endpointRoom);
+                    }
+                }
+
+                if (endpointRoom == null) {
+                    getLogger().trace(".createEndpointSpaceIfRequired(): Creating Space for Endpoint ->{}", endpointParticipantAlias);
                     String endpointTopic = "Endpoint, " + endpointSummary.getComponentID().getId() + ", " + parentParticipantName;
                     MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(endpointParticipantDisplayName, endpointParticipantAlias, endpointTopic, parentSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                    SynapseRoom createdRoom = null;
-                    createdRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
-                    if(createdRoom != null){
-                        getLogger().trace(".createEndpointSpaceIfRequired(): Created Space ->{}", createdRoom);
-                        MatrixRoom matrixRoom = new MatrixRoom(createdRoom);
-                        getRoomCache().addRoom(matrixRoom);
-                        endpointRoom = matrixRoom;
+                    endpointRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
+                    if (endpointRoom != null) {
+                        getLogger().info(".createEndpointSpaceIfRequired(): Created Space ->{}", endpointRoom);
+                        getRoomCache().addRoom(endpointRoom);
                     }
                 }
 
                 if(endpointRoom != null) {
                     endpointSpaceId = endpointRoom.getRoomID();
-                    getMatrixSpaceAPI().addChildToSpace(parentSpaceId, endpointSpaceId);
+                    if(StringUtils.isEmpty(endpointSpaceId)){
+                        getLogger().warn(".createEndpointSpaceIfRequired(): Logic Conflict for endpointSpaceId");
+                    }
+                    if(StringUtils.isEmpty(parentParticipantName)){
+                        getLogger().warn(".createEndpointSpaceIfRequired(): Logic Conflict for parentParticipantName");
+                    }
+                    if(StringUtils.isEmpty(parentSpaceId)){
+                        getLogger().warn(".createEndpointSpaceIfRequired(): Logic Conflict for parentSpaceId");
+                    }
+                    if(StringUtils.isEmpty(endpointRoom.getCanonicalAlias())){
+                        getLogger().warn(".createEndpointSpaceIfRequired(): Logic Conflict for endpointRoom.getCanonicalAlias()");
+                    }
+                    if(StringUtils.isEmpty(endpointRoom.getCanonicalAlias())){
+                        getLogger().warn(".createEndpointSpaceIfRequired(): Logic Conflict for endpointParticipantName");
+                    }
+                    getLogger().info(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.ParticipantName={}, Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}", parentParticipantName, parentSpaceId, endpointParticipantName, endpointRoom.getCanonicalAlias(), endpointSpaceId);
+                    getMatrixSpaceAPI().addChildToSpace(parentSpaceId, endpointSpaceId, getMatrixAccessToken().getHomeServer());
                 }
             }
 

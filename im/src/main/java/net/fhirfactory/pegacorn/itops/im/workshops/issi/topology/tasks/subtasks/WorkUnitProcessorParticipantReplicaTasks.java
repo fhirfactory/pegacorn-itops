@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories;
+package net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.subtasks;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCreation;
@@ -35,11 +35,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.List;
 import java.util.Locale;
 
 @ApplicationScoped
-public class WorkUnitProcessorParticipantReplicaFactory extends BaseParticipantReplicaServices {
-    private static final Logger LOG = LoggerFactory.getLogger(WorkUnitProcessorParticipantReplicaFactory.class);
+public class WorkUnitProcessorParticipantReplicaTasks extends BaseParticipantReplicaServices {
+    private static final Logger LOG = LoggerFactory.getLogger(WorkUnitProcessorParticipantReplicaTasks.class);
 
     //
     // Constructor(s)
@@ -64,7 +65,7 @@ public class WorkUnitProcessorParticipantReplicaFactory extends BaseParticipantR
         try {
             String wupParticipantName = wupSummary.getParticipantName();
             String wupParticipantDisplayName = wupSummary.getParticipantDisplayName();
-            String wupAlias = OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP.getAliasPrefix() + wupParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
+            String wupAlias = getRoomIdentityFactory().buildWorkUnitProcessorSpacePseudoAlias(wupParticipantName);
             MatrixRoom wupRoom = null;
             String wupRoomId= null;
 
@@ -80,16 +81,16 @@ public class WorkUnitProcessorParticipantReplicaFactory extends BaseParticipantR
                 if (!wupMatrixRoom.getContainedRooms().isEmpty()) {
                     for (MatrixRoom currentRoom : wupMatrixRoom.getContainedRooms()) {
                         if (StringUtils.isNotEmpty(currentRoom.getCanonicalAlias())) {
-                            if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomAlias(wupParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_CONSOLE))) {
+                            if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomPseudoAlias(wupParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_CONSOLE))) {
                                 foundSubsystemEventsRoom = true;
                             }
-                            if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomAlias(wupParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS))) {
+                            if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomPseudoAlias(wupParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS))) {
                                 foundSubsystemMetricsRoom = true;
                             }
-                            if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomAlias(wupParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS))) {
+                            if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomPseudoAlias(wupParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_SUBSCRIPTIONS))) {
                                 foundSubsystemSubscriptionsRoom = true;
                             }
-                            if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomAlias(wupParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS))) {
+                            if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomPseudoAlias(wupParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS))) {
                                 foundSubsystemTasksRoom = true;
                             }
                         }
@@ -97,30 +98,52 @@ public class WorkUnitProcessorParticipantReplicaFactory extends BaseParticipantR
                 }
                 wupRoomId = wupRoom.getRoomID();
                 getLogger().trace(".createWorkUnitProcessorSpace(): Checking to see if all the OAM and Sub-Component Rooms exist: Finish");
-            } else {
-                getLogger().debug(".createWorkUnitProcessorSpace(): [Add Space(s) For WUP As Required] Creating Space for WUP ->{}", wupAlias);
-
-                getLogger().trace(".createSubSpaceIfNotThere(): First double-checking the room isn't already create ->{}", wupAlias);
+            }
+            //
+            // If wupRoom is not provided, see if it is in the cache
+            if(wupRoom == null) {
                 MatrixRoom existingRoom = getRoomCache().getRoomFromPseudoAlias(wupAlias);
                 if (existingRoom != null) {
                     getLogger().trace(".createSubSpaceIfNotThere(): Room already exists ->{}", wupAlias);
                     wupRoom = existingRoom;
-                } else {
-                    String wupTopic = "WorkUnitProcessor, " + wupSummary.getComponentID().getId();
-                    MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(wupParticipantDisplayName, wupAlias, wupTopic, workshopId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                    MatrixRoom createdRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
-                    if (createdRoom != null) {
-                        getLogger().debug(".createWorkUnitProcessorSpace(): [Add Space(s) For WUP As Required] Created Space ->{}", createdRoom);
-                        wupRoom = createdRoom;
-                        getRoomCache().addRoom(createdRoom);
-                    }
+                    wupRoomId = wupRoom.getRoomID();
+                    getLogger().info(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}",  workshopId, wupParticipantName, wupRoom.getCanonicalAlias(), wupRoom.getRoomID());
+                    getMatrixSpaceAPI().addChildToSpace(workshopId, wupRoom.getRoomID(), getMatrixAccessToken().getHomeServer());
+                    getLogger().debug(".createWorkUnitProcessorSpace(): [Add Space(s) For WUP As Required] Creating Space for WUP ->{}", wupAlias);
+                }
+            }
+            //
+            // If wupRoom is not provided and is not in the cache, see if it is in the Synapse Server already
+            if(wupRoom == null) {
+                List<SynapseRoom> rooms = getSynapseRoomAPI().getRooms(wupAlias);
+                if (!rooms.isEmpty()) {
+                    wupRoom = new MatrixRoom(rooms.get(0));
+                    wupRoomId = wupRoom.getRoomID();
+                    getRoomCache().addRoom(wupRoom);
+                    getLogger().info(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}",  workshopId, wupParticipantName, wupRoom.getCanonicalAlias(), wupRoom.getRoomID());
+                    getMatrixSpaceAPI().addChildToSpace(workshopId, wupRoomId, getMatrixAccessToken().getHomeServer());
+                }
+            }
+            //
+            // If wupRoom is not provided, is not in the cache and is not in the Synapse Server already, create it!
+            if(wupRoom == null){
+                getLogger().trace(".createSubSpaceIfNotThere(): First double-checking the room isn't already create ->{}", wupAlias);
+                 String wupTopic = "WorkUnitProcessor, " + wupSummary.getComponentID().getId();
+                MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(wupParticipantDisplayName, wupAlias, wupTopic, workshopId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+                MatrixRoom createdRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
+                if (createdRoom != null) {
+                    getLogger().debug(".createWorkUnitProcessorSpace(): [Add Space(s) For WUP As Required] Created Space ->{}", createdRoom);
+                    wupRoom = createdRoom;
+                    getRoomCache().addRoom(createdRoom);
                 }
                 if (wupRoom != null) {
                     wupRoomId = wupRoom.getRoomID();
-                    getMatrixSpaceAPI().addChildToSpace(workshopId, wupRoomId);
+                    getLogger().info(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}",  workshopId, wupParticipantName, wupRoom.getCanonicalAlias(), wupRoom.getRoomID());
+                    getMatrixSpaceAPI().addChildToSpace(workshopId, wupRoomId, getMatrixAccessToken().getHomeServer());
                 }
             }
-
+            //
+            // If wupRoom is not null, check to see if its associated OAM Rooms exist and, if not, create them.
             if (wupRoom != null) {
                 getLogger().debug(".createWorkUnitProcessorSpace(): [Add Rooms If Required] Start...");
                 if (!foundSubsystemEventsRoom) {
@@ -137,7 +160,11 @@ public class WorkUnitProcessorParticipantReplicaFactory extends BaseParticipantR
                 }
                 getLogger().debug(".createWorkUnitProcessorSpace(): [Add Rooms If Required] Finish...");
             }
-
+            //
+            // If the WUP Room is still null, something is wrong!
+            if(wupRoom == null){
+                getLogger().warn(".createWorkUnitProcessorSpace(): Could not find or create WUP Space/Room-Set!!!!!");
+            }
             getLogger().debug(".createWorkUnitProcessorSpace(): Exit, wupRoomId->{}", wupRoomId);
             return (wupRoom);
         } catch(Exception ex){

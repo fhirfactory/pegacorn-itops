@@ -21,21 +21,13 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.issi.reports.tasks;
 
-import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
-import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixInstantMessageMethods;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
-import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
-import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsTaskReportsDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.common.OAMRoomMessageInjectorBase;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.reports.tasks.ParticipantTaskReportsEventFactory;
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,15 +35,13 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
-public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
+public class ParticipantTaskReportsIntoReplica extends OAMRoomMessageInjectorBase {
     private static final Logger LOG = LoggerFactory.getLogger(ParticipantTaskReportsIntoReplica.class);
 
     private boolean initialised;
@@ -61,30 +51,11 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
     private Long CONTENT_FORWARDER_STARTUP_DELAY = 120000L;
     private Long CONTENT_FORWARDER_REFRESH_PERIOD = 15000L;
 
-    List<SynapseRoom> roomList;
-    Instant lastRoomListUpdate;
-    ConcurrentHashMap<String, String> roomIdMap;
-
-    @Inject
-    private MatrixInstantMessageMethods matrixInstantMessageAPI;
-
-    @Inject
-    private SynapseRoomMethods synapseRoomAPI;
-
-    @Inject
-    private MatrixAccessToken matrixAccessToken;
-
-    @Inject
-    private ParticipantRoomIdentityFactory roomIdentityFactory;
-
     @Inject
     private ParticipantTaskReportsEventFactory taskReportEventFactory;
 
     @Inject
     private ITOpsTaskReportsDM taskReportsDM;
-
-    @Inject
-    private ITOpsKnownRoomAndSpaceMapDM roomCache;
 
     //
     // Constructor(s)
@@ -94,9 +65,6 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
         super();
         this.initialised = false;
         this.stillRunning = false;
-        this.roomList = new ArrayList<>();
-        roomIdMap = new ConcurrentHashMap<>();
-        this.lastRoomListUpdate = Instant.EPOCH;
     }
 
     //
@@ -208,20 +176,20 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
 
         try {
 
-            String roomAlias = roomIdentityFactory.buildEndpointRoomAlias(
+            String roomAlias = getRoomIdentityFactory().buildEndpointRoomPseudoAlias(
                     notification.getParticipantName(),
                     OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_TASKS);
 
             getLogger().trace(".forwardEndpointTaskReport(): roomAlias for Events->{}", roomAlias);
 
-            String roomIdFromAlias = roomCache.getRoomIdFromPseudoAlias(roomAlias);
+            String roomIdFromAlias = getRoomIdFromPseudoAlias(roomAlias);
 
             getLogger().trace(".forwardEndpointTaskReport(): roomId for Events->{}", roomIdFromAlias);
 
             if (roomIdFromAlias != null) {
                 MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
                 try {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                    MAPIResponse mapiResponse = getMatrixInstantMessageAPI().postTextMessage(roomIdFromAlias, getMatrixAccessToken().getUserId(), notificationEvent);
                     return(true);
                 } catch(Exception ex){
                     getLogger().warn(".forwardEndpointTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
@@ -242,20 +210,20 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
 
         try {
 
-            String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
+            String roomAlias = getRoomIdentityFactory().buildWUPRoomPseudoAlias(
                     notification.getParticipantName(),
                     OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_TASKS);
 
             getLogger().trace(".forwardWUPTaskReport(): roomAlias for Events->{}", roomAlias);
 
-            String roomIdFromAlias =  roomCache.getRoomIdFromPseudoAlias(roomAlias);
+            String roomIdFromAlias =  getRoomIdFromPseudoAlias(roomAlias);
 
             getLogger().trace(".forwardWUPTaskReport(): roomId for Events->{}", roomIdFromAlias);
 
             if (roomIdFromAlias != null) {
                 MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
                 try{
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                    MAPIResponse mapiResponse = getMatrixInstantMessageAPI().postTextMessage(roomIdFromAlias, getMatrixAccessToken().getUserId(), notificationEvent);
                     return(true);
                 } catch(Exception ex){
                     getLogger().warn(".forwardWUPTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
@@ -275,18 +243,18 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
         getLogger().debug(".forwardProcessingPlantTaskReport(): Entry, notification->{}", notification);
 
         try {
-            String roomAlias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS);
+            String roomAlias = getRoomIdentityFactory().buildProcessingPlantRoomPseudoAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS);
 
             getLogger().trace(".forwardProcessingPlantTaskReport(): roomAlias for Events->{}", roomAlias);
 
-            String roomIdFromAlias =  roomCache.getRoomIdFromPseudoAlias(roomAlias);
+            String roomIdFromAlias =  getRoomIdFromPseudoAlias(roomAlias);
 
             getLogger().trace(".forwardProcessingPlantTaskReport(): roomId for Events->{}", roomIdFromAlias);
 
             if (roomIdFromAlias != null) {
                 MRoomTextMessageEvent notificationEvent = taskReportEventFactory.newTaskReportEvent(roomIdFromAlias, notification);
                 try {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                    MAPIResponse mapiResponse = getMatrixInstantMessageAPI().postTextMessage(roomIdFromAlias, getMatrixAccessToken().getUserId(), notificationEvent);
                     return(true);
                 } catch(Exception ex){
                     getLogger().warn(".forwardProcessingPlantTaskReport(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
@@ -301,30 +269,4 @@ public class ParticipantTaskReportsIntoReplica extends RouteBuilder {
             return(false);
         }
     }
-
-    //
-    // Mechanism to ensure Startup
-    //
-
-    @Override
-    public void configure() throws Exception {
-        String processingPlantName = getClass().getSimpleName();
-
-        from("timer://" + processingPlantName + "?delay=1000&repeatCount=1")
-                .routeId("ProcessingPlant::" + processingPlantName)
-                .log(LoggingLevel.DEBUG, "Starting....");
-    }
-
-    //
-    // Helpers
-    //
-
-    protected void waitALittleBit() {
-        try {
-            Thread.sleep(100);
-        } catch (Exception e) {
-            getLogger().debug(".waitALittleBit():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
-        }
-    }
-
 }

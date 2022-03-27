@@ -21,8 +21,6 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks;
 
-import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
-import net.fhirfactory.pegacorn.communicate.matrixbridge.workshops.matrixbridge.common.SynapseServerConnectionInitialisation;
 import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInterface;

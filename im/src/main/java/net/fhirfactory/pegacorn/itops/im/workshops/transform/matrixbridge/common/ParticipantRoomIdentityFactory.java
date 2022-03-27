@@ -29,27 +29,60 @@ import java.util.Locale;
 @ApplicationScoped
 public class ParticipantRoomIdentityFactory {
 
-    public String buildWUPRoomCanonicalAlias( String wupParticipantName, OAMRoomTypeEnum oamRoomType){
+    protected String flattenParticipantName(String participantName){
+        String participantNameToLowerCase = participantName.toLowerCase(Locale.ROOT);
+        String participantNameWithDotsConvertedToHyphens = participantNameToLowerCase.replace(".", "-");
+        String participantNameWithUnderscoresConvertedToHyphens = participantNameWithDotsConvertedToHyphens.replace("_", "-");
+        String participantNameWithSlashesConvertedToHyphens = participantNameWithUnderscoresConvertedToHyphens.replace("/", "-");
+        String participantNameWithColonsConvertedToHyphens = participantNameWithSlashesConvertedToHyphens.replace(":", "-");
+        return(participantNameWithColonsConvertedToHyphens);
+    }
 
-        String aliasId = oamRoomType.getAliasPrefix().toLowerCase(Locale.ROOT) +
-                wupParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
+    protected String buildRoomPseudoAlias(String participantName, OAMRoomTypeEnum oamRoomType){
+        String flattenedParticipantName = flattenParticipantName(participantName);
+        String aliasId =oamRoomType.getAliasPrefix().toLowerCase(Locale.ROOT) + flattenedParticipantName;
         return(aliasId);
     }
 
-    public String buildProcessingPlantCanonicalAlias(String processingPlantParticipantName, OAMRoomTypeEnum roomType) {
-        String alias = roomType.getAliasPrefix().toLowerCase(Locale.ROOT) + processingPlantParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
-        return(alias);
+    public String buildWorkshopSpacePseudoAlias(String participantName){
+        String aliasId = buildRoomPseudoAlias(participantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WORKSHOP);
+        return(aliasId);
     }
 
-    public String buildEndpointRoomAlias(String endpointParticipantName, OAMRoomTypeEnum oamRoomTypeEnum){
-        String alias = oamRoomTypeEnum.getAliasPrefix().toLowerCase(Locale.ROOT) + endpointParticipantName.toLowerCase(Locale.ROOT).replace(".", "-");
-        return(alias);
+    public String buildWorkUnitProcessorSpacePseudoAlias( String participantName){
+        String aliasId = buildRoomPseudoAlias(participantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP);
+        return(aliasId);
+    }
+
+    public String buildProcessingPlantSpacePseudoAlias( String participantName){
+        String aliasId = buildRoomPseudoAlias(participantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM);
+        return(aliasId);
+    }
+
+    public String buildEndpointSpacePseudoAlias( String participantName){
+        String aliasId = buildRoomPseudoAlias(participantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT);
+        return(aliasId);
+    }
+
+    public String buildWUPRoomPseudoAlias(String wupParticipantName, OAMRoomTypeEnum oamRoomType){
+        String aliasId = buildRoomPseudoAlias(wupParticipantName, oamRoomType);
+        return(aliasId);
+    }
+
+    public String buildProcessingPlantRoomPseudoAlias(String processingPlantParticipantName, OAMRoomTypeEnum roomType) {
+        String aliasId = buildRoomPseudoAlias(processingPlantParticipantName, roomType);
+        return(aliasId);
+    }
+
+    public String buildEndpointRoomPseudoAlias(String endpointParticipantName, OAMRoomTypeEnum oamRoomTypeEnum){
+        String aliasId = buildRoomPseudoAlias(endpointParticipantName, oamRoomTypeEnum);
+        return(aliasId);
 
     }
 
-    public String buildOAMRoomAlias(String participantName, OAMRoomTypeEnum oamRoomTypeEnum){
-        String alias = oamRoomTypeEnum.getAliasPrefix().toLowerCase(Locale.ROOT) + participantName.toLowerCase(Locale.ROOT).replace(".", "-");
-        return(alias);
+    public String buildOAMRoomPseudoAlias(String participantName, OAMRoomTypeEnum oamRoomTypeEnum){
+        String aliasId = buildRoomPseudoAlias(participantName, oamRoomTypeEnum);
+        return(aliasId);
     }
 
 }

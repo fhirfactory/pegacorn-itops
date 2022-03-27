@@ -21,23 +21,17 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps;
 
-import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
-import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.valuesets.PetasosMonitoredComponentTypeEnum;
-import net.fhirfactory.pegacorn.core.model.petasos.participant.PetasosParticipant;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.PetasosParticipantSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Locale;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
@@ -47,7 +41,10 @@ public class ITOpsKnownParticipantMapDM {
     // ConcurrentHashMap<participantName, participant>
     private ConcurrentHashMap<String, PetasosParticipantSummary> participantMap;
 
-
+    // Recently Discovered Participants
+    // Set<participantName>
+    private Set<String> recentlyDiscoveredParticipants;
+    private Instant lastDiscoveryCheckpoint;
 
     @Inject
     private ParticipantRoomIdentityFactory roomIdentityFactory;
@@ -58,12 +55,17 @@ public class ITOpsKnownParticipantMapDM {
 
     public ITOpsKnownParticipantMapDM(){
         this.participantMap = new ConcurrentHashMap<>();
+        this.recentlyDiscoveredParticipants = new HashSet<>();
+        this.lastDiscoveryCheckpoint = Instant.EPOCH;
     }
 
     //
     // Getters (and Setters)
     //
 
+    public Instant getLastDiscoveryCheckpoint() {
+        return lastDiscoveryCheckpoint;
+    }
 
     public ConcurrentHashMap<String, PetasosParticipantSummary> getParticipantMap() {
         return participantMap;
@@ -81,6 +83,13 @@ public class ITOpsKnownParticipantMapDM {
     // Business Methods
     //
 
+    public Set<String> getRecentlyDiscoveredParticipants(){
+        Set<String> discoveredParticipants = new HashSet<>();
+        discoveredParticipants.addAll(recentlyDiscoveredParticipants);
+        lastDiscoveryCheckpoint = Instant.now();
+        recentlyDiscoveredParticipants.clear();
+        return(discoveredParticipants);
+    }
 
     public void addParticipant(PetasosParticipantSummary participant){
         getLogger().debug(".addParticipant(): Entry, participant->{}", participant);
@@ -89,6 +98,8 @@ public class ITOpsKnownParticipantMapDM {
         }
         if(getParticipantMap().containsKey(participant.getParticipantName())){
             participantMap.remove(participant.getParticipantName());
+        } else {
+            getRecentlyDiscoveredParticipants().add(participant.getParticipantName());
         }
         getParticipantMap().put(participant.getParticipantName(), participant);
         getLogger().debug(".addParticipant(): Exit");

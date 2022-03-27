@@ -22,30 +22,21 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.issi.topology;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
-import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixApplicationServiceMethods;
-import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixRoomMethods;
-import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixSpaceMethods;
 import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
 import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixUser;
 import net.fhirfactory.pegacorn.communicate.matrixbridge.workshops.matrixbridge.common.SynapseServerConnectionInitialisation;
 import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
-import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseUserMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseUser;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
-import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
+import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownParticipantMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownUserMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.common.ITOpsRoomHelpers;
-import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.EndpointParticipantReplicaFactory;
-import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.ProcessingPlantParticipantReplicaFactory;
-import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.WorkUnitProcessorParticipantReplicaFactory;
-import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.WorkshopParticipantReplicaFactory;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsSubsystemParticipantTasks;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.topology.ParticipantTopologyIntoReplicaFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsTopologySynchronisationTasks;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsUserTasks;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -74,20 +65,19 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     private Instant userRoomSynchronisationDaemonLastRunTime;
 
     private Instant lastFullUserUpdate;
+    private Instant lastFullRoomUpdate;
 
-    private Long ROOM_SYNCHRONISATION_WATCHDOG_STARTUP_DELAY = 60000L;
+    private Long ROOM_SYNCHRONISATION_WATCHDOG_STARTUP_DELAY = 60000L; // Milliseconds
     private Long USER_SYNCHRONISATION_OVERRIDE_PERIOD = 900L; // Seconds
-    private Long ROOM_SYNCHRONISATION_WATCHDOG_CHECK_PERIOD = 60000L;
-    private Long ROOM_SYNCHRONISATION_WATCHDOG_RESET_PERIOD = 1800L;
+    private Long ROOM_COMPLETE_SYNCHRONISATION_PERIOD = 600L; // Seconds
+    private Long ROOM_SYNCHRONISATION_WATCHDOG_CHECK_PERIOD = 60000L;  // Milliseconds
+    private Long ROOM_SYNCHRONISATION_WATCHDOG_RESET_PERIOD = 1800L;  // Milliseconds
 
     private Long SHORT_GAPPING_PERIOD = 100L;
     private Long LONG_GAPPING_PERIOD = 1000L;
 
     @Inject
     private SynapseServerConnectionInitialisation serverConnectionInitialisation;
-
-    @Inject
-    private ITOpsRoomHelpers itopsRoomHelpers;
 
     @Inject
     private ITOpsSubsystemParticipantTasks itopsSubsystemParticipantTasks;
@@ -99,16 +89,10 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     private SynapseAdminAccessToken synapseAccessToken;
 
     @Inject
-    private MatrixRoomMethods matrixRoomAPI;
-
-    @Inject
-    private MatrixSpaceMethods matrixSpaceAPI;
-
-    @Inject
-    private SynapseRoomMethods synapseRoomAPI;
-
-    @Inject
     private SynapseUserMethods synapseUserAPI;
+
+    @Inject
+    private ITOpsKnownParticipantMapDM participantMapDM;
 
     @Inject
     private ITOpsKnownRoomAndSpaceMapDM roomCache;
@@ -120,25 +104,11 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     private ITOpsSystemWideReportedTopologyMapDM systemWideTopologyMap;
 
     @Inject
-    private ParticipantTopologyIntoReplicaFactory matrixBridgeFactories;
+    private ITOpsTopologySynchronisationTasks matrixCacheSynchronisationTasks;
 
     @Inject
-    private ParticipantRoomIdentityFactory roomIdentityFactory;
+    private ITOpsUserTasks userTasks;
 
-    @Inject
-    private WorkUnitProcessorParticipantReplicaFactory wupReplicaServices;
-
-    @Inject
-    private WorkshopParticipantReplicaFactory workshopReplicaServices;
-
-    @Inject
-    private ProcessingPlantParticipantReplicaFactory processingPlantReplicaServices;
-
-    @Inject
-    private EndpointParticipantReplicaFactory endpointReplicaServices;
-
-    @Inject
-    private MatrixApplicationServiceMethods matrixApplicationServiceMethods;
 
     //
     // Constructor(s)
@@ -151,6 +121,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         this.topologySynchronisationDaemonIsStillRunning = false;
         this.topologySynchronisationDaemonLastRunTime = Instant.EPOCH;
         this.lastFullUserUpdate = Instant.EPOCH;
+        this.lastFullRoomUpdate = Instant.EPOCH;
     }
 
     //
@@ -178,12 +149,20 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     // Getters (and Setters)
     //
 
+    protected Long getRoomCompleteSynchronisationPeriod(){
+        return(ROOM_COMPLETE_SYNCHRONISATION_PERIOD);
+    }
+
     protected Logger getLogger() {
         return (LOG);
     }
 
     protected Instant getTopologySynchronisationDaemonLastRunTime() {
         return (topologySynchronisationDaemonLastRunTime);
+    }
+
+    protected Instant getLastFullRoomUpdate(){
+        return(this.lastFullRoomUpdate);
     }
 
     protected void setTopologySynchronisationDaemonLastRunTime(Instant instant){
@@ -200,42 +179,6 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
 
     protected ITOpsKnownRoomAndSpaceMapDM getRoomCache(){
         return(roomCache);
-    }
-
-    protected ParticipantRoomIdentityFactory getRoomIdentityFactory(){
-        return(roomIdentityFactory);
-    }
-
-    protected ParticipantTopologyIntoReplicaFactory getMatrixBridgeFactories(){
-        return(matrixBridgeFactories);
-    }
-
-    protected SynapseRoomMethods getSynapseRoomAPI() {
-        return synapseRoomAPI;
-    }
-
-    protected MatrixRoomMethods getMatrixRoomAPI() {
-        return matrixRoomAPI;
-    }
-
-    protected MatrixSpaceMethods getMatrixSpaceAPI() {
-        return matrixSpaceAPI;
-    }
-
-    protected WorkshopParticipantReplicaFactory getWorkshopReplicaServices(){
-        return(this.workshopReplicaServices);
-    }
-
-    protected ProcessingPlantParticipantReplicaFactory getProcessingPlantReplicaServices(){
-        return(this.processingPlantReplicaServices);
-    }
-
-    protected EndpointParticipantReplicaFactory getEndpointReplicaServices(){
-        return(this.endpointReplicaServices);
-    }
-
-    protected MatrixAccessToken getMatrixAccessToken() {
-        return (matrixAccessToken);
     }
 
     protected ITOpsSystemWideReportedTopologyMapDM getSystemWideTopologyMap(){
@@ -314,160 +257,82 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     // User Synchronisation Task
     //
 
-    private void userRoomSynchronisationDaemon(){
+    private void userRoomSynchronisationDaemon() {
         getLogger().debug(".userRoomSynchronisationDaemon(): Entry");
 
         setUserRoomSynchronisationDaemonIsStillRunning(true);
         setUserRoomSynchronisationDaemonLastRunTime(Instant.now());
 
-        if(StringUtils.isEmpty(synapseAccessToken.getSessionAccessToken()) || StringUtils.isEmpty(matrixAccessToken.getSessionAccessToken())){
+        if (StringUtils.isEmpty(synapseAccessToken.getSessionAccessToken()) || StringUtils.isEmpty(matrixAccessToken.getSessionAccessToken())) {
             getLogger().debug(".userRoomSynchronisationDaemon(): Exit, access tokens not yet set");
             setUserRoomSynchronisationDaemonIsStillRunning(false);
             return;
         }
 
-        //
-        // Check to see if Rooms were added
-        Set<MatrixRoom> addedRoomSet = getRoomCache().getRecentlyAddedRooms();
-
-        //
-        // Add all users to the new rooms
-        List<SynapseUser> userList = synapseUserAPI.getALLAccounts();
-        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join Users to Added Rooms] Start...");
-        for (SynapseUser currentUser : userList) {
-            MatrixUser matrixUser = new MatrixUser(currentUser);
-            getUserCache().addMatrixUser(matrixUser);
-        }
         try {
-            for (SynapseRoom currentRoom : addedRoomSet) {
-                String currentRoomAlias = currentRoom.getCanonicalAlias();
-                if (StringUtils.isNotEmpty(currentRoomAlias)) {
-                    if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
-                        if(allShouldJoin(currentRoomAlias)) {
-                            getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join Users to Added Rooms] Processing Space->{}", currentRoomAlias);
-                            String roomId = currentRoom.getRoomID();
-                            List<String> roomMembers = synapseRoomAPI.getRoomMembers(roomId);
-                            for (SynapseUser currentUser : userList) {
-                                if (currentUser.getName().contentEquals(matrixAccessToken.getUserId()) || currentUser.getName().contentEquals(synapseAccessToken.getUserId())) {
-                                    getLogger().trace(".userRoomSynchronisationDaemon(): [Auto Join Users to Added Rooms] Not Adding User->{}", currentUser.getName());
-                                } else {
-                                    getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join Users to Added Rooms] Processing User->{}", currentUser.getName());
-                                    synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
-                                }
-                            }
-                        }
-                    }
-                }
+            //
+            // Synchronise the User Set
+            List<SynapseUser> userList = synapseUserAPI.getALLAccounts();
+            getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join Users to Added Rooms] Start...");
+            for (SynapseUser currentUser : userList) {
+                MatrixUser matrixUser = new MatrixUser(currentUser);
+                getUserCache().addMatrixUser(matrixUser);
             }
         } catch (Exception ex){
-            getLogger().warn(".userRoomSynchronisationDaemon(): Failure to Add Users to New Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+            getLogger().warn(".userRoomSynchronisationDaemon(): Problem Synchronising User Set (between Synapse and Local Cache), message->{}", ExceptionUtils.getMessage(ex));
+        }
+
+        try {
+            //
+            // Add new users to the known room set
+            Set<MatrixUser> recentAddedUsers = userCache.getRecentAddedUsers();
+            if (!recentAddedUsers.isEmpty()) {
+                getLogger().info(".userRoomSynchronisationDaemon(): [New Users Added] Start");
+                userTasks.addUsersToAllRooms(recentAddedUsers);
+                getLogger().info(".userRoomSynchronisationDaemon(): [New Users Added] Finish");
+            }
+        } catch (Exception ex){
+            getLogger().warn(".userRoomSynchronisationDaemon(): Problem Joining Added Users to Rooms, message->{}", ExceptionUtils.getMessage(ex));
+        }
+
+        try{
+            //
+            // Check to see if Rooms were added and Add Users to them
+            Set<MatrixRoom> addedRoomSet = getRoomCache().getRecentlyAddedRooms();
+            if(!addedRoomSet.isEmpty()){
+                getLogger().info(".userRoomSynchronisationDaemon(): [New Rooms Added] Start");
+                userTasks.addAllUsersToRoomSet(addedRoomSet);
+                getLogger().info(".userRoomSynchronisationDaemon(): [New Rooms Added] Finish");
+            }
+        } catch (Exception ex){
+            getLogger().warn(".userRoomSynchronisationDaemon(): Problem Adding User to New Rooms, message->{}", ExceptionUtils.getMessage(ex));
+        }
+
+        try {
+            //
+            // Add All Users to All Rooms (if required)
+            Long secondsSinceLastFullUserUpdate = Instant.now().getEpochSecond() - this.lastFullUserUpdate.getEpochSecond();
+            if (secondsSinceLastFullUserUpdate > this.USER_SYNCHRONISATION_OVERRIDE_PERIOD) {
+                getLogger().info(".userRoomSynchronisationDaemon(): [Full User/Room Remap] Start");
+                userTasks.joinAllUsersToAllRooms();
+                this.lastFullUserUpdate = Instant.now();
+                getLogger().info(".userRoomSynchronisationDaemon(): [Full User/Room Remap] Finish");
+            }
+        } catch (Exception ex){
+            getLogger().warn(".userRoomSynchronisationDaemon(): Problem Performing User/Room Remap, message->{}", ExceptionUtils.getMessage(ex));
         }
 
         //
-        // See if there are new Users
-        Set<MatrixUser> addedUserSet = getUserCache().getRecentAddedUsers();
-
-        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join New Users to the Older Rooms] Start...");
-        try {
-            for (MatrixRoom currentRoom : getRoomCache().getFullRoomSet()) {
-                String currentRoomAlias = currentRoom.getCanonicalAlias();
-                if (StringUtils.isNotEmpty(currentRoomAlias)) {
-                    if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
-                        if (allShouldJoin(currentRoomAlias)) {
-                            getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
-                            String roomId = currentRoom.getRoomID();
-                            for (SynapseUser currentUser : addedUserSet) {
-                                if (currentUser.getName().contentEquals(matrixAccessToken.getUserId()) || currentUser.getName().contentEquals(synapseAccessToken.getUserId())) {
-                                    getLogger().trace(".userRoomSynchronisationDaemon(): [Auto Join New Users to the Older Rooms] Not Adding User->{}", currentUser.getName());
-                                } else {
-                                    getLogger().trace(".userRoomSynchronisationDaemon(): [Auto Join New Users to the Older Rooms] Processing User->{}", currentUser.getName());
-                                    synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch(Exception ex){
-            getLogger().warn(".userRoomSynchronisationDaemon(): Failure to add New Users to Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-        }
-        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto New Users to the Older Rooms] Finish...");
-
-        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Start...");
-        Long secondsSinceLastFullUserUpdate = Instant.now().getEpochSecond() - this.lastFullUserUpdate.getEpochSecond();
-        try{
-            Set<MatrixRoom> fullRoomSet = getRoomCache().getFullRoomSet();
-            Set<MatrixUser> fullUserSet = getUserCache().getKnownUsers();
-            if(secondsSinceLastFullUserUpdate > this.USER_SYNCHRONISATION_OVERRIDE_PERIOD){
-                getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Starting... more than USER_SYNCHRONISATION_OVERRIDE_PERIOD since last full update");
-                for (MatrixRoom currentRoom : fullRoomSet) {
-                    String currentRoomAlias = currentRoom.getCanonicalAlias();
-                    if (StringUtils.isNotEmpty(currentRoomAlias)) {
-                        if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
-                            if(allShouldJoin(currentRoomAlias)) {
-                                getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Processing Room/Space->{}", currentRoomAlias);
-                                String roomId = currentRoom.getRoomID();
-                                for (MatrixUser currentUser : fullUserSet) {
-                                    if (currentUser.getName().contentEquals(matrixAccessToken.getUserId()) || currentUser.getName().contentEquals(synapseAccessToken.getUserId())) {
-                                        getLogger().trace(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Not Adding User->{}", currentUser.getName());
-                                    } else {
-                                        getLogger().trace(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Processing User->{}", currentUser.getName());
-                                        synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                this.lastFullUserUpdate = Instant.now();
-            }
-        } catch(Exception ex){
-            getLogger().warn(".userRoomSynchronisationDaemon(): Failure to add All Users to Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-        }
-        getLogger().debug(".userRoomSynchronisationDaemon(): [Auto Join All Users to All Rooms] Finish...");
-
+        // We're Done
         setUserRoomSynchronisationDaemonIsStillRunning(false);
+
         getLogger().debug(".userRoomSynchronisationDaemon(): Exit");
     }
 
-    //
-    // Room Membership Requirement Check
-    //
-
-    public boolean allShouldJoin(String roomAlias){
-        //
-        // Do this check first
-        boolean isSubsystemComponentRom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_COMPONENTS.getAliasPrefix());
-        if(isSubsystemComponentRom) {
-            return (false);
-        }
-        boolean isSubsystemRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM.getAliasPrefix());
-        boolean isSubsystemSubscriptionRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS.getAliasPrefix());
-        boolean isSubsystemTaskRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS.getAliasPrefix());
-        boolean isSubsystemConsoleRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_CONSOLE.getAliasPrefix());
-        boolean isSubsystemMetricsRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS.getAliasPrefix());
-        if( isSubsystemRoom || isSubsystemSubscriptionRoom || isSubsystemTaskRoom || isSubsystemConsoleRoom || isSubsystemMetricsRoom){
-            return(true);
-        }
-        boolean isEndpointRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT.getAliasPrefix());
-        boolean isEndpointTaskRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_TASKS.getAliasPrefix());
-        boolean isEndpointConsoleRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_CONSOLE.getAliasPrefix());
-        boolean isEndpointMetricsRoom = roomAlias.contains(OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_METRICS.getAliasPrefix());
-        if(isEndpointRoom || isEndpointTaskRoom || isEndpointConsoleRoom || isEndpointMetricsRoom){
-            boolean isMLLP = roomAlias.contains("mllp");
-            boolean isHTTP = roomAlias.contains("http");
-            boolean isFILE = roomAlias.contains("file");
-            if(isMLLP || isHTTP || isFILE){
-                return(true);
-            }
-        }
-        return(false);
-    }
 
     //
     // Topology Synchronisation Task
     //
-
 
     private void topologyReplicationSynchronisationDaemon() {
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): Entry");
@@ -491,57 +356,50 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         }
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Application-Services Connection Initialisation] Finish");
 
-        // 2nd, Synchronise Existing Room List
-        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Room List] Start...");
-        try {
-            roomList = synapseRoomAPI.getRooms("*");
-            getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Synchronise Room List] RoomList->{}", roomList);
-            // remove if not available
-            Set<MatrixRoom> knownRooms = roomCache.getFullRoomSet();
-            for(MatrixRoom currentKnownRoom: knownRooms){
-                boolean found = false;
-                for(SynapseRoom currentRoom: roomList){
-                    if(currentRoom.getRoomID().contentEquals(currentKnownRoom.getRoomID())){
-                        found = true;
-                        break;
-                    }
-                }
-                if(!found){
-                    roomCache.deleteRoom(currentKnownRoom.getRoomID());
-                }
-            }
-            // add if absent
-            for (SynapseRoom currentRoom : roomList) {
-                getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Synchronise Room List] Processing Room ->{}", currentRoom);
-                MatrixRoom matrixRoom = new MatrixRoom(currentRoom);
-                roomCache.addRoom(matrixRoom);
-            }
-        } catch(Exception ex){
-            getLogger().warn(".topologyReplicationSynchronisationDaemon(): Failure to synchronise room list, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-        }
-        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Room List] Finish...");
-
-        // 3rd, Synchronise Participant List
+        //
+        // 2nd, Synchronise Participant List
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Participant List] Start...");
         try {
-            itopsSubsystemParticipantTasks.updateParticipantListUsingReportedMetrics();
-        } catch(Exception ex){
+            itopsSubsystemParticipantTasks.updateParticipantListUsingReportedTopology();
+        } catch (Exception ex) {
             getLogger().error(".topologyReplicationSynchronisationDaemon(): Failure to synchronise participant list, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
         }
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Participant List] Finish...");
 
+        //
+        // Check to See if Activity/Updates needed
+        boolean shouldDoFullRoomSynchronisation = false;
+        Long ageSinceRun = Instant.now().getEpochSecond() - getLastFullRoomUpdate().getEpochSecond();
+        Set<String> foundParticipants = participantMapDM.getRecentlyDiscoveredParticipants();
+        if ((ageSinceRun > getRoomCompleteSynchronisationPeriod()) || !foundParticipants.isEmpty()) {
+            shouldDoFullRoomSynchronisation = true;
+        }
+
+        //
+        // 3rd, Perform Synchronisation of Room List (from Synapse --> Cache)
+        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Room Set Between Synapse and Local Cache] Start...");
+        if(shouldDoFullRoomSynchronisation) {
+            getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Room Set (From Synapse --> Cache)] Start...");
+            matrixCacheSynchronisationTasks.synchroniseMatrixIntoLocalCache();
+            getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Room Set (From Synapse --> Cache)] Finish...");
+        }
+        getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Room Set Between Synapse and Local Cache] Finish...");
+
+        //
         // 4th, Adding Subsystem Space(s) If Required
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] Start...");
-        try {
-            List<ProcessingPlantSummary> processingPlants = getSystemWideTopologyMap().getProcessingPlants();
-            for (ProcessingPlantSummary currentProcessingPlant : processingPlants) {
-                getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] Processing ->{}", currentProcessingPlant.getParticipantName());
-                MatrixRoom subsystemParticipantSpace = itopsSubsystemParticipantTasks.getSpaceRoomSetForSubsystemParticipant(currentProcessingPlant.getParticipantName());
-                getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] subsystemParticipantSpace ->{}", subsystemParticipantSpace);
-                itopsSubsystemParticipantTasks.createParticipantSpacesAndRoomsIfNotThere(currentProcessingPlant, subsystemParticipantSpace);
+        if(shouldDoFullRoomSynchronisation) {
+            try {
+                List<ProcessingPlantSummary> processingPlants = getSystemWideTopologyMap().getProcessingPlants();
+                for (ProcessingPlantSummary currentProcessingPlant : processingPlants) {
+                    getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] Processing ->{}", currentProcessingPlant.getParticipantName());
+                    MatrixRoom subsystemParticipantSpace = matrixCacheSynchronisationTasks.getSpaceRoomSetForSubsystemParticipant(currentProcessingPlant.getParticipantName());
+                    getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] subsystemParticipantSpace ->{}", subsystemParticipantSpace);
+                    matrixCacheSynchronisationTasks.createParticipantSpacesAndRoomsIfNotThere(currentProcessingPlant, subsystemParticipantSpace);
+                }
+            } catch (Exception ex) {
+                getLogger().error(".topologyReplicationSynchronisationDaemon(): Failure to Add Spaces/Rooms to Synapse, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             }
-        } catch(Exception ex){
-            getLogger().error(".topologyReplicationSynchronisationDaemon(): Failure to Add Spaces/Rooms to Synapse, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
         }
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Add Space(s) As Required & Rooms As Required] Finish...");
 
@@ -562,22 +420,4 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
                 .routeId("ProcessingPlant::" + processingPlantName)
                 .log(LoggingLevel.DEBUG, "Starting....");
     }
-
-    protected void waitALittleBit(){
-        try {
-            Thread.sleep(SHORT_GAPPING_PERIOD);
-        } catch (Exception e) {
-            getLogger().debug(".waitALittleBit():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
-        }
-    }
-
-    protected void waitALittleBitLonger(){
-        try {
-            Thread.sleep(LONG_GAPPING_PERIOD);
-        } catch (Exception e) {
-            getLogger().debug(".waitALittleBitLonger():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
-        }
-
-    }
-
 }

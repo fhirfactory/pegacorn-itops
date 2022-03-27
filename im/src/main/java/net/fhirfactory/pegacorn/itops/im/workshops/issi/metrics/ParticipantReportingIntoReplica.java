@@ -21,65 +21,30 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.issi.metrics;
 
-import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
-import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixInstantMessageMethods;
-import net.fhirfactory.pegacorn.communicate.matrix.model.core.MatrixRoom;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
 import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideMetricsDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.metrics.ParticipantMetricsReportEventFactory;
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.builder.RouteBuilder;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.common.OAMRoomMessageInjectorBase;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.time.Instant;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
-public class ParticipantReportingIntoReplica extends RouteBuilder {
+public class ParticipantReportingIntoReplica extends OAMRoomMessageInjectorBase {
     private static final Logger LOG = LoggerFactory.getLogger(ParticipantReportingIntoReplica.class);
 
     private boolean initialised;
 
     private Long CONTENT_FORWARDER_STARTUP_DELAY = 180000L;
     private Long CONTENT_FORWARDER_REFRESH_PERIOD = 30000L;
-
-    Instant lastRoomListUpdate;
-    ConcurrentHashMap<String, String> roomIdMap;
-
-    @Inject
-    private SynapseAdminAccessToken synapseAccessToken;
-
-    @Inject
-    private MatrixInstantMessageMethods matrixInstantMessageAPI;
-
-    @Inject
-    private MatrixAccessToken matrixAccessToken;
-
-    @Inject
-    private ITOpsKnownRoomAndSpaceMapDM matrixBridgeCache;
-
-    @Inject
-    private ITOpsSystemWideMetricsDM systemWideMetricsCache;
-
-    @Inject
-    private ParticipantRoomIdentityFactory roomIdentityFactory;
-
-    @Inject
-    private ParticipantMetricsReportEventFactory metricsReportEventFactory;
 
     //
     // Constructor(s)
@@ -88,8 +53,6 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
     public ParticipantReportingIntoReplica(){
         super();
         this.initialised = false;
-        roomIdMap = new ConcurrentHashMap<>();
-        this.lastRoomListUpdate = Instant.EPOCH;
     }
 
     //
@@ -121,7 +84,7 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
     }
 
     protected SynapseAdminAccessToken getSynapseAccessToken(){
-        return(synapseAccessToken);
+        return(getSynapseAccessToken());
     }
 
     //
@@ -148,7 +111,7 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
     private void reportsAndMetricsForwarder(){
         getLogger().debug(".reportsAndMetricsForwarder(): Entry");
-        List<PetasosComponentMetricSet> metricSets = systemWideMetricsCache.getUpdatedMetricSets();
+        List<PetasosComponentMetricSet> metricSets = getSystemWideMetricsCache().getUpdatedMetricSets();
         for(PetasosComponentMetricSet currentMetricSet: metricSets){
             if(getLogger().isDebugEnabled()) {
                 getLogger().debug(".reportsAndMetricsForwarder(): Processing Metrics From -->{}", currentMetricSet.getSourceParticipantName());
@@ -187,7 +150,7 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
         try{
 
-            String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
+            String roomAlias = getRoomIdentityFactory().buildWUPRoomPseudoAlias(
                     wupMetricSet.getSourceParticipantName(),
                     OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_METRICS);
 
@@ -199,10 +162,10 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
             if(roomIdFromAlias != null) {
 
-                List<MRoomTextMessageEvent> metricsEventSet = metricsReportEventFactory.createWorkUnitProcessorMetricsEvent(roomIdFromAlias, wupMetricSet);
+                List<MRoomTextMessageEvent> metricsEventSet = getMetricsReportEventFactory().createWorkUnitProcessorMetricsEvent(roomIdFromAlias, wupMetricSet);
 
                 for (MRoomTextMessageEvent currentEvent : metricsEventSet) {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), currentEvent);
+                    MAPIResponse mapiResponse = getMatrixInstantMessageAPI().postTextMessage(roomIdFromAlias, getMatrixAccessToken().getUserId(), currentEvent);
                     getLogger().debug(".forwardWUPMetrics(): Metrics Forwarded, mapiResponse->{}", mapiResponse);
                 }
             } else {
@@ -219,7 +182,7 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
         getLogger().debug(".forwardProcessingPlantMetrics(): Entry, metricSet->{}", metricSet);
 
         try{
-            String roomAlias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(metricSet.getSourceParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS);
+            String roomAlias = getRoomIdentityFactory().buildProcessingPlantRoomPseudoAlias(metricSet.getSourceParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS);
 
             getLogger().trace(".forwardProcessingPlantMetrics(): roomAlias for Metric->{}", roomAlias);
 
@@ -229,10 +192,10 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
             if(roomIdFromAlias != null) {
 
-                List<MRoomTextMessageEvent> metricsEventSet = metricsReportEventFactory.createProcessingPlantMetricsEvent(roomIdFromAlias, metricSet);
+                List<MRoomTextMessageEvent> metricsEventSet = getMetricsReportEventFactory().createProcessingPlantMetricsEvent(roomIdFromAlias, metricSet);
 
                 for (MRoomTextMessageEvent currentEvent : metricsEventSet) {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), currentEvent);
+                    MAPIResponse mapiResponse = getMatrixInstantMessageAPI().postTextMessage(roomIdFromAlias, getMatrixAccessToken().getUserId(), currentEvent);
                     getLogger().debug(".forwardProcessingPlantMetrics(): Metrics Forwarded, mapiResponse->{}", mapiResponse);
                 }
             } else {
@@ -250,7 +213,7 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
         try {
 
-            String roomAlias = roomIdentityFactory.buildEndpointRoomAlias(metricSet.getSourceParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_METRICS);
+            String roomAlias = getRoomIdentityFactory().buildEndpointRoomPseudoAlias(metricSet.getSourceParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_METRICS);
 
             getLogger().trace(".forwardEndpointMetrics(): roomAlias for Metric->{}", roomAlias);
 
@@ -260,11 +223,11 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
 
             if (roomIdFromAlias != null) {
 
-                List<MRoomTextMessageEvent> metricsEventSet = metricsReportEventFactory.createEndpointMetricsEvent(roomIdFromAlias, metricSet);
+                List<MRoomTextMessageEvent> metricsEventSet = getMetricsReportEventFactory().createEndpointMetricsEvent(roomIdFromAlias, metricSet);
 
                 for (MRoomTextMessageEvent currentEvent : metricsEventSet) {
                     getLogger().debug(".forwardEndpointMetrics(): Forward Metrics, currentEvent->{}", currentEvent);
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), currentEvent);
+                    MAPIResponse mapiResponse = getMatrixInstantMessageAPI().postTextMessage(roomIdFromAlias, getMatrixAccessToken().getUserId(), currentEvent);
                     getLogger().trace(".forwardEndpointMetrics(): Metrics Forwarded, mapiResponse->{}", mapiResponse);
                 }
             } else {
@@ -276,18 +239,7 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
         }
     }
 
-    //
-    // Mechanism to ensure Startup
-    //
 
-    @Override
-    public void configure() throws Exception {
-        String wupName = getClass().getSimpleName();
-
-        from("timer://"+wupName+"?delay=1000&repeatCount=1")
-                .routeId("ProcessingPlant::"+wupName)
-                .log(LoggingLevel.DEBUG, "Starting....");
-    }
 
     //
     // Helpers
@@ -299,12 +251,5 @@ public class ParticipantReportingIntoReplica extends RouteBuilder {
         } catch (Exception e) {
             getLogger().debug(".waitALittleBit():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
         }
-    }
-
-    public String getRoomIdFromPseudoAlias(String alias){
-        getLogger().debug(".getRoomIdFromPseudoAlias(): Entry, alias->{}", alias);
-        MatrixRoom roomFromPseudoAlias = matrixBridgeCache.getRoomFromPseudoAlias(alias);
-        getLogger().debug(".getRoomIdFromPseudoAlias(): Exit, roomFromPseudoAlias->{}", roomFromPseudoAlias);
-        return(roomFromPseudoAlias.getRoomID());
     }
 }

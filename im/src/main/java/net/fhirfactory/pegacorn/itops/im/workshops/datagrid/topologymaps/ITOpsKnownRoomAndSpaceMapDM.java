@@ -186,6 +186,7 @@ public class ITOpsKnownRoomAndSpaceMapDM {
     }
 
     public MatrixRoom getRoomFromRoomId(String roomId){
+        getLogger().debug(".getRoomFromRoomId(): Entry, roomId->{}", roomId);
         MatrixRoom room = null;
         if(StringUtils.isNotEmpty(roomId)) {
             synchronized (getKnownRoomsLock()) {
@@ -194,14 +195,20 @@ public class ITOpsKnownRoomAndSpaceMapDM {
                 }
             }
         }
+        getLogger().debug(".getRoomFromRoomId(): Exit, room->{}", room);
         return(room);
     }
 
     public void deleteRoom(String roomId){
+        getLogger().debug(".deleteRoom(): Entry, roomId->{}",roomId);
+        boolean roomIsDeleted = false;
+        boolean roomITOpsAliasIsDeleted = false;
+        boolean roomCanonicalAliasIsDeleted = false;
         if (StringUtils.isNotEmpty(roomId)) {
             synchronized (getKnownRoomsLock()){
                 if(getKnownRooms().containsKey(roomId)){
                     getKnownRooms().remove(roomId);
+                    roomIsDeleted = true;
                 }
             }
             synchronized (getKnownCanonicalAliasRoomMapLock()){
@@ -213,6 +220,7 @@ public class ITOpsKnownRoomAndSpaceMapDM {
                         String currentRoomId = getCanonicalAliasRoomMap().get(currentCanonicalAlias);
                         if(currentRoomId.contentEquals(roomId)){
                             getCanonicalAliasRoomMap().remove(currentCanonicalAlias);
+                            roomCanonicalAliasIsDeleted = true;
                             break;
                         }
                     }
@@ -227,15 +235,18 @@ public class ITOpsKnownRoomAndSpaceMapDM {
                         String currentRoomId = getPseudoAliasRoomMap().get(currentPseudoAlias);
                         if(currentRoomId.contentEquals(roomId)){
                             getPseudoAliasRoomMap().remove(currentPseudoAlias);
+                            roomITOpsAliasIsDeleted = true;
                             break;
                         }
                     }
                 }
             }
         }
+        getLogger().debug(".deleteRoom(): Exit, roomIsDeleted->{}, roomITOpsAliasIsDeleted->{}, roomCanonicalAliasIsDeleted->{}", roomIsDeleted, roomITOpsAliasIsDeleted, roomCanonicalAliasIsDeleted);
     }
 
     public MatrixRoom getRoomFromCanonicalAlias(String canonicalAlias){
+        getLogger().debug(".getRoomFromCanonicalAlias(): Entry, canonicalAlias->{}", canonicalAlias);
         MatrixRoom room = null;
         String roomId = null;
         if(StringUtils.isNotEmpty(canonicalAlias)) {
@@ -252,12 +263,12 @@ public class ITOpsKnownRoomAndSpaceMapDM {
                 }
             }
         }
+        getLogger().debug(".getRoomFromCanonicalAlias(): Exit, room->{}", room);
         return(room);
     }
 
     public MatrixRoom getRoomFromPseudoAlias(String pseudoAlias){
-        getLogger().debug(".getRoomFromPseudoAlias(): Entry");
-        getLogger().trace(".getRoomFromPseudoAlias(): Entry, pseudoAlias->{}", pseudoAlias);
+        getLogger().debug(".getRoomFromPseudoAlias(): Entry, pseudoAlias->{}", pseudoAlias);
         MatrixRoom room = null;
         String roomId = null;
         if(StringUtils.isNotEmpty(pseudoAlias)) {
@@ -331,6 +342,7 @@ public class ITOpsKnownRoomAndSpaceMapDM {
     }
 
     private String getPseudoAliasFromAliasId(String aliasId){
+        getLogger().debug(".getPseudoAliasFromAliasId(): Entry, aliasId->{}", aliasId);
         if(StringUtils.isEmpty(aliasId)){
             return(null);
         }
@@ -341,10 +353,12 @@ public class ITOpsKnownRoomAndSpaceMapDM {
         if(aliasSplit.length > 0) {
             alias = aliasSplit[0];
         }
+        getLogger().debug(".getPseudoAliasFromAliasId(): Exit, alias->{}", alias);
         return(alias);
     }
 
     public Set<MatrixRoom> getFullRoomSet(){
+        getLogger().debug(".getFullRoomSet(): Entry");
         Set<MatrixRoom> roomSet = new HashSet<>();
         if(getKnownRooms().isEmpty()){
             return(roomSet);
@@ -352,10 +366,15 @@ public class ITOpsKnownRoomAndSpaceMapDM {
         synchronized (getKnownRoomsLock()){
             roomSet.addAll(getKnownRooms().values());
         }
+        if(getLogger().isDebugEnabled()){
+            getLogger().debug(".getFullRoomSet(): Exit, roomSet.size->{}", roomSet.size());
+        }
+        getLogger().trace(".getFullRoomSet(): Exit, roomSet->{}", roomSet);
         return(roomSet);
     }
 
     public Set<MatrixRoom> getRecentlyAddedRooms(){
+        getLogger().debug(".getRecentlyAddedRooms(): Entry");
         Set<MatrixRoom> addedRoomSet = new HashSet<>();
         if(getKnownRooms().isEmpty()){
             return(addedRoomSet);
@@ -380,6 +399,7 @@ public class ITOpsKnownRoomAndSpaceMapDM {
                 }
             }
         }
+        getLogger().debug(".getRecentlyAddedRooms(): Exit, addedRoomSet->{}", addedRoomSet);
         return(addedRoomSet);
     }
 

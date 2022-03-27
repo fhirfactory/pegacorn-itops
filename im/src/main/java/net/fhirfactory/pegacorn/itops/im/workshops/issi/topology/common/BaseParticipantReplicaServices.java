@@ -34,13 +34,11 @@ import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.topology.ParticipantTopologyIntoReplicaFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Set;
 
 public abstract class BaseParticipantReplicaServices {
     private Long SHORT_GAPPING_PERIOD = 100L;
@@ -127,19 +125,42 @@ public abstract class BaseParticipantReplicaServices {
 
     }
 
+    /**
+     * This method takes a participantName/participantDisplayName, the parent "Space" and the OAM Room Type and "creates"
+     * the room, then adding it as a child to the designated "Space". It first checks to see if the room already exists
+     * - initially in the cache but then in Synapse if it isn't in the cache. If it doesn't exist, it then creates it.
+     *
+     * @param participantName
+     * @param participantDisplayName
+     * @param participantSpaceId
+     * @param roomType
+     */
     protected void installAnOAMRoom(String participantName, String participantDisplayName, String participantSpaceId, OAMRoomTypeEnum roomType) {
         getLogger().debug(".installAnOAMRoom(): Entry, participantName->{}, participantDisplayName->{}, participantSpaceId->{}, roomType->{}",participantName,participantDisplayName, participantSpaceId,roomType);
 
-        String roomAlias = getRoomIdentityFactory().buildOAMRoomAlias(participantName, roomType);
+        String roomAlias = getRoomIdentityFactory().buildOAMRoomPseudoAlias(participantName, roomType);
         getLogger().trace(".installAnOAMRoom(): roomAlias->{}", roomAlias);
 
         getLogger().trace(".installAnOAMRoom(): First double-checking the room isn't already create ->{}", roomAlias);
         MatrixRoom oamRoom = null;
+        //
+        // Check to see if room already exists (within cache)
         MatrixRoom existingRoom = getRoomCache().getRoomFromPseudoAlias(roomAlias);
-        if(existingRoom != null){
+        if(existingRoom != null) {
             getLogger().trace(".installAnOAMRoom(): Room already exists ->{}", roomAlias);
             oamRoom = existingRoom;
-        } else {
+        }
+        //
+        // Check to see if room already exists (within Synapse)
+        if(oamRoom == null) {
+            List<SynapseRoom> rooms = getSynapseRoomAPI().getRooms(roomAlias);
+            if (!rooms.isEmpty()) {
+                oamRoom = new MatrixRoom(rooms.get(0));
+            }
+        }
+        //
+        // If room cannot be found, create it!
+        if(oamRoom == null){
             getLogger().trace(".installAnOAMRoom(): Room doesn't appear to exist, so creating it");
             String roomTopic = participantDisplayName + "." + roomType.getDisplayName();
             getLogger().trace(".installAnOAMRoom(): roomTopic->{}", roomTopic);
@@ -155,11 +176,19 @@ public abstract class BaseParticipantReplicaServices {
                 oamRoom = matrixRoom;
             }
         }
+        //
+        // Add it as a child to the parent "space"
         if(oamRoom != null) {
-            getMatrixSpaceAPI().addChildToSpace(participantSpaceId, oamRoom.getRoomID());
-        } else {
+            getLogger().info(".installAnOAMRoom(): Adding Room/Space as Child: Parent.ParticipantName->{}, Parent.RoomId->{}, Child.RoomAlias->{}, Child.RoomId->{}",  participantName, participantSpaceId, oamRoom.getCanonicalAlias(), oamRoom.getRoomID());
+            getMatrixSpaceAPI().addChildToSpace(participantSpaceId, oamRoom.getRoomID(), matrixAccessToken.getHomeServer());
+        }
+        //
+        // Log a warning if we were not able to create the room!
+        if(oamRoom == null){
             getLogger().warn(".installAnOAMRoom(): Could not create room -> {}", roomAlias);
         }
+        //
+        // All done
         getLogger().debug(".installAnOAMRoom(): Exit");
     }
 

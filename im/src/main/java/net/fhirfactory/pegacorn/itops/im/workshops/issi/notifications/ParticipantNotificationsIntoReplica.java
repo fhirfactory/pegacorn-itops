@@ -21,30 +21,17 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.issi.notifications;
 
-import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
-import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixInstantMessageMethods;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
-import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAccessToken;
-import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseRoomMethods;
-import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseAdminProxyInterface;
-import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.valuesets.PetasosComponentITOpsNotificationTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsNotificationsDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideMetricsDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.common.OAMRoomMessageInjectorBase;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.notifications.ParticipantNotificationEventFactory;
 import org.apache.camel.ExchangePattern;
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,15 +39,13 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
-public class ParticipantNotificationsIntoReplica extends RouteBuilder {
+public class ParticipantNotificationsIntoReplica extends OAMRoomMessageInjectorBase {
     private static final Logger LOG = LoggerFactory.getLogger(ParticipantNotificationsIntoReplica.class);
 
     private boolean initialised;
@@ -70,39 +55,8 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     private Long CONTENT_FORWARDER_STARTUP_DELAY = 120000L;
     private Long CONTENT_FORWARDER_REFRESH_PERIOD = 15000L;
 
-    List<SynapseRoom> roomList;
-    Instant lastRoomListUpdate;
-    ConcurrentHashMap<String, String> roomIdMap;
-
     @Inject
     private ITOpsIMNames itOpsIMNames;
-
-    @Inject
-    private SynapseAdminAccessToken synapseAccessToken;
-
-    @Produce
-    private ProducerTemplate camelRouteInjector;
-
-    @Inject
-    private SynapseAdminProxyInterface synapseAdminProxy;
-
-    @Inject
-    private MatrixInstantMessageMethods matrixInstantMessageAPI;
-
-    @Inject
-    private SynapseRoomMethods synapseRoomAPI;
-
-    @Inject
-    private MatrixAccessToken matrixAccessToken;
-
-    @Inject
-    private ITOpsSystemWideReportedTopologyMapDM systemWideTopologyMap;
-
-    @Inject
-    private ITOpsSystemWideMetricsDM systemWideMetrics;
-
-    @Inject
-    private ParticipantRoomIdentityFactory roomIdentityFactory;
 
     @Inject
     private ParticipantNotificationEventFactory notificationEventFactory;
@@ -111,7 +65,7 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     private ITOpsNotificationsDM notificationsDM;
 
     @Inject
-    private ITOpsKnownRoomAndSpaceMapDM matrixBridgeCache;
+    private ProducerTemplate camelRouteInjector;
 
     //
     // Constructor(s)
@@ -121,9 +75,6 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
         super();
         this.initialised = false;
         this.stillRunning = false;
-        this.roomList = new ArrayList<>();
-        roomIdMap = new ConcurrentHashMap<>();
-        this.lastRoomListUpdate = Instant.EPOCH;
     }
 
     //
@@ -152,10 +103,6 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
 
     protected Logger getLogger(){
         return(LOG);
-    }
-
-    protected SynapseAdminAccessToken getSynapseAccessToken(){
-        return(synapseAccessToken);
     }
 
     protected boolean isStillRunning(){
@@ -243,13 +190,13 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     private boolean forwardWUPNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardWUPNotification(): Entry, notification->{}",notification);
         try {
-            String roomAlias = roomIdentityFactory.buildWUPRoomCanonicalAlias(
+            String roomAlias = getRoomIdentityFactory().buildWUPRoomPseudoAlias(
                     notification.getParticipantName(),
                     OAMRoomTypeEnum.OAM_ROOM_TYPE_WUP_CONSOLE);
 
             getLogger().trace(".forwardWUPNotification(): roomAlias for Events->{}", roomAlias);
 
-            String roomIdFromAlias = getRoomId(roomAlias);
+            String roomIdFromAlias =  getRoomIdFromPseudoAlias(roomAlias);
 
             getLogger().trace(".forwardWUPNotification(): roomId for Events->{}", roomIdFromAlias);
 
@@ -258,14 +205,14 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
                 MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
 
                 try {
-                    MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
+                    MAPIResponse mapiResponse = getMatrixInstantMessageAPI().postTextMessage(roomIdFromAlias, getMatrixAccessToken().getUserId(), notificationEvent);
                     return(true);
                 } catch(Exception ex){
                     getLogger().warn(".forwardWUPNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
                     return(false);
                 }
             } else {
-                getLogger().warn(".forwardWUPNotification(): No room to forward work unit processor notifications into (WorkUnitProcessor->{})!", notification.getParticipantName());
+                getLogger().warn(".forwardWUPNotification(): No room to forward work unit processor notifications into (WorkUnitProcessor->{}), ITOps Room Pseudo Alias ->{}", notification.getParticipantName(), roomAlias);
                 // TODO either re-queue or send to DeadLetter
                 return(false);
             }
@@ -278,27 +225,32 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     private boolean forwardProcessingPlantNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardProcessingPlantNotification(): Entry, notification->{}", notification);
 
-        String roomAlias = roomIdentityFactory.buildProcessingPlantCanonicalAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_CONSOLE);
+        try {
+            String roomAlias = getRoomIdentityFactory().buildProcessingPlantRoomPseudoAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_CONSOLE);
 
-        getLogger().trace(".forwardProcessingPlantNotification(): roomAlias for Events->{}", roomAlias);
+            getLogger().trace(".forwardProcessingPlantNotification(): roomAlias for Events->{}", roomAlias);
 
-        String roomIdFromAlias = getRoomId(roomAlias);
+            String roomIdFromAlias =  getRoomIdFromPseudoAlias(roomAlias);
 
-        getLogger().trace(".forwardProcessingPlantNotification(): roomId for Events->{}", roomIdFromAlias);
+            getLogger().trace(".forwardProcessingPlantNotification(): roomId for Events->{}", roomIdFromAlias);
 
-        if(roomIdFromAlias != null){
-            MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
+            if (roomIdFromAlias != null) {
+                MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
 
-            try{
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
-                return(true);
-            } catch(Exception ex){
-                getLogger().warn(".forwardProcessingPlantNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-                return(false);
+                try {
+                    MAPIResponse mapiResponse = getMatrixInstantMessageAPI().postTextMessage(roomIdFromAlias, getMatrixAccessToken().getUserId(), notificationEvent);
+                    return (true);
+                } catch (Exception ex) {
+                    getLogger().warn(".forwardProcessingPlantNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                    return (false);
+                }
+            } else {
+                getLogger().warn(".forwardProcessingPlantNotification(): No room to forward processing plant notifications into (ProcessingPlant->{}), ITOps Room Pseudo Alias->{}", notification.getParticipantName(), roomAlias);
+                // TODO either re-queue or send to DeadLetter
+                return (false);
             }
-        } else {
-            getLogger().warn(".forwardProcessingPlantNotification(): No room to forward processing plant notifications into (ProcessingPlant->{}!", notification.getParticipantName());
-            // TODO either re-queue or send to DeadLetter
+        } catch(Exception ex){
+            getLogger().warn(".forwardProcessingPlantNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             return(false);
         }
     }
@@ -306,83 +258,35 @@ public class ParticipantNotificationsIntoReplica extends RouteBuilder {
     private boolean forwardEndpointNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardEndpointNotification(): Entry, notification->{}", notification);
 
-        String roomAlias = roomIdentityFactory.buildEndpointRoomAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_CONSOLE);
+        String roomAlias = null;
+        try {
 
-        getLogger().debug(".forwardEndpointNotification(): roomAlias for Events->{}", roomAlias);
+            roomAlias = getRoomIdentityFactory().buildEndpointRoomPseudoAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_ENDPOINT_CONSOLE);
 
-        String roomIdFromAlias = getRoomId(roomAlias);
+            getLogger().debug(".forwardEndpointNotification(): roomAlias for Events->{}", roomAlias);
 
-        getLogger().debug(".forwardEndpointNotification(): roomId for Events->{}", roomIdFromAlias);
+            String roomIdFromAlias = getRoomIdFromPseudoAlias(roomAlias);
 
-        if(roomIdFromAlias != null){
-            MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
-            try{
-                MAPIResponse mapiResponse = matrixInstantMessageAPI.postTextMessage(roomIdFromAlias, matrixAccessToken.getUserId(), notificationEvent);
-                getLogger().debug(".forwardEndpointNotification(): notification sent!");
-                return(true);
-            } catch(Exception ex){
-                getLogger().warn(".forwardEndpointNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
-                return(false);
+            getLogger().debug(".forwardEndpointNotification(): roomId for Events->{}", roomIdFromAlias);
+
+            if (roomIdFromAlias != null) {
+                MRoomTextMessageEvent notificationEvent = notificationEventFactory.newNotificationEvent(roomIdFromAlias, notification);
+                try {
+                    MAPIResponse mapiResponse = getMatrixInstantMessageAPI().postTextMessage(roomIdFromAlias, getMatrixAccessToken().getUserId(), notificationEvent);
+                    getLogger().debug(".forwardEndpointNotification(): notification sent!");
+                    return (true);
+                } catch (Exception ex) {
+                    getLogger().warn(".forwardEndpointNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+                    return (false);
+                }
+            } else {
+                getLogger().warn(".forwardEndpointNotification(): No room to forward endpoint notifications into (EndpointRoom->{}), ITOps Room Pseudo Alias->{}", notification.getParticipantName(), roomAlias);
+                return (false);
             }
-        } else {
-            getLogger().warn(".forwardEndpointNotification(): No room to forward endpoint notifications into (EndpointRoom->{}!", notification.getParticipantName());
+        } catch(Exception ex){
+            getLogger().warn(".forwardEndpointNotification(): Failed to send InstantMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
             return(false);
         }
     }
 
-    //
-    // Mechanism to ensure Startup
-    //
-
-    @Override
-    public void configure() throws Exception {
-        String processingPlantName = getClass().getSimpleName();
-
-        from("timer://"+processingPlantName+"?delay=1000&repeatCount=1")
-                .routeId("ProcessingPlant::"+processingPlantName)
-                .log(LoggingLevel.DEBUG, "Starting....");
-    }
-
-    //
-    // Helpers
-    //
-
-    protected void waitALittleBit(){
-        try {
-            Thread.sleep(100);
-        } catch (Exception e) {
-            getLogger().debug(".waitALittleBit():...{}, {}", ExceptionUtils.getMessage(e), ExceptionUtils.getStackTrace(e));
-        }
-    }
-
-    public String getRoomId(String alias){
-        if(roomIdMap.containsKey(alias)){
-            return(roomIdMap.get(alias));
-        }
-        List<SynapseRoom> currentStateRoomList = getCurrentStateRoomList();
-        for(SynapseRoom currentRoom: currentStateRoomList){
-            if(StringUtils.isNotEmpty(currentRoom.getCanonicalAlias())){
-                String aliasFromRoom = currentRoom.getCanonicalAlias();
-                if(aliasFromRoom.contains(alias)){
-                    roomIdMap.put(alias, currentRoom.getRoomID());
-                    return(currentRoom.getRoomID());
-                }
-            }
-        }
-        return(null);
-    }
-
-    public List<SynapseRoom> getCurrentStateRoomList(){
-        getLogger().debug(".getCurrentStateRoomList(): [Synchronise Room List] Start...");
-        Long listAge = Instant.now().getEpochSecond() - this.lastRoomListUpdate.getEpochSecond();
-        if(listAge > 10) {
-            List<SynapseRoom> newRoomList = synapseRoomAPI.getRooms("*");
-            getLogger().trace(".getCurrentStateRoomList(): [Synchronise Room List] RoomList->{}", newRoomList);
-            this.roomList.clear();
-            this.roomList.addAll(newRoomList);
-            this.lastRoomListUpdate = Instant.now();
-            getLogger().debug(".getCurrentStateRoomList(): [Synchronise Room List] Finish...");
-        }
-        return(roomList);
-    }
 }
