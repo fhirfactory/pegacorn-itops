@@ -60,6 +60,8 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
 
     private boolean firstRunComplete;
 
+    private Instant startupTime;
+
     private boolean topologySynchronisationDaemonIsStillRunning;
     private Instant topologySynchronisationDaemonLastRunTime;
 
@@ -74,6 +76,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     private Long ROOM_COMPLETE_SYNCHRONISATION_PERIOD = 900L; // Seconds
     private Long ROOM_SYNCHRONISATION_WATCHDOG_CHECK_PERIOD = 60000L;  // Milliseconds
     private Long ROOM_SYNCHRONISATION_WATCHDOG_RESET_PERIOD = 1800L;  // Milliseconds
+    private static Long ROOM_INITIAL_CHECK_PERIOD = 300L;
 
     private Long SHORT_GAPPING_PERIOD = 100L;
     private Long LONG_GAPPING_PERIOD = 1000L;
@@ -130,6 +133,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         this.topologySynchronisationDaemonLastRunTime = Instant.EPOCH;
         this.lastFullUserUpdate = Instant.EPOCH;
         this.lastFullRoomUpdate = Instant.EPOCH;
+        this.startupTime = Instant.now();
     }
 
     //
@@ -209,6 +213,14 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         this.userRoomSynchronisationDaemonLastRunTime = userRoomSynchronisationDaemonLastRunTime;
     }
 
+    public Instant getStartupTime(){
+        return(this.startupTime);
+    }
+
+    protected Long getRoomInitialCheckPeriod(){
+        return(ROOM_INITIAL_CHECK_PERIOD);
+    }
+
     //
     // Topology Synchronisation Scheduler
     //
@@ -277,6 +289,8 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             return;
         }
 
+        boolean isInitialStartupPeriod = (Instant.now().getEpochSecond() - getStartupTime().getEpochSecond()) < getRoomInitialCheckPeriod();
+
         try {
             //
             // Synchronise the User Set
@@ -294,7 +308,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             //
             // Add new users to the known room set
             Set<MatrixUser> recentAddedUsers = userCache.getRecentAddedUsers();
-            if (!recentAddedUsers.isEmpty()) {
+            if (!recentAddedUsers.isEmpty() || isInitialStartupPeriod) {
                 getLogger().debug(".userRoomSynchronisationDaemon(): [New Users Added] Start");
                 userTasks.addUsersToAllRooms(recentAddedUsers);
                 itopsConsoleLogger.logConsoleEvent("Joining recently discovered/added users to ITOps Rooms");
@@ -308,7 +322,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             //
             // Check to see if Rooms were added and Add Users to them
             Set<MatrixRoom> addedRoomSet = getRoomCache().getRecentlyAddedRooms();
-            if(!addedRoomSet.isEmpty()){
+            if(!addedRoomSet.isEmpty() || isInitialStartupPeriod){
                 getLogger().debug(".userRoomSynchronisationDaemon(): [New Rooms Added] Start");
                 userTasks.addAllUsersToRoomSet(addedRoomSet);
                 itopsConsoleLogger.logConsoleEvent("Joining users to recently discovered/added ITOps Rooms");
@@ -355,6 +369,8 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
 
         List<SynapseRoom> roomList = new ArrayList<>();
 
+        boolean isInitialStartupPeriod = (Instant.now().getEpochSecond() - getStartupTime().getEpochSecond()) < getRoomInitialCheckPeriod();
+
         //
         // 1st, do check of the Synapse/Matrix-Application-Service Connection
         getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Application-Services Connection Initialisation] Start");
@@ -390,7 +406,10 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
         if(updatedTopology){
             itopsConsoleLogger.logConsoleEvent("Doing a full synchronisation ITOps-Rooms: Topology Update");
         }
-        if (doRegularCheck || updatedTopology) {
+        if(isInitialStartupPeriod){
+            itopsConsoleLogger.logConsoleEvent("Doing a full synchronisation ITOps-Rooms: Initial Check Period");
+        }
+        if (doRegularCheck || updatedTopology || isInitialStartupPeriod) {
             shouldDoFullRoomSynchronisation = true;
             this.lastFullRoomUpdate = Instant.now();
         }
