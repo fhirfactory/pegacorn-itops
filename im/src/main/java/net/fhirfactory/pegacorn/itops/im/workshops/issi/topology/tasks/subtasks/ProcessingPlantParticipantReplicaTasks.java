@@ -74,45 +74,51 @@ public class ProcessingPlantParticipantReplicaTasks extends BaseParticipantRepli
         getLogger().debug(".createProcessingPlantSpace(): Entry, processingPlantParticipantName->{}", processingPlantParticipantName);
 
         try {
-            String participantRoomAlias = getRoomIdentityFactory().buildProcessingPlantSpacePseudoAlias(processingPlantParticipantName);
             String spaceId = null;
             MatrixRoom participantComponentRoom = null;
+            ProcessingPlantSpaceDetail processingPlantSpace = null;
+
             boolean foundSubsystemEventsRoom = false;
             boolean foundSubsystemMetricsRoom = false;
             boolean foundSubsystemSubscriptionsRoom = false;
             boolean foundSubsystemTasksRoom = false;
             boolean foundSubsystemComponentsRoom = false;
 
-            ProcessingPlantSpaceDetail processingPlantSpace = null;
+            if(participantRoom != null){
+                spaceId = participantRoom.getRoomID();
+            } else {
 
-            //
-            // Is the room in the cache?
-            if (participantRoom == null) {
-                MatrixRoom existingRoom = getRoomCache().getRoomFromPseudoAlias(participantRoomAlias);
-                if (existingRoom != null) {
-                    getLogger().trace(".createProcessingPlantSpace(): [Add Space(s) As Required] Room actually exists for ->{}", processingPlantParticipantName);
-                    participantRoom = existingRoom;
+                String participantRoomAlias = getRoomIdentityFactory().buildProcessingPlantSpacePseudoAlias(processingPlantParticipantName);
+
+                //
+                // Is the room in the cache?
+                if (participantRoom == null) {
+                    MatrixRoom existingRoom = getRoomCache().getRoomFromPseudoAlias(participantRoomAlias);
+                    if (existingRoom != null) {
+                        getLogger().trace(".createProcessingPlantSpace(): [Add Space(s) As Required] Room actually exists for ->{}", processingPlantParticipantName);
+                        participantRoom = existingRoom;
+                    }
                 }
-            }
-            //
-            // Is the room in Synapse already?
-            if (participantRoom == null) {
-                List<SynapseRoom> rooms = getSynapseRoomAPI().getRooms(participantRoomAlias);
-                if (!rooms.isEmpty()) {
-                    participantRoom = new MatrixRoom(rooms.get(0));
-                    getRoomCache().addRoom(participantRoom);
+                //
+                // Is the room in Synapse already?
+                if (participantRoom == null) {
+                    List<SynapseRoom> rooms = getSynapseRoomAPI().getRooms(participantRoomAlias);
+                    if (!rooms.isEmpty()) {
+                        participantRoom = new MatrixRoom(rooms.get(0));
+                        getRoomCache().addRoom(participantRoom);
+                    }
                 }
-            }
-            //
-            // If the room doesn't exist, create it.
-            if (participantRoom == null) {
-                getLogger().trace(".createProcessingPlantSpace(): [Add Space(s) As Required] Creating room for ->{}", processingPlantParticipantName);
-                MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceCreationRequest(processingPlantParticipantName, participantRoomAlias, "ProcessingPlant", MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
-                participantRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
-                if (participantRoom != null) {
-                    getRoomCache().addRoom(participantRoom);
+                //
+                // If the room doesn't exist, create it.
+                if (participantRoom == null) {
+                    getLogger().trace(".createProcessingPlantSpace(): [Add Space(s) As Required] Creating room for ->{}", processingPlantParticipantName);
+                    MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceCreationRequest(processingPlantParticipantName, participantRoomAlias, "ProcessingPlant", MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
+                    participantRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
+                    if (participantRoom != null) {
+                        getRoomCache().addRoom(participantRoom);
+                    }
+                    getLogger().trace(".createProcessingPlantSpace(): [Add Space(s) As Required] Created Room ->{}", participantRoom);
                 }
-                getLogger().trace(".createProcessingPlantSpace(): [Add Space(s) As Required] Created Room ->{}", participantRoom);
             }
 
             //
@@ -130,26 +136,27 @@ public class ProcessingPlantParticipantReplicaTasks extends BaseParticipantRepli
                 } else {
                     for (MatrixRoom currentRoom : participantRoom.getContainedRooms()) {
                         if (StringUtils.isNotEmpty(currentRoom.getCanonicalAlias())) {
+                            getLogger().debug(".createProcessingPlantSpace(): Checking contained rooms, roomName->{}, roomCanonicalAlias->{}", currentRoom.getName(), currentRoom.getCanonicalAlias());
                             if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomPseudoAlias(processingPlantParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_CONSOLE))) {
                                 foundSubsystemEventsRoom = true;
-                                getLogger().trace(".createProcessingPlantSpace(): {} Events Room Exists", processingPlantParticipantName);
+                                getLogger().debug(".createProcessingPlantSpace(): {} Events Room Exists", processingPlantParticipantName);
                             }
                             if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomPseudoAlias(processingPlantParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_METRICS))) {
                                 foundSubsystemMetricsRoom = true;
-                                getLogger().trace(".createProcessingPlantSpace(): {} Metrics Room Exists", processingPlantParticipantName);
+                                getLogger().debug(".createProcessingPlantSpace(): {} Metrics Room Exists", processingPlantParticipantName);
                             }
                             if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomPseudoAlias(processingPlantParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_SUBSCRIPTIONS))) {
                                 foundSubsystemSubscriptionsRoom = true;
-                                getLogger().trace(".createProcessingPlantSpace(): {} Subscription Room Exists", processingPlantParticipantName);
+                                getLogger().debug(".createProcessingPlantSpace(): {} Subscription Room Exists", processingPlantParticipantName);
                             }
                             if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomPseudoAlias(processingPlantParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_TASKS))) {
                                 foundSubsystemTasksRoom = true;
-                                getLogger().trace(".createProcessingPlantSpace(): {} Task Reporting Room Exists", processingPlantParticipantName);
+                                getLogger().debug(".createProcessingPlantSpace(): {} Task Reporting Room Exists", processingPlantParticipantName);
                             }
                             if (currentRoom.getCanonicalAlias().startsWith("#" + getRoomIdentityFactory().buildOAMRoomPseudoAlias(processingPlantParticipantName, OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_COMPONENTS))) {
                                 foundSubsystemComponentsRoom = true;
                                 participantComponentRoom = currentRoom;
-                                getLogger().trace(".createProcessingPlantSpace(): {} Component Space Exists", processingPlantParticipantName);
+                                getLogger().debug(".createProcessingPlantSpace(): {} Component Space Exists", processingPlantParticipantName);
                             }
                         }
                         if (foundSubsystemComponentsRoom && foundSubsystemEventsRoom && foundSubsystemMetricsRoom && foundSubsystemSubscriptionsRoom && foundSubsystemTasksRoom) {

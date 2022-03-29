@@ -33,7 +33,6 @@ import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlan
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.WorkUnitProcessorSummary;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.WorkshopSummary;
 import net.fhirfactory.pegacorn.itops.im.datatypes.ProcessingPlantSpaceDetail;
-import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.subtasks.EndpointParticipantReplicaTasks;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.subtasks.ProcessingPlantParticipantReplicaTasks;
@@ -48,12 +47,13 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 @ApplicationScoped
 public class ITOpsTopologySynchronisationTasks {
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsTopologySynchronisationTasks.class);
+
+    private static int MAXIMUM_SPACE_TREE_DEPTH = 10;
 
     @Inject
     private SynapseRoomMethods synapseRoomAPI;
@@ -138,71 +138,19 @@ public class ITOpsTopologySynchronisationTasks {
 
         ProcessingPlantSpaceDetail processingPlantSpace = processingPlantReplicaServices.createProcessingPlantSpaceIfNotThere(processingPlant.getParticipantName(), processingPlantMatrixRoom);
         if(processingPlantSpace != null) {
-            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processingPlantSpace->{}", processingPlantSpace);
+            getLogger().debug(".createParticipantSpacesAndRoomsIfNotThere(): processingPlantSpace->{}", processingPlantSpace);
             for (WorkshopSummary currentWorkshop : processingPlant.getWorkshops().values()) {
-                getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: currentWorkshop->{}", currentWorkshop);
-                String workshopPseudoAlias = roomIdentityFactory.buildWorkshopSpacePseudoAlias(currentWorkshop.getParticipantName());
-                MatrixRoom currentWorkshopSpace = resolveMatrixRoomFromParticipantName(processingPlantSpace.getProcessingPlantComponentSpace().getContainedRooms(), workshopPseudoAlias);
-                String workshopId = null;
-                if(currentWorkshopSpace == null) {
-                    getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: creating currentWorkshopSpace->{}", currentWorkshopSpace);
-                    currentWorkshopSpace = workshopReplicaServices.createSubSpaceIfNotThere(processingPlantSpace.getProcessingPlantComponentSpace().getRoomID(), currentWorkshopSpace, currentWorkshop);
-                    if(currentWorkshopSpace != null){
-                        workshopId = currentWorkshopSpace.getRoomID();
-                    }
-                } else {
-                    getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: matrix space already exists for currentWorkshopSpace->{}", currentWorkshopSpace);
-                    workshopId = currentWorkshopSpace.getRoomID();
-                }
-                if(StringUtils.isNotEmpty(workshopId)) {
+                MatrixRoom currentWorkshopSpace = processWorkshopSpace(currentWorkshop, processingPlantSpace);
+                if(currentWorkshopSpace != null) {
+                    String workshopId = currentWorkshopSpace.getCanonicalAlias();
                     getLogger().debug(".createParticipantSpacesAndRoomsIfNotThere(): processing workshop: workshopId->{}", workshopId);
                     for (WorkUnitProcessorSummary currentWUPSummary : currentWorkshop.getWorkUnitProcessors().values()) {
-                        getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: currentWUPSummary->{}", currentWUPSummary);
-                        MatrixRoom currentWUPSpace = null;
-                        String wupSpacePseudoId = roomIdentityFactory.buildWorkUnitProcessorSpacePseudoAlias(currentWUPSummary.getParticipantName());
-                        currentWUPSpace = resolveMatrixRoomFromParticipantName(currentWorkshopSpace.getContainedRooms(), wupSpacePseudoId);
-                        String wupSpaceId = null;
-                        String wupSpaceAliasId = null;
-                        if(currentWUPSpace == null) {
-                            getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: currentWUPSpace->{}", currentWUPSpace);
-                            currentWUPSpace = wupReplicaServices.createWorkUnitProcessorSpaceIfNotThere(workshopId, currentWUPSpace, currentWUPSummary);
-                        }
-                        if(currentWUPSpace != null){
-                            wupSpaceId = currentWUPSpace.getRoomID();
-                            wupSpaceAliasId = currentWUPSpace.getCanonicalAlias();
-                        }
-                        getLogger().debug(".createParticipantSpacesAndRoomsIfNotThere(): processing wup: wupSpaceAliasId->{}", wupSpaceAliasId);
-                        if(StringUtils.isNotEmpty(wupSpaceId)) {
+                        MatrixRoom currentWUPSpace = processWorkUnitProcessorSpace(currentWorkshopSpace, currentWUPSummary);
+                        if(currentWUPSpace != null) {
+                            String wupSpaceAliasId = currentWUPSpace.getCanonicalAlias();
                             getLogger().debug(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: wupSpaceAliasId->{}", wupSpaceAliasId);
                             for (EndpointSummary currentEndpointSummary : currentWUPSummary.getEndpoints().values()) {
-                                getLogger().info(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: currentEndpointSummary->{}", currentEndpointSummary);
-                                String endpointSpacePseudoId = roomIdentityFactory.buildEndpointSpacePseudoAlias(currentEndpointSummary.getParticipantName());
-                                MatrixRoom currentEndpointSpace = resolveMatrixRoomFromParticipantName(currentWUPSpace.getContainedRooms(), endpointSpacePseudoId);
-                                getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: currentEndpointSpace->{}", currentEndpointSpace);
-                                if(currentEndpointSpace == null){
-                                    currentEndpointSpace = endpointReplicaServices.createEndpointSpaceIfRequired(currentWUPSummary.getParticipantName(), wupSpaceId, currentEndpointSpace, currentEndpointSummary);
-                                }
-                                String endPointId = null;
-                                String endpointAliasId = null;
-                                if(currentEndpointSpace != null){
-                                    endPointId = currentEndpointSpace.getRoomID();
-                                    endpointAliasId = currentEndpointSpace.getCanonicalAlias();
-                                }
-                                getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: endpointAliasId->{}", endpointAliasId);
-                                if(StringUtils.isNotEmpty(endPointId)) {
-                                    getLogger().trace(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: endpointAliasId->{}", endpointAliasId);
-                                    boolean isMLLPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_CLIENT);
-                                    boolean isMLLPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_SERVER);
-                                    boolean isHTTPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_CLIENT);
-                                    boolean isHTTPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_SERVER);
-                                    boolean isFileShareSink = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.FILE_SHARE_SINK);
-                                    boolean isFileShareSource = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.FILE_SHARE_SOURCE);
-                                    if (isHTTPClient || isHTTPServer || isMLLPClient || isMLLPServer || isFileShareSink || isFileShareSource) {
-                                        matrixSpaceAPI.addChildToSpace(processingPlantSpace.getProcessingPlantSpace().getRoomID(), endPointId, matrixAccessToken.getHomeServer());
-                                    }
-                                } else {
-                                    getLogger().info(".createParticipantSpacesAndRoomsIfNotThere(): processing endpoints for wup: Could not resolve any endpoints for ->{}", currentEndpointSummary.getParticipantName());
-                                }
+                                MatrixRoom endpointSpace = processEndpointSpace(processingPlantSpace, currentWUPSpace, currentWUPSummary.getParticipantName(), currentEndpointSummary);
                             }
                         } else {
                             getLogger().error(".createParticipantSpacesAndRoomsIfNotThere(): Cannot create WUP Room for {}",currentWUPSummary.getParticipantName());
@@ -216,6 +164,50 @@ public class ITOpsTopologySynchronisationTasks {
             getLogger().error(".createParticipantSpacesAndRoomsIfNotThere(): Cannot create Participant Room for {}",processingPlant.getParticipantName());
         }
         getLogger().debug(".createParticipantSpacesAndRoomsIfNotThere(): Exit");
+    }
+
+    protected MatrixRoom processWorkshopSpace(WorkshopSummary currentWorkshop, ProcessingPlantSpaceDetail processingPlantSpace){
+        getLogger().debug(".processWorkshopSpace(): Entry, currentWorkshop->{}", currentWorkshop);
+        String workshopPseudoAlias = roomIdentityFactory.buildWorkshopSpacePseudoAlias(currentWorkshop.getParticipantName());
+        MatrixRoom currentWorkshopSpace = resolveMatrixRoomFromParticipantName(processingPlantSpace.getProcessingPlantComponentSpace().getContainedRooms(), workshopPseudoAlias);
+        getLogger().debug(".processWorkshopSpace(): processing workshop: currentWorkshopSpace->{}", currentWorkshopSpace);
+        currentWorkshopSpace = workshopReplicaServices.createSubSpaceIfNotThere(processingPlantSpace.getProcessingPlantComponentSpace().getRoomID(), currentWorkshopSpace, currentWorkshop);
+        getLogger().debug(".processWorkshopSpace(): Exit, currentWorkshopSpace->{}", currentWorkshopSpace);
+        return(currentWorkshopSpace);
+    }
+
+    protected MatrixRoom processWorkUnitProcessorSpace(MatrixRoom currentWorkshopSpace, WorkUnitProcessorSummary currentWUPSummary){
+        getLogger().debug(".processWorkUnitProcessorSpace(): processing wup: currentWUPSummary->{}", currentWUPSummary);
+        MatrixRoom currentWUPSpace = null;
+        String wupSpacePseudoId = roomIdentityFactory.buildWorkUnitProcessorSpacePseudoAlias(currentWUPSummary.getParticipantName());
+        currentWUPSpace = resolveMatrixRoomFromParticipantName(currentWorkshopSpace.getContainedRooms(), wupSpacePseudoId);
+        getLogger().debug(".processWorkUnitProcessorSpace(): processing wup: currentWUPSpace->{}", currentWUPSpace);
+        currentWUPSpace = wupReplicaServices.createWorkUnitProcessorSpaceIfNotThere(currentWorkshopSpace.getRoomID(), currentWUPSpace, currentWUPSummary);
+        getLogger().debug(".processWorkUnitProcessorSpace(): Exit, currentWUPSpace->{}", currentWUPSpace);
+        return(currentWUPSpace);
+    }
+
+    protected MatrixRoom processEndpointSpace(ProcessingPlantSpaceDetail processingPlantSpace, MatrixRoom currentWUPSpace, String currentWUPParticipantName, EndpointSummary currentEndpointSummary){
+        getLogger().debug(".processEndpointSpace(): processing endpoints for wup: currentEndpointSummary->{}", currentEndpointSummary);
+        String endpointSpacePseudoId = roomIdentityFactory.buildEndpointSpacePseudoAlias(currentEndpointSummary.getParticipantName());
+        MatrixRoom currentEndpointSpace = resolveMatrixRoomFromParticipantName(currentWUPSpace.getContainedRooms(), endpointSpacePseudoId);
+        getLogger().debug(".processEndpointSpace(): processing endpoints for wup: currentEndpointSpace->{}", currentEndpointSpace);
+        currentEndpointSpace = endpointReplicaServices.createEndpointSpaceIfRequired(currentWUPParticipantName, currentWUPSpace.getRoomID(), currentEndpointSpace, currentEndpointSummary);
+        if(currentEndpointSpace != null) {
+            getLogger().trace(".processEndpointSpace(): processing endpoints for wup: endpointAliasId->{}", currentEndpointSpace.getCanonicalAlias());
+            boolean isMLLPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_CLIENT);
+            boolean isMLLPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.MLLP_SERVER);
+            boolean isHTTPClient = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_CLIENT);
+            boolean isHTTPServer = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.HTTP_API_SERVER);
+            boolean isFileShareSink = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.FILE_SHARE_SINK);
+            boolean isFileShareSource = currentEndpointSummary.getEndpointType().equals(PetasosEndpointTopologyTypeEnum.FILE_SHARE_SOURCE);
+            if (isHTTPClient || isHTTPServer || isMLLPClient || isMLLPServer || isFileShareSink || isFileShareSource) {
+                matrixSpaceAPI.addChildToSpace(processingPlantSpace.getProcessingPlantSpace().getRoomID(), currentEndpointSpace.getRoomID(), matrixAccessToken.getHomeServer());
+            }
+        } else {
+            getLogger().debug(".processEndpointSpace(): processing endpoints for wup: Could not resolve any endpoints for ->{}", currentEndpointSummary.getParticipantName());
+        }
+        return(currentEndpointSpace);
     }
 
     protected MatrixRoom resolveMatrixRoomFromParticipantName(List<MatrixRoom> matrixRoomList, String pseudoAlias){
@@ -244,7 +236,7 @@ public class ITOpsTopologySynchronisationTasks {
         return(null);
     }
 
-    public MatrixRoom getSpaceRoomSetForSubsystemParticipant(String subsystemParticipantName){
+    public MatrixRoom getSpaceTreeForSubsystemParticipant(String subsystemParticipantName){
         getLogger().debug(".getSpaceRoomSetForSubsystemParticipant(): Entry, subsystemParticipantName->{}", subsystemParticipantName);
 
         String participantRoomAlias = roomIdentityFactory.buildProcessingPlantSpacePseudoAlias(subsystemParticipantName);
@@ -258,17 +250,14 @@ public class ITOpsTopologySynchronisationTasks {
 
         String spaceId = subsystemRoom.getRoomID();
         getLogger().trace(".getSpaceRoomSetForSubsystemParticipant(): Getting hierarchy for spaceId->{}", spaceId);
-        List<MatrixRoom> containedRooms = matrixSpaceAPI.getContainedRooms(subsystemRoom, 8);
-        getLogger().trace(".getSpaceRoomSetForSubsystemParticipant(): containedRooms->{}", containedRooms);
-
-        getLogger().trace(".getSpaceRoomSetForSubsystemParticipant(): Populating Hierarchy Model");
-        addChildren(subsystemRoom, containedRooms);
-        getLogger().trace(".getSpaceRoomSetForSubsystemParticipant(): Populating Hierarchy Model... Done");
+        MatrixRoom spaceTree = matrixSpaceAPI.getSpaceTree(subsystemRoom, getMaximumSpaceTreeDepth());
+        getLogger().trace(".getSpaceRoomSetForSubsystemParticipant(): containedRooms->{}", spaceTree);
 
         getLogger().debug(".getSpaceRoomSetForSubsystemParticipant(): Exit, subsystemRoom->{}", subsystemRoom);
         return(subsystemRoom);
     }
 
+    /*
     public void addChildren(MatrixRoom parent, List<MatrixRoom> roomList){
         getLogger().debug(".addChildren(): Entry, parent->{},parent.getContainedRooms().size()->{}, List.size()->{}", parent, parent.getContainedRooms().size(), roomList.size());
         if(parent == null){
@@ -299,12 +288,18 @@ public class ITOpsTopologySynchronisationTasks {
         getLogger().debug(".addChildren(): Exit, parent->{}", parent);
     }
 
+     */
+
     //
     // Getters and Setters
     //
 
     protected Logger getLogger(){
         return(LOG);
+    }
+
+    protected int getMaximumSpaceTreeDepth(){
+        return(MAXIMUM_SPACE_TREE_DEPTH);
     }
 
 }

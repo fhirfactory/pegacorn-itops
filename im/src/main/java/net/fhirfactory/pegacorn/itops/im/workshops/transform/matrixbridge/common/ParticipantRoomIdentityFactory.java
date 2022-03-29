@@ -40,7 +40,7 @@ public class ParticipantRoomIdentityFactory {
 
     protected String buildRoomPseudoAlias(String participantName, OAMRoomTypeEnum oamRoomType){
         String flattenedParticipantName = flattenParticipantName(participantName);
-        String aliasId =oamRoomType.getAliasPrefix().toLowerCase(Locale.ROOT) + flattenedParticipantName;
+        String aliasId = oamRoomType.getAliasPrefix().toLowerCase(Locale.ROOT) + flattenedParticipantName;
         return(aliasId);
     }
 

@@ -90,25 +90,25 @@ public class ITOpsUserTasks {
     public void addUsersToAllRooms(Set<MatrixUser> addedUserSet) {
         getLogger().debug(".addNewUsersToAllRooms(): Entry");
 
-        getLogger().info(".addNewUsersToAllRooms(): [Auto Join New Users to the Older Rooms] Start...");
+        getLogger().debug(".addNewUsersToAllRooms(): [Auto Join New Users to the Older Rooms] Start...");
         try {
             for (MatrixRoom currentRoom : roomCache.getFullRoomSet()) {
                 String currentRoomAlias = currentRoom.getCanonicalAlias();
                 if (StringUtils.isNotEmpty(currentRoomAlias)) {
                     if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
                         if (allShouldJoin(currentRoomAlias)) {
-                            getLogger().info(".addNewUsersToAllRooms(): [Auto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
+                            getLogger().debug(".addNewUsersToAllRooms(): [Auto Join New Users to the Older Rooms] Processing Room/Space->{}", currentRoomAlias);
                             String roomId = currentRoom.getRoomID();
                             List<String> roomMembers = synapseRoomAPI.getRoomMembers(roomId);
                             for (SynapseUser currentUser : addedUserSet) {
-                                getLogger().info(".addNewUsersToAllRooms(): RoomId->{}, roomMembers->{}", roomId, roomMembers);
+                                getLogger().debug(".addNewUsersToAllRooms(): RoomId->{}, roomMembers->{}", roomId, roomMembers);
                                 if(roomMembers.contains(currentUser.getName())) {
                                     getLogger().trace(".addNewUsersToAllRooms(): [Auto Join Users to Added Rooms] User Already Member, not Adding->{}", currentUser.getName());
                                 } else {
                                     if (currentUser.getName().contentEquals(matrixAccessToken.getUserId()) || currentUser.getName().contentEquals(synapseAccessToken.getUserId())) {
-                                        getLogger().info(".addNewUsersToAllRooms(): [Auto Join New Users to the Older Rooms] Not Adding User->{}", currentUser.getName());
+                                        getLogger().debug(".addNewUsersToAllRooms(): [Auto Join New Users to the Older Rooms] Not Adding User->{}", currentUser.getName());
                                     } else {
-                                        getLogger().info(".addNewUsersToAllRooms(): [Auto Join New Users to the Older Rooms] Processing User->{}", currentUser.getName());
+                                        getLogger().debug(".addNewUsersToAllRooms(): [Auto Join New Users to the Older Rooms] Processing User->{}", currentUser.getName());
                                         synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
                                     }
                                 }
@@ -120,7 +120,7 @@ public class ITOpsUserTasks {
         } catch (Exception ex) {
             getLogger().warn(".addNewUsersToAllRooms(): Failure to add New Users to Spaces/Rooms, message->{}, stackTrace->{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
         }
-        getLogger().info(".addNewUsersToAllRooms(): [Auto New Users to the Older Rooms] Finish...");
+        getLogger().debug(".addNewUsersToAllRooms(): [Auto New Users to the Older Rooms] Finish...");
 
         getLogger().debug(".addNewUsersToAllRooms(): Exit");
     }
@@ -138,7 +138,7 @@ public class ITOpsUserTasks {
                             String roomId = currentRoom.getRoomID();
                             List<String> roomMembers = synapseRoomAPI.getRoomMembers(roomId);
                             for (MatrixUser currentUser : knownUsers) {
-                                getLogger().info(".addAllUsersToRoomSet(): RoomId->{}, roomMembers->{}", roomId, roomMembers);
+                                getLogger().debug(".addAllUsersToRoomSet(): RoomId->{}, roomMembers->{}", roomId, roomMembers);
                                 if(roomMembers.contains(currentUser.getName())) {
                                     getLogger().trace(".addAllUsersToRoomSet(): [Auto Join Users to Added Rooms] User Already Member, not Adding->{}", currentUser.getName());
                                 } else {
@@ -171,18 +171,18 @@ public class ITOpsUserTasks {
                 if (StringUtils.isNotEmpty(currentRoomAlias)) {
                     if (itopsRoomHelpers.isAnITOpsRoom(currentRoomAlias)) {
                         if (allShouldJoin(currentRoomAlias)) {
-                            getLogger().info(".joinAllUsersToAllRooms(): [Auto Join All Users to All Rooms] Processing Room/Space->{}", currentRoomAlias);
+                            getLogger().debug(".joinAllUsersToAllRooms(): [Auto Join All Users to All Rooms] Processing Room/Space->{}", currentRoomAlias);
                             String roomId = currentRoom.getRoomID();
                             List<String> roomMembers = synapseRoomAPI.getRoomMembers(roomId);
                             for (MatrixUser currentUser : fullUserSet) {
-                                getLogger().info(".joinAllUsersToAllRooms(): RoomId->{}, roomMembers->{}", roomId, roomMembers);
+                                getLogger().debug(".joinAllUsersToAllRooms(): RoomId->{}, roomMembers->{}", roomId, roomMembers);
                                 if(roomMembers.contains(currentUser.getName())) {
                                     getLogger().trace(".joinAllUsersToAllRooms(): [Auto Join Users to Added Rooms] User Already Member, not Adding->{}", currentUser.getName());
                                 } else {
                                     if (currentUser.getName().contentEquals(matrixAccessToken.getUserId()) || currentUser.getName().contentEquals(synapseAccessToken.getUserId())) {
-                                        getLogger().info(".joinAllUsersToAllRooms(): [Auto Join All Users to All Rooms] Not Adding User->{}", currentUser.getName());
+                                        getLogger().debug(".joinAllUsersToAllRooms(): [Auto Join All Users to All Rooms] Not Adding User->{}", currentUser.getName());
                                     } else {
-                                        getLogger().info(".joinAllUsersToAllRooms(): [Auto Join All Users to All Rooms] Processing User->{}", currentUser.getName());
+                                        getLogger().debug(".joinAllUsersToAllRooms(): [Auto Join All Users to All Rooms] Processing User->{}", currentUser.getName());
                                         synapseRoomAPI.addRoomMember(roomId, currentUser.getName());
                                     }
                                 }

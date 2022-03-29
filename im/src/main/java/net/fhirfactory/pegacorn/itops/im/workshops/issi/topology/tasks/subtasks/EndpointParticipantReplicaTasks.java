@@ -122,7 +122,7 @@ public class EndpointParticipantReplicaTasks extends BaseParticipantReplicaServi
                     MRoomCreation mRoomCreation = getMatrixBridgeFactories().newSpaceInSpaceCreationRequest(endpointParticipantDisplayName, endpointParticipantAlias, endpointTopic, parentSpaceId, MRoomPresetEnum.ROOM_PRESET_PUBLIC_CHAT, MRoomVisibilityEnum.ROOM_VISIBILITY_PUBLIC);
                     endpointRoom = getMatrixSpaceAPI().createSpace(getMatrixAccessToken().getUserId(), mRoomCreation);
                     if (endpointRoom != null) {
-                        getLogger().info(".createEndpointSpaceIfRequired(): Created Space ->{}", endpointRoom);
+                        getLogger().debug(".createEndpointSpaceIfRequired(): Created Space ->{}", endpointRoom);
                         getRoomCache().addRoom(endpointRoom);
                     }
                 }
@@ -144,7 +144,7 @@ public class EndpointParticipantReplicaTasks extends BaseParticipantReplicaServi
                     if(StringUtils.isEmpty(endpointRoom.getCanonicalAlias())){
                         getLogger().warn(".createEndpointSpaceIfRequired(): Logic Conflict for endpointParticipantName");
                     }
-                    getLogger().info(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.ParticipantName={}, Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}", parentParticipantName, parentSpaceId, endpointParticipantName, endpointRoom.getCanonicalAlias(), endpointSpaceId);
+                    getLogger().debug(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.ParticipantName={}, Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}", parentParticipantName, parentSpaceId, endpointParticipantName, endpointRoom.getCanonicalAlias(), endpointSpaceId);
                     getMatrixSpaceAPI().addChildToSpace(parentSpaceId, endpointSpaceId, getMatrixAccessToken().getHomeServer());
                 }
             }

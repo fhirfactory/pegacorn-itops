@@ -38,10 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ITOpsKnownRoomAndSpaceMapDM {
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsKnownRoomAndSpaceMapDM.class);
 
-    // ConcurrentHashMap<spaceId, MatrixRoom>
-    private ConcurrentHashMap<String, MatrixRoom> knownSpaces;
-    private Object knownSpacesLock;
-
     // ConcurrentHashMap<roomId, MatrixRoom>
     private ConcurrentHashMap<String, MatrixRoom> knownRooms;
     private Object knownRoomsLock;
@@ -58,7 +54,6 @@ public class ITOpsKnownRoomAndSpaceMapDM {
     private ConcurrentHashMap<String, MatrixRoom> lastUsedRoomSet;
     private Object knownLastScannedRoomSet;
 
-
     @Inject
     private ParticipantRoomIdentityFactory roomIdentityFactory;
 
@@ -68,11 +63,9 @@ public class ITOpsKnownRoomAndSpaceMapDM {
 
     public ITOpsKnownRoomAndSpaceMapDM(){
         this.knownRooms = new ConcurrentHashMap<>();
-        this.knownSpaces = new ConcurrentHashMap<>();
         this.pseudoAliasRoomMap = new ConcurrentHashMap<>();
         this.canonicalAliasRoomMap = new ConcurrentHashMap<>();
         this.lastUsedRoomSet = new ConcurrentHashMap<>();
-        this.knownSpacesLock = new Object();
         this.knownRoomsLock = new Object();
         this.knownPseudoAliasRoomMapLock = new Object();
         this.knownCanonicalAliasRoomMapLock = new Object();
@@ -91,10 +84,6 @@ public class ITOpsKnownRoomAndSpaceMapDM {
         return knownRooms;
     }
 
-    protected ConcurrentHashMap<String, MatrixRoom> getKnownSpaces() {
-        return knownSpaces;
-    }
-
     public ConcurrentHashMap<String, String> getPseudoAliasRoomMap() {
         return pseudoAliasRoomMap;
     }
@@ -105,10 +94,6 @@ public class ITOpsKnownRoomAndSpaceMapDM {
 
     protected Logger getLogger(){
         return(LOG);
-    }
-
-    protected Object getKnownSpacesLock() {
-        return knownSpacesLock;
     }
 
     protected Object getKnownRoomsLock() {
@@ -289,20 +274,6 @@ public class ITOpsKnownRoomAndSpaceMapDM {
         return(room);
     }
 
-    public List<String> getSpaceNameSet(){
-        getLogger().debug(".getSpaceNameSet(): Entry");
-        List<String> spaceNameSet = new ArrayList<>();
-        synchronized(getKnownSpacesLock()) {
-            Enumeration<String> keys = getKnownSpaces().keys();
-            while (keys.hasMoreElements()) {
-                SynapseRoom synapseRoom = getKnownSpaces().get(keys.nextElement());
-                spaceNameSet.add(synapseRoom.getName());
-            }
-        }
-        getLogger().debug(".getSpaceNameSet(): Exit");
-        return(spaceNameSet);
-    }
-
     public String getRoomIdFromPseudoAlias(String alias){
         getLogger().debug(".getRoomIdFromPseudoAlias(): Entry, alias->{}", alias);
 
@@ -373,30 +344,34 @@ public class ITOpsKnownRoomAndSpaceMapDM {
         return(roomSet);
     }
 
-    public Set<MatrixRoom> getRecentlyAddedRooms(){
+    public Set<MatrixRoom> getRecentlyAddedRooms() {
         getLogger().debug(".getRecentlyAddedRooms(): Entry");
         Set<MatrixRoom> addedRoomSet = new HashSet<>();
-        if(getKnownRooms().isEmpty()){
-            return(addedRoomSet);
+        if (getKnownRooms().isEmpty()) {
+            return (addedRoomSet);
         }
-        if(getLastUsedRoomSet().isEmpty()){
-            synchronized (getKnownRoomsLock()){
-                addedRoomSet.addAll(getKnownRooms().values());
-            }
-        } else {
-            synchronized (getKnownRoomsLock()) {
-                Collection<MatrixRoom> currentKnownRoomSet = getKnownRooms().values();
+        synchronized (getKnownRoomsLock()) {
+            Collection<MatrixRoom> currentKnownRoomSet = getKnownRooms().values();
+            if (getLastUsedRoomSet().isEmpty()) {
+                addedRoomSet.addAll(currentKnownRoomSet);
+            } else {
+                Collection<MatrixRoom> previousKnownRoomSet = getLastUsedRoomSet().values();
                 for (MatrixRoom currentKnownRoom : currentKnownRoomSet) {
-                    if (!getLastUsedRoomSet().containsKey(currentKnownRoom.getRoomID())) {
+                    boolean currentKnownRoomWasThere = false;
+                    for (MatrixRoom previousKnownRoom : previousKnownRoomSet) {
+                        if (currentKnownRoom.getRoomID().contentEquals(previousKnownRoom.getRoomID())) {
+                            currentKnownRoomWasThere = true;
+                            break;
+                        }
+                    }
+                    if (!currentKnownRoomWasThere) {
                         addedRoomSet.add(currentKnownRoom);
                     }
                 }
                 getLastUsedRoomSet().clear();
-                synchronized (getKnownRoomsLock()){
-                    for (MatrixRoom currentKnownRoom : currentKnownRoomSet) {
-                        getLastUsedRoomSet().put(currentKnownRoom.getRoomID(),currentKnownRoom);
-                    }
-                }
+            }
+            for (MatrixRoom currentKnownRoom : currentKnownRoomSet) {
+                getLastUsedRoomSet().put(currentKnownRoom.getRoomID(), currentKnownRoom);
             }
         }
         getLogger().debug(".getRecentlyAddedRooms(): Exit, addedRoomSet->{}", addedRoomSet);

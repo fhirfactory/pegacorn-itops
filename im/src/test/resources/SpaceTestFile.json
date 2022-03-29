@@ -1,0 +1,1489 @@
+{
+  "rooms": [
+    {
+      "room_id": "!RWMJVXUWzvjMvAaNyv:aether-itops-replica-server.local",
+      "name": "MITaF.IIE",
+      "topic": "ProcessingPlant",
+      "canonical_alias": "#subsystem-mitaf-iie:aether-itops-replica-server.local",
+      "num_joined_members": 2,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!XxOmVZFeDZhukfUzhc:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!RWMJVXUWzvjMvAaNyv:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351718165
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!eZYCCkyKoTSonuvxES:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":aether-itops-replica-server.local"
+            ]
+          },
+          "room_id": "!RWMJVXUWzvjMvAaNyv:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648353151923
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!aggZAdBBzndFoCliLK:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":aether-itops-replica-server.local"
+            ]
+          },
+          "room_id": "!RWMJVXUWzvjMvAaNyv:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648353152048
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!ElpioplAOSKHzxBywF:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":aether-itops-replica-server.local"
+            ]
+          },
+          "room_id": "!RWMJVXUWzvjMvAaNyv:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648353152192
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!isjGEmLbdusDMmDSpl:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":aether-itops-replica-server.local"
+            ]
+          },
+          "room_id": "!RWMJVXUWzvjMvAaNyv:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648353152324
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!HPiZUByZYmKKeUziDH:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":aether-itops-replica-server.local"
+            ]
+          },
+          "room_id": "!RWMJVXUWzvjMvAaNyv:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648353155625
+        }
+      ]
+    },
+    {
+      "room_id": "!XxOmVZFeDZhukfUzhc:aether-itops-replica-server.local",
+      "name": "Components",
+      "topic": "Processing Plant Components",
+      "canonical_alias": "#subsystem-components-mitaf-iie:aether-itops-replica-server.local",
+      "num_joined_members": 2,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!YOfBYjgujMXZCkFSRq:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!XxOmVZFeDZhukfUzhc:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351722907
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!FcrShUqHFGVWuEBaGN:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!XxOmVZFeDZhukfUzhc:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351779902
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!ETSwgPTYJjZKPAnXzU:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!XxOmVZFeDZhukfUzhc:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351784682
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!YToeKnvxIiRSbiwCaR:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!XxOmVZFeDZhukfUzhc:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351793109
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!JPeDaQcWfOjydsPfaz:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!XxOmVZFeDZhukfUzhc:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351802510
+        }
+      ]
+    },
+    {
+      "room_id": "!YOfBYjgujMXZCkFSRq:aether-itops-replica-server.local",
+      "name": "InternalIPC",
+      "topic": "Workshop, MITaF.IIE.InternalIPC",
+      "canonical_alias": "#workshop-mitaf-iie-internalipc:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!jQNZWhMPgPCRWfAQjG:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!YOfBYjgujMXZCkFSRq:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351723819
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!GdIhoZtRgSxBjWTXIy:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!YOfBYjgujMXZCkFSRq:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351731508
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!YOfBYjgujMXZCkFSRq:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351736047
+        }
+      ]
+    },
+    {
+      "room_id": "!jQNZWhMPgPCRWfAQjG:aether-itops-replica-server.local",
+      "name": "PetasosTaskForwarderWUP",
+      "topic": "WorkUnitProcessor, PetasosTaskForwarderWUP-10-1-243-233",
+      "canonical_alias": "#wup-mitaf-iie-internalipc-petasostaskforwarderwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!yExxKICXhBVCoovEHY:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!jQNZWhMPgPCRWfAQjG:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351724678
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!EvOCwQJeTUijBAEKLN:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!jQNZWhMPgPCRWfAQjG:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351725579
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!aPhcTJCahPNnIgzvxZ:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!jQNZWhMPgPCRWfAQjG:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351726464
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!IWbQOIvYHTgKGfwjvJ:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!jQNZWhMPgPCRWfAQjG:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351727264
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!GdJoCFsQSDhtuHeBJJ:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!jQNZWhMPgPCRWfAQjG:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351728121
+        }
+      ]
+    },
+    {
+      "room_id": "!yExxKICXhBVCoovEHY:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "PetasosTaskForwarderWUP.Console",
+      "canonical_alias": "#wup-console-mitaf-iie-internalipc-petasostaskforwarderwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!EvOCwQJeTUijBAEKLN:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "PetasosTaskForwarderWUP.Metrics",
+      "canonical_alias": "#wup-metrics-mitaf-iie-internalipc-petasostaskforwarderwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!aPhcTJCahPNnIgzvxZ:aether-itops-replica-server.local",
+      "name": "Subscriptions",
+      "topic": "PetasosTaskForwarderWUP.Subscriptions",
+      "canonical_alias": "#wup-subscriptions-mitaf-iie-internalipc-petasostaskforwarderwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!IWbQOIvYHTgKGfwjvJ:aether-itops-replica-server.local",
+      "name": "ActivityReports",
+      "topic": "PetasosTaskForwarderWUP.ActivityReports",
+      "canonical_alias": "#wup-tasks-mitaf-iie-internalipc-petasostaskforwarderwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!GdJoCFsQSDhtuHeBJJ:aether-itops-replica-server.local",
+      "name": "MITaF.IIE.InternalIPC.Messaging",
+      "topic": "Endpoint, JGroups.IntegrationPoint::Messaging, MITaF.IIE.InternalIPC.PetasosTaskForwarderWUP",
+      "canonical_alias": "#endpoint-mitaf-iie-internalipc-messaging:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!XnaCkKqSqRkyLBlbBG:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!GdJoCFsQSDhtuHeBJJ:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351728877
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!RsbPRadSjHpkJlOwEY:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!GdJoCFsQSDhtuHeBJJ:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351729650
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!seJUxKCdzITaayPnWe:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!GdJoCFsQSDhtuHeBJJ:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351730477
+        }
+      ]
+    },
+    {
+      "room_id": "!XnaCkKqSqRkyLBlbBG:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "MITaF.IIE.InternalIPC.Messaging.Console",
+      "canonical_alias": "#endpoint-console-mitaf-iie-internalipc-messaging:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!RsbPRadSjHpkJlOwEY:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "MITaF.IIE.InternalIPC.Messaging.Metrics",
+      "canonical_alias": "#endpoint-metrics-mitaf-iie-internalipc-messaging:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!seJUxKCdzITaayPnWe:aether-itops-replica-server.local",
+      "name": "ActivityReports",
+      "topic": "MITaF.IIE.InternalIPC.Messaging.ActivityReports",
+      "canonical_alias": "#endpoint-tasks-mitaf-iie-internalipc-messaging:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!GdIhoZtRgSxBjWTXIy:aether-itops-replica-server.local",
+      "name": "PetasosTaskReceiverWUP",
+      "topic": "WorkUnitProcessor, PetasosTaskReceiverWUP-10-1-243-233",
+      "canonical_alias": "#wup-mitaf-iie-internalipc-petasostaskreceiverwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!cernPoQSsCzJwnjfQY:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!GdIhoZtRgSxBjWTXIy:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351732296
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!zFBGhIjaVwiJUiHmmd:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!GdIhoZtRgSxBjWTXIy:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351733285
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!HCsNTKYfyeeVKdDtoF:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!GdIhoZtRgSxBjWTXIy:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351734107
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!JvDmXGEktAFMdbrZMQ:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!GdIhoZtRgSxBjWTXIy:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351735034
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!GdJoCFsQSDhtuHeBJJ:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!GdIhoZtRgSxBjWTXIy:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351735112
+        }
+      ]
+    },
+    {
+      "room_id": "!cernPoQSsCzJwnjfQY:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "PetasosTaskReceiverWUP.Console",
+      "canonical_alias": "#wup-console-mitaf-iie-internalipc-petasostaskreceiverwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!zFBGhIjaVwiJUiHmmd:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "PetasosTaskReceiverWUP.Metrics",
+      "canonical_alias": "#wup-metrics-mitaf-iie-internalipc-petasostaskreceiverwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!HCsNTKYfyeeVKdDtoF:aether-itops-replica-server.local",
+      "name": "Subscriptions",
+      "topic": "PetasosTaskReceiverWUP.Subscriptions",
+      "canonical_alias": "#wup-subscriptions-mitaf-iie-internalipc-petasostaskreceiverwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!JvDmXGEktAFMdbrZMQ:aether-itops-replica-server.local",
+      "name": "ActivityReports",
+      "topic": "PetasosTaskReceiverWUP.ActivityReports",
+      "canonical_alias": "#wup-tasks-mitaf-iie-internalipc-petasostaskreceiverwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+      "name": "JGroupsServiceManagementWUP",
+      "topic": "WorkUnitProcessor, JGroupsServiceManagementWUP-10-1-243-233",
+      "canonical_alias": "#wup-mitaf-iie-internalipc-jgroupsservicemanagementwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!nLwgBtWmCMgMKyhWrx:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351736773
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!BlQkwkCKfzGtvetCvv:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351737669
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!iPxHEgYrWuFmRZKSkp:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351738383
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!BjYEzYDJslihzPaCID:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351739061
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!kKnAeAaVSAmNsLORrh:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351739804
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!KcahRPQOiTsDrrHIDl:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351745926
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!PDudHhxGPgNaLpcxko:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351755411
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!wcdbQngSKKYhkbFvtS:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351765783
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!GdJoCFsQSDhtuHeBJJ:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351771324
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!wKmHgUrEDsktJtpGNQ:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351773079
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!pUeIVgUrhqLMxGyAhL:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!dfkwxryyorTjbmuThU:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351776576
+        }
+      ]
+    },
+    {
+      "room_id": "!nLwgBtWmCMgMKyhWrx:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "JGroupsServiceManagementWUP.Console",
+      "canonical_alias": "#wup-console-mitaf-iie-internalipc-jgroupsservicemanagementwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!BlQkwkCKfzGtvetCvv:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "JGroupsServiceManagementWUP.Metrics",
+      "canonical_alias": "#wup-metrics-mitaf-iie-internalipc-jgroupsservicemanagementwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!iPxHEgYrWuFmRZKSkp:aether-itops-replica-server.local",
+      "name": "Subscriptions",
+      "topic": "JGroupsServiceManagementWUP.Subscriptions",
+      "canonical_alias": "#wup-subscriptions-mitaf-iie-internalipc-jgroupsservicemanagementwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!BjYEzYDJslihzPaCID:aether-itops-replica-server.local",
+      "name": "ActivityReports",
+      "topic": "JGroupsServiceManagementWUP.ActivityReports",
+      "canonical_alias": "#wup-tasks-mitaf-iie-internalipc-jgroupsservicemanagementwup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!kKnAeAaVSAmNsLORrh:aether-itops-replica-server.local",
+      "name": "MITaF.IIE.InternalIPC.SubscriptionServices",
+      "topic": "Endpoint, JGroups.IntegrationPoint::SubscriptionServices, MITaF.IIE.InternalIPC.JGroupsServiceManagementWUP",
+      "canonical_alias": "#endpoint-mitaf-iie-internalipc-subscriptionservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!cZaWOguoHNyFgWMdMa:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!kKnAeAaVSAmNsLORrh:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351740483
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!SwKjpyAnNLlwAgrBFZ:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!kKnAeAaVSAmNsLORrh:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351741398
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!UGWIPVBfwDouuyGpWW:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!kKnAeAaVSAmNsLORrh:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351743604
+        }
+      ]
+    },
+    {
+      "room_id": "!cZaWOguoHNyFgWMdMa:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "MITaF.IIE.InternalIPC.SubscriptionServices.Console",
+      "canonical_alias": "#endpoint-console-mitaf-iie-internalipc-subscriptionservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!SwKjpyAnNLlwAgrBFZ:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "MITaF.IIE.InternalIPC.SubscriptionServices.Metrics",
+      "canonical_alias": "#endpoint-metrics-mitaf-iie-internalipc-subscriptionservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!UGWIPVBfwDouuyGpWW:aether-itops-replica-server.local",
+      "name": "ActivityReports",
+      "topic": "MITaF.IIE.InternalIPC.SubscriptionServices.ActivityReports",
+      "canonical_alias": "#endpoint-tasks-mitaf-iie-internalipc-subscriptionservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!KcahRPQOiTsDrrHIDl:aether-itops-replica-server.local",
+      "name": "MITaF.IIE.InternalIPC.TaskingServices",
+      "topic": "Endpoint, JGroups.IntegrationPoint::TaskingServices, MITaF.IIE.InternalIPC.JGroupsServiceManagementWUP",
+      "canonical_alias": "#endpoint-mitaf-iie-internalipc-taskingservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!jrjiYvSGQRuylojcUn:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!KcahRPQOiTsDrrHIDl:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351748163
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!vRABmUsigKnjBEMAMH:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!KcahRPQOiTsDrrHIDl:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351750356
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!AzlheZwEJWvbuOBfdl:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!KcahRPQOiTsDrrHIDl:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351752788
+        }
+      ]
+    },
+    {
+      "room_id": "!jrjiYvSGQRuylojcUn:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "MITaF.IIE.InternalIPC.TaskingServices.Console",
+      "canonical_alias": "#endpoint-console-mitaf-iie-internalipc-taskingservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!vRABmUsigKnjBEMAMH:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "MITaF.IIE.InternalIPC.TaskingServices.Metrics",
+      "canonical_alias": "#endpoint-metrics-mitaf-iie-internalipc-taskingservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!AzlheZwEJWvbuOBfdl:aether-itops-replica-server.local",
+      "name": "ActivityReports",
+      "topic": "MITaF.IIE.InternalIPC.TaskingServices.ActivityReports",
+      "canonical_alias": "#endpoint-tasks-mitaf-iie-internalipc-taskingservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!PDudHhxGPgNaLpcxko:aether-itops-replica-server.local",
+      "name": "MITaF.IIE.InternalIPC.TopologyServices",
+      "topic": "Endpoint, JGroups.IntegrationPoint::TopologyServices, MITaF.IIE.InternalIPC.JGroupsServiceManagementWUP",
+      "canonical_alias": "#endpoint-mitaf-iie-internalipc-topologyservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!dwjBbYLBxlqVoBsUOm:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!PDudHhxGPgNaLpcxko:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351758128
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!hluXBGvMDbYPvUOMzj:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!PDudHhxGPgNaLpcxko:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351760828
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!wbrfBMdzXLsMmjelEZ:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!PDudHhxGPgNaLpcxko:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351763741
+        }
+      ]
+    },
+    {
+      "room_id": "!dwjBbYLBxlqVoBsUOm:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "MITaF.IIE.InternalIPC.TopologyServices.Console",
+      "canonical_alias": "#endpoint-console-mitaf-iie-internalipc-topologyservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!hluXBGvMDbYPvUOMzj:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "MITaF.IIE.InternalIPC.TopologyServices.Metrics",
+      "canonical_alias": "#endpoint-metrics-mitaf-iie-internalipc-topologyservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!wbrfBMdzXLsMmjelEZ:aether-itops-replica-server.local",
+      "name": "ActivityReports",
+      "topic": "MITaF.IIE.InternalIPC.TopologyServices.ActivityReports",
+      "canonical_alias": "#endpoint-tasks-mitaf-iie-internalipc-topologyservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!wcdbQngSKKYhkbFvtS:aether-itops-replica-server.local",
+      "name": "MITaF.IIE.InternalIPC.InterceptionServices",
+      "topic": "Endpoint, JGroups.IntegrationPoint::InterceptionServices, MITaF.IIE.InternalIPC.JGroupsServiceManagementWUP",
+      "canonical_alias": "#endpoint-mitaf-iie-internalipc-interceptionservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!NAlQVzYEwVInaHAYwx:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!wcdbQngSKKYhkbFvtS:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351767709
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!BcoCNVOHPeMDiiekyf:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!wcdbQngSKKYhkbFvtS:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351769399
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!hsfEKAxAJiyEimooyW:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!wcdbQngSKKYhkbFvtS:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351771106
+        }
+      ]
+    },
+    {
+      "room_id": "!NAlQVzYEwVInaHAYwx:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "MITaF.IIE.InternalIPC.InterceptionServices.Console",
+      "canonical_alias": "#endpoint-console-mitaf-iie-internalipc-interceptionservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!BcoCNVOHPeMDiiekyf:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "MITaF.IIE.InternalIPC.InterceptionServices.Metrics",
+      "canonical_alias": "#endpoint-metrics-mitaf-iie-internalipc-interceptionservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!hsfEKAxAJiyEimooyW:aether-itops-replica-server.local",
+      "name": "ActivityReports",
+      "topic": "MITaF.IIE.InternalIPC.InterceptionServices.ActivityReports",
+      "canonical_alias": "#endpoint-tasks-mitaf-iie-internalipc-interceptionservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!wKmHgUrEDsktJtpGNQ:aether-itops-replica-server.local",
+      "name": "MITaF.IIE.InternalIPC.AuditService",
+      "topic": "Endpoint, JGroups.IntegrationPoint::AuditServices, MITaF.IIE.InternalIPC.JGroupsServiceManagementWUP",
+      "canonical_alias": "#endpoint-mitaf-iie-internalipc-auditservice:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!DJGjSqChZmYoyPkhEe:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!wKmHgUrEDsktJtpGNQ:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351774225
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!fUpekatGHwtKVuhgkx:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!wKmHgUrEDsktJtpGNQ:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351774912
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!oVLItASmMOmZkplaMy:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!wKmHgUrEDsktJtpGNQ:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351775682
+        }
+      ]
+    },
+    {
+      "room_id": "!DJGjSqChZmYoyPkhEe:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "MITaF.IIE.InternalIPC.AuditService.Console",
+      "canonical_alias": "#endpoint-console-mitaf-iie-internalipc-auditservice:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!fUpekatGHwtKVuhgkx:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "MITaF.IIE.InternalIPC.AuditService.Metrics",
+      "canonical_alias": "#endpoint-metrics-mitaf-iie-internalipc-auditservice:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!oVLItASmMOmZkplaMy:aether-itops-replica-server.local",
+      "name": "ActivityReports",
+      "topic": "MITaF.IIE.InternalIPC.AuditService.ActivityReports",
+      "canonical_alias": "#endpoint-tasks-mitaf-iie-internalipc-auditservice:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!pUeIVgUrhqLMxGyAhL:aether-itops-replica-server.local",
+      "name": "MITaF.IIE.InternalIPC.MetricsServices",
+      "topic": "Endpoint, JGroups.IntegrationPoint::MetricsServices, MITaF.IIE.InternalIPC.JGroupsServiceManagementWUP",
+      "canonical_alias": "#endpoint-mitaf-iie-internalipc-metricsservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!iGbVVtnHOMTOgISOyQ:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!pUeIVgUrhqLMxGyAhL:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351777360
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!xjbfxbjsRFTuZIppGE:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!pUeIVgUrhqLMxGyAhL:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351778229
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!rJolMbiUmZYaDlxRGM:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!pUeIVgUrhqLMxGyAhL:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351779032
+        }
+      ]
+    },
+    {
+      "room_id": "!iGbVVtnHOMTOgISOyQ:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "MITaF.IIE.InternalIPC.MetricsServices.Console",
+      "canonical_alias": "#endpoint-console-mitaf-iie-internalipc-metricsservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!xjbfxbjsRFTuZIppGE:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "MITaF.IIE.InternalIPC.MetricsServices.Metrics",
+      "canonical_alias": "#endpoint-metrics-mitaf-iie-internalipc-metricsservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!rJolMbiUmZYaDlxRGM:aether-itops-replica-server.local",
+      "name": "ActivityReports",
+      "topic": "MITaF.IIE.InternalIPC.MetricsServices.ActivityReports",
+      "canonical_alias": "#endpoint-tasks-mitaf-iie-internalipc-metricsservices:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!FcrShUqHFGVWuEBaGN:aether-itops-replica-server.local",
+      "name": "Audit",
+      "topic": "Workshop, MITaF.IIE.Audit",
+      "canonical_alias": "#workshop-mitaf-iie-audit:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!nzFEUPuDLaviNwumfB:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!FcrShUqHFGVWuEBaGN:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351780821
+        }
+      ]
+    },
+    {
+      "room_id": "!nzFEUPuDLaviNwumfB:aether-itops-replica-server.local",
+      "name": "AuditEventCaptureAndRouteWUP",
+      "topic": "WorkUnitProcessor, AuditEventCaptureAndRouteWUP-10-1-243-233",
+      "canonical_alias": "#wup-mitaf-iie-audit-auditeventcaptureandroutewup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": true,
+      "room_type": "m.space",
+      "children_state": [
+        {
+          "type": "m.space.child",
+          "state_key": "!wBYyimKnLrQUqwMSwu:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!nzFEUPuDLaviNwumfB:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351781620
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!JuivkCkinsqwBeyzwj:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!nzFEUPuDLaviNwumfB:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351782382
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!fseDpaRzyzbYUoGeQv:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!nzFEUPuDLaviNwumfB:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351783140
+        },
+        {
+          "type": "m.space.child",
+          "state_key": "!AdQGvlkGInPncWdSEn:aether-itops-replica-server.local",
+          "content": {
+            "suggested": false,
+            "auto_join": true,
+            "via": [
+              ":null"
+            ]
+          },
+          "room_id": "!nzFEUPuDLaviNwumfB:aether-itops-replica-server.local",
+          "sender": "@application-service-admin:aether-itops-replica-server.local",
+          "origin_server_ts": 1648351783871
+        }
+      ]
+    },
+    {
+      "room_id": "!wBYyimKnLrQUqwMSwu:aether-itops-replica-server.local",
+      "name": "Console",
+      "topic": "AuditEventCaptureAndRouteWUP.Console",
+      "canonical_alias": "#wup-console-mitaf-iie-audit-auditeventcaptureandroutewup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    },
+    {
+      "room_id": "!JuivkCkinsqwBeyzwj:aether-itops-replica-server.local",
+      "name": "Metrics",
+      "topic": "AuditEventCaptureAndRouteWUP.Metrics",
+      "canonical_alias": "#wup-metrics-mitaf-iie-audit-auditeventcaptureandroutewup:aether-itops-replica-server.local",
+      "num_joined_members": 1,
+      "join_rules": "public",
+      "join_rule": "public",
+      "world_readable": true,
+      "guest_can_join": false,
+      "children_state": []
+    }
+  ],
+  "next_batch": "KAlBrQtqDttdMryAttXHmwWe"
+}

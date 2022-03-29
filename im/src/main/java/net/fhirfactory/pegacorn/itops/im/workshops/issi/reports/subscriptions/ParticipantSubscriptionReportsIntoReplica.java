@@ -210,7 +210,7 @@ public class ParticipantSubscriptionReportsIntoReplica extends OAMRoomMessageInj
             if (roomIdFromAlias != null) {
 
                 MRoomTextMessageEvent subscriberSummaryEvent = subscriptionReportEventFactory.newWUPSubscriberSubscriptionReportEvent(roomIdFromAlias, subscriptionSummary);
-                getLogger().info(".forwardWorkUnitProcessorSubscriptionReport(): roomIdFromAlias->{}, subscriberSummaryEvent->{}", roomIdFromAlias, subscriberSummaryEvent);
+                getLogger().debug(".forwardWorkUnitProcessorSubscriptionReport(): roomIdFromAlias->{}, subscriberSummaryEvent->{}", roomIdFromAlias, subscriberSummaryEvent);
                 if (subscriberSummaryEvent != null) {
                     MAPIResponse mapiResponse = getMatrixInstantMessageAPI().postTextMessage(roomIdFromAlias, getMatrixAccessToken().getUserId(), subscriberSummaryEvent);
                 }

@@ -107,7 +107,7 @@ public class WorkUnitProcessorParticipantReplicaTasks extends BaseParticipantRep
                     getLogger().trace(".createSubSpaceIfNotThere(): Room already exists ->{}", wupAlias);
                     wupRoom = existingRoom;
                     wupRoomId = wupRoom.getRoomID();
-                    getLogger().info(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}",  workshopId, wupParticipantName, wupRoom.getCanonicalAlias(), wupRoom.getRoomID());
+                    getLogger().debug(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}",  workshopId, wupParticipantName, wupRoom.getCanonicalAlias(), wupRoom.getRoomID());
                     getMatrixSpaceAPI().addChildToSpace(workshopId, wupRoom.getRoomID(), getMatrixAccessToken().getHomeServer());
                     getLogger().debug(".createWorkUnitProcessorSpace(): [Add Space(s) For WUP As Required] Creating Space for WUP ->{}", wupAlias);
                 }
@@ -120,7 +120,7 @@ public class WorkUnitProcessorParticipantReplicaTasks extends BaseParticipantRep
                     wupRoom = new MatrixRoom(rooms.get(0));
                     wupRoomId = wupRoom.getRoomID();
                     getRoomCache().addRoom(wupRoom);
-                    getLogger().info(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}",  workshopId, wupParticipantName, wupRoom.getCanonicalAlias(), wupRoom.getRoomID());
+                    getLogger().debug(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}",  workshopId, wupParticipantName, wupRoom.getCanonicalAlias(), wupRoom.getRoomID());
                     getMatrixSpaceAPI().addChildToSpace(workshopId, wupRoomId, getMatrixAccessToken().getHomeServer());
                 }
             }
@@ -138,7 +138,7 @@ public class WorkUnitProcessorParticipantReplicaTasks extends BaseParticipantRep
                 }
                 if (wupRoom != null) {
                     wupRoomId = wupRoom.getRoomID();
-                    getLogger().info(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}",  workshopId, wupParticipantName, wupRoom.getCanonicalAlias(), wupRoom.getRoomID());
+                    getLogger().debug(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomAlias->{}, Child.RoomId->{}",  workshopId, wupParticipantName, wupRoom.getCanonicalAlias(), wupRoom.getRoomID());
                     getMatrixSpaceAPI().addChildToSpace(workshopId, wupRoomId, getMatrixAccessToken().getHomeServer());
                 }
             }

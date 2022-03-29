@@ -76,7 +76,7 @@ public class WorkshopParticipantReplicaTasks extends BaseParticipantReplicaServi
                 if (!rooms.isEmpty()) {
                     newSpace = new MatrixRoom(rooms.get(0));
                     getRoomCache().addRoom(newSpace);
-                    getLogger().info(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomId->{}",  processingPlantSpaceId, participantName, newSpace.getRoomID());
+                    getLogger().debug(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomId->{}",  processingPlantSpaceId, participantName, newSpace.getRoomID());
                     getMatrixSpaceAPI().addChildToSpace(processingPlantSpaceId, newSpace.getRoomID(), getMatrixAccessToken().getHomeServer());
                 }
             }
@@ -91,7 +91,7 @@ public class WorkshopParticipantReplicaTasks extends BaseParticipantReplicaServi
                 }
                 if (newSpace != null) {
                     getLogger().trace(".createSubSpaceIfNotThere(): Space ->{}", newSpace);
-                    getLogger().info(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomId->{}",  processingPlantSpaceId, participantName, newSpace.getRoomID());
+                    getLogger().debug(".createEndpointSpaceIfRequired(): Adding Room/Space as Child: Parent.RoomId->{}, Child.ParticipantName->{}, Child.RoomId->{}",  processingPlantSpaceId, participantName, newSpace.getRoomID());
                     getMatrixSpaceAPI().addChildToSpace(processingPlantSpaceId, newSpace.getRoomID(), getMatrixAccessToken().getHomeServer());
                 }
             }
