@@ -47,4 +47,8 @@ public class ITOpsIMNames {
     public String getInteractITOpsIMHTTPServerName(){
         return("iops-im-rest");
     }
+
+    public String getITOpsNotificationToCommunicateMessageIngresFeed(){
+        return("direct:ITOpsNotification.To.CommunicateMessage.Ingres");
+    }
 }

@@ -115,23 +115,30 @@ public class ITOpsKnownUserMapDM {
         if(knownUserSet.isEmpty()){
             return(addedUsers);
         }
-        if(previousKnownUserSet.isEmpty()){
-            synchronized (knownUserSetLock){
-                addedUsers.addAll(knownUserSet.values());
-            }
-        } else {
-            synchronized (knownUserSetLock) {
-                Collection<MatrixUser> knownUsers = knownUserSet.values();
+        synchronized (knownUserSetLock) {
+            Collection<MatrixUser> knownUsers = knownUserSet.values();
+            if(previousKnownUserSet.isEmpty()){
+                addedUsers.addAll(knownUsers);
+            } else {
+                Collection<MatrixUser> previouslyKnownUsers = previousKnownUserSet.values();
                 for (MatrixUser currentKnownUser : knownUsers) {
-                    if (!previousKnownUserSet.containsKey(currentKnownUser.getName())) {
+                    boolean currentKnownUserWasThere = false;
+                    for(MatrixUser previousKnownUser: previouslyKnownUsers) {
+                        if (currentKnownUser.getName().contentEquals(previousKnownUser.getName())) {
+                            currentKnownUserWasThere = true;
+                            break;
+                        }
+                    }
+                    if(!currentKnownUserWasThere){
                         addedUsers.add(currentKnownUser);
                     }
                 }
                 previousKnownUserSet.clear();
-                for (MatrixUser currentKnownUser : knownUsers) {
-                    previousKnownUserSet.put(currentKnownUser.getName(), currentKnownUser);
-                }
             }
+            for (MatrixUser currentKnownUser : knownUsers) {
+                previousKnownUserSet.put(currentKnownUser.getName(), currentKnownUser);
+            }
+
         }
         return(addedUsers);
     }

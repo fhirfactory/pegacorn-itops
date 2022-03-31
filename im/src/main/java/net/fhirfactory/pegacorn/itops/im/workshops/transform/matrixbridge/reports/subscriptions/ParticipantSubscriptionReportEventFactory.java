@@ -73,7 +73,7 @@ public class ParticipantSubscriptionReportEventFactory {
     //
 
     public MRoomTextMessageEvent newAsASubscriberSubscriptionReportEvent(String roomId, Collection<PetasosSubscriberSubscriptionSummary> subscriptionSummary){
-        getLogger().debug(".newAsASubscriberSubscriptionReportEvent(): Entry, subscriptionSummary->{}", subscriptionSummary);
+        getLogger().info(".newAsASubscriberSubscriptionReportEvent(): Entry, subscriptionSummary->{}", subscriptionSummary);
         if(subscriptionSummary == null){
             getLogger().debug(".newAsASubscriberSubscriptionReportEvent(): Exit, subscriptionSummary is null, returning -null-");
             return(null);
@@ -97,7 +97,9 @@ public class ParticipantSubscriptionReportEventFactory {
             descriptionBuilder.append("Publisher --> "+ currentSummary.getPublisherParticipantName()+ "\n");
             descriptionBuilder.append("Subscriber --> "+ currentSummary.getParticipantName() + "\n");
             for(TaskWorkItemSubscriptionType currentTopic: currentSummary.getSubscribedTaskWorkItems()) {
-                descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
+                if(currentTopic.hasContentDescriptor()) {
+                    descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
+                }
                 if(currentTopic.hasContainerDescriptor()) {
                     descriptionBuilder.append("*** ContainerDescriptor --> " + currentTopic.getContainerDescriptor().toDotString() + "\n");
                 }
@@ -127,13 +129,13 @@ public class ParticipantSubscriptionReportEventFactory {
 
         subscriptionReportNotificationEvent.setContent(textContent);
 
-        getLogger().debug(".newAsASubscriberSubscriptionReportEvent(): Exit, subscriptionReportNotificationEvent->{}", subscriptionReportNotificationEvent);
+        getLogger().info(".newAsASubscriberSubscriptionReportEvent(): Exit, subscriptionReportNotificationEvent->{}", subscriptionReportNotificationEvent);
         return(subscriptionReportNotificationEvent);
     }
 
 
     public MRoomTextMessageEvent newAsAPublisherSubscriptionReportEvent(String roomId, Collection<PetasosPublisherSubscriptionSummary> publisherSummary){
-        getLogger().debug(".newAsAPublisherSubscriptionReportEvent(): Entry, publisherSummary->{}", publisherSummary);
+        getLogger().info(".newAsAPublisherSubscriptionReportEvent(): Entry, publisherSummary->{}", publisherSummary);
         if(publisherSummary == null){
             getLogger().debug(".newAsAPublisherSubscriptionReportEvent(): Exit, publisherSummary is null, returning -null-");
             return(null);
@@ -158,7 +160,9 @@ public class ParticipantSubscriptionReportEventFactory {
             descriptionBuilder.append("Publisher --> "+ currentSummary.getParticipantName()+ "\n");
             descriptionBuilder.append("Subscriber --> "+ currentSummary.getSubscriberParticipantName() + "\n");
             for(TaskWorkItemSubscriptionType currentTopic: currentSummary.getSubscribedTaskWorkItems()) {
-                descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
+                if(currentTopic.hasContentDescriptor()) {
+                    descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
+                }
                 if(currentTopic.hasContainerDescriptor()) {
                     descriptionBuilder.append("*** ContainerDescriptor --> " + currentTopic.getContainerDescriptor().toDotString() + "\n");
                 }
@@ -188,16 +192,16 @@ public class ParticipantSubscriptionReportEventFactory {
 
         publisherReportEvent.setContent(textContent);
 
-        getLogger().debug(".newAsAPublisherSubscriptionReportEvent(): Exit, publisherReportEvent->{}", publisherReportEvent);
+        getLogger().info(".newAsAPublisherSubscriptionReportEvent(): Exit, publisherReportEvent->{}", publisherReportEvent);
         return(publisherReportEvent);
     }
 
     public MRoomTextMessageEvent newWUPSubscriberSubscriptionReportEvent(String roomId, PetasosWorkUnitProcessorSubscriptionSummary subscriptionSummary){
-        getLogger().info(".newAsASubscriberSubscriptionReportEvent(): Entry");
-        getLogger().trace(".newAsASubscriberSubscriptionReportEvent(): publisherSummary->{}", subscriptionSummary);
+        getLogger().info(".newWUPSubscriberSubscriptionReportEvent(): Entry, publisherSummary->{}", subscriptionSummary);
+
 
         if(subscriptionSummary == null){
-            getLogger().debug(".newAsASubscriberSubscriptionReportEvent(): Exit, publisherSummary is null, returning -null-");
+            getLogger().debug(".newWUPSubscriberSubscriptionReportEvent(): Exit, publisherSummary is null, returning -null-");
             return(null);
         }
 
@@ -213,9 +217,11 @@ public class ParticipantSubscriptionReportEventFactory {
         descriptionBuilder.append("Subscriber --> "+ subscriptionSummary.getParticipantName()+ "\n");
         descriptionBuilder.append("ComponentId --> "+ subscriptionSummary.getComponentID() + "\n");
         for(TaskWorkItemSubscriptionType currentTopic: subscriptionSummary.getSubscribedTaskWorkItems()) {
-            descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
+            if(currentTopic.hasContentDescriptor()) {
+                descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
+            }
             if(currentTopic.hasContainerDescriptor()) {
-                descriptionBuilder.append("*** ContainerDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
+                descriptionBuilder.append("*** ContainerDescriptor --> " + currentTopic.getContainerDescriptor().toDotString() + "\n");
             }
             if(currentTopic.hasNormalisationStatus()) {
                 descriptionBuilder.append("*** Normalisation --> " + currentTopic.getNormalisationStatus().getDisplayName() + "\n");
@@ -242,8 +248,7 @@ public class ParticipantSubscriptionReportEventFactory {
 
         subscriptionReportNotificationEvent.setContent(textContent);
 
-        getLogger().info(".newAsASubscriberSubscriptionReportEvent(): Exit");
-        getLogger().trace(".newAsASubscriberSubscriptionReportEvent(): Exit, subscriptionReportNotificationEvent->{}", subscriptionReportNotificationEvent);
+        getLogger().info(".newAsASubscriberSubscriptionReportEvent(): Exit, subscriptionReportNotificationEvent->{}", subscriptionReportNotificationEvent);
         return(subscriptionReportNotificationEvent);
     }
 
