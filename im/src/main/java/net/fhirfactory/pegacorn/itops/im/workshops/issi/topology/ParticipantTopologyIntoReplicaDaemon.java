@@ -34,7 +34,12 @@ import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKn
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownUserMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.issi.ITOpsConsoleEventLogger;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.common.ITOpsRoomHelpers;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.EndpointParticipantReplicaFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.ProcessingPlantParticipantReplicaFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.WorkUnitProcessorParticipantReplicaFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.factories.WorkshopParticipantReplicaFactory;
+import net.fhirfactory.pegacorn.itops.im.workshops.oam.ITOpsIMConsoleEventLogger;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsSubsystemParticipantTasks;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsTopologySynchronisationTasks;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsUserTasks;
@@ -120,6 +125,11 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     @Inject
     private ITOpsConsoleEventLogger itopsConsoleLogger;
 
+    @Inject
+    private ProcessingPlantParticipantReplicaFactory processingPlantReplicaServices;
+    
+    @Inject
+    private ITOpsIMConsoleEventLogger itopsConsoleLogger;
 
     //
     // Constructor(s)

@@ -57,6 +57,9 @@ public class ParticipantTaskReportsIntoReplica extends OAMRoomMessageInjectorBas
     @Inject
     private ITOpsTaskReportsDM taskReportsDM;
 
+    @Inject
+    private ITOpsKnownRoomAndSpaceMapDM roomCache;
+
     //
     // Constructor(s)
     //

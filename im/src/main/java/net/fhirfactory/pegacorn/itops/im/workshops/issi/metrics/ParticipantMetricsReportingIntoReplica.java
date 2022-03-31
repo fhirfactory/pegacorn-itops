@@ -27,30 +27,35 @@ import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAcce
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.common.OAMRoomMessageInjectorBase;
+import net.fhirfactory.pegacorn.itops.im.workshops.oam.ITOpsIMMetricsProcessor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 @ApplicationScoped
-public class ParticipantReportingIntoReplica extends OAMRoomMessageInjectorBase {
-    private static final Logger LOG = LoggerFactory.getLogger(ParticipantReportingIntoReplica.class);
+public class ParticipantMetricsReportingIntoReplica extends OAMRoomMessageInjectorBase {
+    private static final Logger LOG = LoggerFactory.getLogger(ParticipantMetricsReportingIntoReplica.class);
 
     private boolean initialised;
 
     private Long CONTENT_FORWARDER_STARTUP_DELAY = 180000L;
     private Long CONTENT_FORWARDER_REFRESH_PERIOD = 30000L;
 
+    @Inject
+    private ITOpsIMMetricsProcessor localMetricsProcessor;
+
     //
     // Constructor(s)
     //
 
-    public ParticipantReportingIntoReplica(){
+    public ParticipantMetricsReportingIntoReplica(){
         super();
         this.initialised = false;
     }
@@ -111,6 +116,14 @@ public class ParticipantReportingIntoReplica extends OAMRoomMessageInjectorBase 
 
     private void reportsAndMetricsForwarder(){
         getLogger().debug(".reportsAndMetricsForwarder(): Entry");
+
+        //
+        // Process Local Metrics 1st
+        localMetricsProcessor.captureLocalMetrics();
+        localMetricsProcessor.forwardLocalMetricsToServer();
+
+        //
+        // Now Process All Metrics
         List<PetasosComponentMetricSet> metricSets = getSystemWideMetricsCache().getUpdatedMetricSets();
         for(PetasosComponentMetricSet currentMetricSet: metricSets){
             if(getLogger().isDebugEnabled()) {
