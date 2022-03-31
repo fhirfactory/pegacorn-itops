@@ -39,6 +39,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 import static net.fhirfactory.pegacorn.internals.communicate.entities.message.valuesets.CommunicateSMSStatusEnum.CREATED;
@@ -47,12 +50,9 @@ import static net.fhirfactory.pegacorn.internals.communicate.entities.message.va
 public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationToCommunicateMessage{
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsNotificationToCommunicateSMSMessage.class);
 
-    private String targetPhoneNumber;
-    private boolean resolvedTargetSMSPhoneNumber;
+    private List<String> targetPhoneNumbers = null;
 
-    private static final String ITOPS_EMAIL_TARGET_PHONE_NUMBER = "ERROR_EVENT_SMS_TARGET_PHONE_NUMBER";
-
-    private static final String UNDEFINED_PHONE_NUMBER= "Undefined Phone Number";
+    private static final String ITOPS_SMS_TARGET_PHONE_NUMBER = "ERROR_EVENT_SMS_TARGET_PHONE_NUMBER";
 
     //
     // Constructor(s)
@@ -60,7 +60,6 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
 
     public ITOpsNotificationToCommunicateSMSMessage(){
         super();
-        resolvedTargetSMSPhoneNumber = false;
     }
 
     //
@@ -76,23 +75,25 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
     // Business Methods
     //
 
-    private String getTargetPhoneNumber(){
-        if(!this.resolvedTargetSMSPhoneNumber){
-            targetPhoneNumber = getProcessingPlant().getMeAsASoftwareComponent().getOtherConfigurationParameter(ITOPS_EMAIL_TARGET_PHONE_NUMBER);
-            if (StringUtils.isEmpty(targetPhoneNumber)) {
-                getLogger().error(".getSourceEmailAddress(): Cannot Resolve Source Address for ITOps Email Notifications");
-                this.targetPhoneNumber = UNDEFINED_PHONE_NUMBER;
-            } else {
-                this.resolvedTargetSMSPhoneNumber = true;
+    private Iterator<String> getTargetPhoneNumbers() {
+        if (targetPhoneNumbers == null){
+            targetPhoneNumbers = new ArrayList<>();
+            String targetPhoneNumbersStr = getProcessingPlant().getMeAsASoftwareComponent().getOtherConfigurationParameter(ITOPS_SMS_TARGET_PHONE_NUMBER);
+            if (targetPhoneNumbersStr != null) {
+                for (String phoneNumber : targetPhoneNumbersStr.split(",")) {
+                    if (!StringUtils.isEmpty(phoneNumber)) {
+                        targetPhoneNumbers.add(phoneNumber);
+                    }
+                }
             }
         }
-        return(this.targetPhoneNumber);
+        return(this.targetPhoneNumbers.iterator());
     }
 
     public UoW transformNotificationIntoCommunicateSMS(UoW uow, Exchange camelExchange) {
         getLogger().info(".transformNotificationIntoCommunicateSMS(): Entry, uow->{}", uow);
 
-        String targetPhone = getTargetPhoneNumber();
+        Iterator<String> targetPhones = getTargetPhoneNumbers();
 
         PetasosComponentITOpsNotification notification = camelExchange.getProperty(getLocalItopsNotificationMessagePropertyName(), PetasosComponentITOpsNotification.class);
 
@@ -103,43 +104,56 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
         }
 
         if (!uow.getProcessingOutcome().equals(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED)) {
-            if (targetPhone.contentEquals(UNDEFINED_PHONE_NUMBER)) {
+            if (!targetPhones.hasNext()) {
                 uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
                 StringBuilder errorMessageBuilder = new StringBuilder();
                 errorMessageBuilder.append("Error -> SMS Target is Undefined \n");
                 uow.setFailureDescription(errorMessageBuilder.toString());
             } else {
-                CommunicateSMSMessage smsMessage = new CommunicateSMSMessage();
-                smsMessage.setPhoneNumber(getTargetPhoneNumber());
-                smsMessage.setStatus(CREATED);
+                DataParcelManifest egressPayloadManifest = new DataParcelManifest();
+                DataParcelTypeDescriptor smsMessageDescriptor = getMessageTopicFactory().createSMSTypeDescriptor();
+                egressPayloadManifest.setContentDescriptor(smsMessageDescriptor);
+                egressPayloadManifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getSubsystemParticipantName());
+                egressPayloadManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
+                egressPayloadManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
+                egressPayloadManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);
+                egressPayloadManifest.setInterSubsystemDistributable(true);
+                
+                String message;
                 if(StringUtils.isNotEmpty(notification.getContentHeading())) {
-                    smsMessage.setMessage(notification.getContentHeading());
+                    message =notification.getContentHeading();
                 } else {
-                    smsMessage.setMessage("Error ("+notification.getParticipantName()+")");
+                    message = "Error ("+notification.getParticipantName()+")";
                 }
-                smsMessage.setSimplifiedID("CommunicateSMSMessage:" + UUID.randomUUID().toString());
-                smsMessage.setDescription("CommunicateSMSMessage: From(" + getProcessingPlant().getSubsystemParticipantName() + "), on behalf of (" + notification.getParticipantName() + ")");
-                smsMessage.setDisplayName(getProcessingPlant().getSubsystemParticipantName() + "(" + smsMessage.getSimplifiedID() + ")");
-
-                UoWPayload egressPayload = new UoWPayload();
-                try {
-                    String egressPayloadString = getJSONMapper().writeValueAsString(smsMessage);
-                    egressPayload.setPayload(egressPayloadString);
-                    DataParcelManifest egressPayloadManifest = new DataParcelManifest();
-                    DataParcelTypeDescriptor smsMessageDescriptor = getMessageTopicFactory().createSMSTypeDescriptor();
-                    egressPayloadManifest.setContentDescriptor(smsMessageDescriptor);
-                    egressPayloadManifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getSubsystemParticipantName());
-                    egressPayloadManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
-                    egressPayloadManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
-                    egressPayloadManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);
-                    egressPayloadManifest.setInterSubsystemDistributable(true);
+                String description = "CommunicateSMSMessage: From(" + getProcessingPlant().getSubsystemParticipantName() + "), on behalf of (" + notification.getParticipantName() + ")";
+                
+                do {
+                    CommunicateSMSMessage smsMessage = new CommunicateSMSMessage();
+                    smsMessage.setPhoneNumber(targetPhones.next());
+                    smsMessage.setStatus(CREATED);
+                    smsMessage.setMessage(message);
+                    smsMessage.setSimplifiedID("CommunicateSMSMessage:" + UUID.randomUUID().toString());  // use a new ID for each SMS
+                    smsMessage.setDescription(description);
+                    smsMessage.setDisplayName(getProcessingPlant().getSubsystemParticipantName() + "(" + smsMessage.getSimplifiedID() + ")");
+                    
+                    String egressPayloadString;
+                    try {
+                        egressPayloadString = getJSONMapper().writeValueAsString(smsMessage);
+                    } catch (Exception ex) {
+                        uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                        uow.setFailureDescription("Could not convert CommunicateSMSMessage to JSON String, error->" + ExceptionUtils.getMessage(ex));
+                        getLogger().warn(".transformNotificationIntoCommunicateSMS(): Could not convert CommunicateEmailMessage to JSON String, error->{}" + ExceptionUtils.getMessage(ex));
+                        break;
+                    }
+                    
+                    UoWPayload egressPayload = new UoWPayload(egressPayloadManifest, egressPayloadString);
                     egressPayload.setPayloadManifest(egressPayloadManifest);
+                    
                     uow.getEgressContent().addPayloadElement(egressPayload);
+                } while (targetPhones.hasNext());
+                
+                if (!targetPhones.hasNext()) {
                     uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
-                } catch (Exception ex) {
-                    uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-                    uow.setFailureDescription("Could not convert CommunicateSMSMessage to JSON String, error->" + ExceptionUtils.getMessage(ex));
-                    getLogger().warn(".transformNotificationIntoCommunicateSMS(): Could not convert CommunicateEmailMessage to JSON String, error->{}" + ExceptionUtils.getMessage(ex));
                 }
             }
         }
