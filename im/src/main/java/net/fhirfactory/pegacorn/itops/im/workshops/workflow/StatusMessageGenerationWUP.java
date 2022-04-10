@@ -22,7 +22,7 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.workflow;
 
 import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
-import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.itops.im.workshops.workflow.beans.ITOpsNotificationCapture;
 import net.fhirfactory.pegacorn.itops.im.workshops.workflow.beans.ITOpsNotificationToCommunicateEmailMessage;
