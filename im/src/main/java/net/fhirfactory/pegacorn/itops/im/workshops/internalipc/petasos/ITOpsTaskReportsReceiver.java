@@ -26,7 +26,7 @@ import net.fhirfactory.pegacorn.core.interfaces.oam.tasks.PetasosITOpsTaskReport
 import net.fhirfactory.pegacorn.core.interfaces.oam.tasks.PetasosITOpsTaskReportingHandlerInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsTaskReportsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos.common.ITOpsReceiverBase;
 import org.slf4j.Logger;
@@ -50,7 +50,7 @@ public class ITOpsTaskReportsReceiver extends ITOpsReceiverBase implements Petas
     // Business Methods
     //
 
-    public void sendTaskReport(PetasosComponentITOpsNotification notification) {
+    public void sendTaskReport(ITOpsNotification notification) {
         getLogger().debug(".sendTaskReport(): Entry, notification->{}", notification);
         //
         // We don't want to send taskReports for the ITOps framework itself, it would create a cyclical event
@@ -59,7 +59,7 @@ public class ITOpsTaskReportsReceiver extends ITOpsReceiverBase implements Petas
         getLogger().debug(".sendTaskReport(): Exit");
     }
 
-    public void processTaskReport(PetasosComponentITOpsNotification notification) {
+    public void processTaskReport(ITOpsNotification notification) {
         getLogger().debug(".processTaskReport(): Entry, notification->{}", notification);
         taskReportsDM.addTaskReport(notification);
         getLogger().debug(".processTaskReport(): Exit");

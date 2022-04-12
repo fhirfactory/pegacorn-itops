@@ -26,7 +26,7 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.messag
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.contenttypes.MRoomMessageTypeEnum;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.contenttypes.MTextContentType;
 import net.fhirfactory.pegacorn.communicate.matrixbridge.workshops.matrixbridge.common.RoomServerTransactionIDProvider;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ public class ParticipantTaskReportsEventFactory {
     // Business Methods
     //
 
-    public MRoomTextMessageEvent newTaskReportEvent(String roomId, PetasosComponentITOpsNotification taskReportNotification){
+    public MRoomTextMessageEvent newTaskReportEvent(String roomId, ITOpsNotification taskReportNotification){
         getLogger().debug(".newTaskReportEvent(): Entry, taskReportNotification->{}", taskReportNotification);
         if(taskReportNotification == null){
             getLogger().debug(".newTaskReportEvent(): Exit, taskReportNotification is null, returning empty list");
