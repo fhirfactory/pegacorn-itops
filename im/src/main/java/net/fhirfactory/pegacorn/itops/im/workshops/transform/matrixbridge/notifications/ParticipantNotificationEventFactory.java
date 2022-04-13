@@ -27,7 +27,7 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.messag
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.contenttypes.MTextContentType;
 import net.fhirfactory.pegacorn.communicate.matrixbridge.workshops.matrixbridge.common.RoomServerTransactionIDProvider;
 import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +51,7 @@ public class ParticipantNotificationEventFactory {
     // Business Methods
     //
 
-    public MRoomTextMessageEvent newNotificationEvent(String roomId, PetasosComponentITOpsNotification notification){
+    public MRoomTextMessageEvent newNotificationEvent(String roomId, ITOpsNotification notification){
         getLogger().debug(".newNotificationEvent(): Entry, notification->{}", notification);
         if(notification == null){
             getLogger().debug(".newNotificationEvent(): Exit, notification is null, returning empty list");
