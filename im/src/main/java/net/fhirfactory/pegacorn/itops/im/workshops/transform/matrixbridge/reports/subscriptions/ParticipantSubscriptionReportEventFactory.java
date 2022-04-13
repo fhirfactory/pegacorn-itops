@@ -30,7 +30,7 @@ import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosPublisherSubscriptionSummary;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosSubscriberSubscriptionSummary;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.petasos.task.datatypes.work.datatypes.TaskWorkItemSubscriptionType;
+import net.fhirfactory.pegacorn.core.model.petasos.subscription.datatypes.DataParcelManifestSubscriptionMaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +96,7 @@ public class ParticipantSubscriptionReportEventFactory {
         for(PetasosSubscriberSubscriptionSummary currentSummary: subscriptionSummary){
             descriptionBuilder.append("Publisher --> "+ currentSummary.getPublisherParticipantName()+ "\n");
             descriptionBuilder.append("Subscriber --> "+ currentSummary.getParticipantName() + "\n");
-            for(TaskWorkItemSubscriptionType currentTopic: currentSummary.getSubscribedTaskWorkItems()) {
+            for(DataParcelManifestSubscriptionMaskType currentTopic: currentSummary.getSubscribedTaskWorkItems()) {
                 if(currentTopic.hasContentDescriptor()) {
                     descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
                 }
@@ -159,7 +159,7 @@ public class ParticipantSubscriptionReportEventFactory {
             getLogger().trace(".newAsAPublisherSubscriptionReportEvent(): Processing currentSummary->{}", currentSummary);
             descriptionBuilder.append("Publisher --> "+ currentSummary.getParticipantName()+ "\n");
             descriptionBuilder.append("Subscriber --> "+ currentSummary.getSubscriberParticipantName() + "\n");
-            for(TaskWorkItemSubscriptionType currentTopic: currentSummary.getSubscribedTaskWorkItems()) {
+            for(DataParcelManifestSubscriptionMaskType currentTopic: currentSummary.getSubscribedTaskWorkItems()) {
                 if(currentTopic.hasContentDescriptor()) {
                     descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
                 }
@@ -216,7 +216,7 @@ public class ParticipantSubscriptionReportEventFactory {
         StringBuilder descriptionBuilder = new StringBuilder();
         descriptionBuilder.append("Subscriber --> "+ subscriptionSummary.getParticipantName()+ "\n");
         descriptionBuilder.append("ComponentId --> "+ subscriptionSummary.getComponentID() + "\n");
-        for(TaskWorkItemSubscriptionType currentTopic: subscriptionSummary.getSubscribedTaskWorkItems()) {
+        for(DataParcelManifestSubscriptionMaskType currentTopic: subscriptionSummary.getSubscribedTaskWorkItems()) {
             if(currentTopic.hasContentDescriptor()) {
                 descriptionBuilder.append("*** ContentDescriptor --> " + currentTopic.getContentDescriptor().toDotString() + "\n");
             }
