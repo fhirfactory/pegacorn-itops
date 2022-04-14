@@ -28,7 +28,7 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIRes
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
 import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
 import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterface;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.valuesets.PetasosComponentITOpsNotificationTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
@@ -131,7 +131,7 @@ public class ITOpsConsoleEventLogger {
 
         String message = messageBuilder.toString();
 
-        ITOpsNotification notification = new ITOpsNotification();
+        PetasosComponentITOpsNotification notification = new PetasosComponentITOpsNotification();
         notification.setContent(message);
         notification.setParticipantName(processingPlant.getSubsystemParticipantName());
         notification.setNotificationType(PetasosComponentITOpsNotificationTypeEnum.SUCCESS_NOTIFICATION_TYPE);
@@ -140,7 +140,7 @@ public class ITOpsConsoleEventLogger {
         logConsoleEvent(notification);
     }
 
-    protected void logConsoleEvent(ITOpsNotification notification){
+    protected void logConsoleEvent(PetasosComponentITOpsNotification notification){
         getLogger().debug(".sendConnectivityReport(): Entry, notification->{}", notification);
         try {
             String roomAlias = getRoomIdentityFactory().buildProcessingPlantRoomPseudoAlias(notification.getParticipantName(), OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_CONSOLE);

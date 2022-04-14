@@ -23,7 +23,7 @@ package net.fhirfactory.pegacorn.itops.im.workshops.workflow.beans;
 
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelTypeDescriptor;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
@@ -62,7 +62,7 @@ public class ITOpsNotificationCapture extends ITOpsNotificationToCommunicateMess
     //
 
 
-    public UoW captureNotification(ITOpsNotification notification, Exchange camelExchange){
+    public UoW captureNotification(PetasosComponentITOpsNotification notification, Exchange camelExchange){
         getLogger().info(".captureNotification(): Entry, notification->{}", notification);
 
         String errorCondition = null;

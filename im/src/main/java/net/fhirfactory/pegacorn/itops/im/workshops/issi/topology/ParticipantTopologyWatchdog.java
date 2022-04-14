@@ -26,7 +26,7 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.messag
 import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
 import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterface;
 import net.fhirfactory.pegacorn.core.model.petasos.endpoint.JGroupsIntegrationPointNamingUtilities;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.valuesets.PetasosComponentITOpsNotificationTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.common.OAMRoomMessageInjectorBase;
@@ -156,7 +156,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         try {
             List<String> allClusterMembers = topologyServicesEndpoint.getAllClusterMembers();
             if(allClusterMembers != null) {
-                ITOpsNotification connectivityNotification = null;
+                PetasosComponentITOpsNotification connectivityNotification = null;
                 Long timeSinceLastFullReport = Instant.now().getEpochSecond() - getTopologyConnectivityFullReportInstant().getEpochSecond();
                 if (timeSinceLastFullReport > getEndpointConnectivityFullReportPeriod()) {
                     connectivityNotification = buildFullConnectivityReport(allClusterMembers);
@@ -199,7 +199,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         return(false);
     }
 
-    protected ITOpsNotification buildDeltaConnectivityReport(List<String> allClusterMembers){
+    protected PetasosComponentITOpsNotification buildDeltaConnectivityReport(List<String> allClusterMembers){
         getLogger().debug(".buildConnectivityReport(): Entry");
 
         StringBuilder reportBuilder = new StringBuilder();
@@ -248,7 +248,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         String report = reportBuilder.toString();
         String formattedReport = formattedReportBuilder.toString();
 
-        ITOpsNotification notification = new ITOpsNotification();
+        PetasosComponentITOpsNotification notification = new PetasosComponentITOpsNotification();
         notification.setContent(report);
         notification.setFormattedContent(formattedReport);
         notification.setParticipantName(processingPlant.getSubsystemParticipantName());
@@ -260,7 +260,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         return(notification);
     }
 
-    protected ITOpsNotification buildFullConnectivityReport(List<String> allClusterMembers){
+    protected PetasosComponentITOpsNotification buildFullConnectivityReport(List<String> allClusterMembers){
         getLogger().debug(".buildConnectivityReport(): Entry");
 
         StringBuilder reportBuilder = new StringBuilder();
@@ -289,7 +289,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         String report = reportBuilder.toString();
         String formattedReport = formattedReportBuilder.toString();
 
-        ITOpsNotification notification = new ITOpsNotification();
+        PetasosComponentITOpsNotification notification = new PetasosComponentITOpsNotification();
         notification.setContent(report);
         notification.setFormattedContent(formattedReport);
         notification.setParticipantName(processingPlant.getSubsystemParticipantName());
@@ -301,7 +301,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         return(notification);
     }
 
-    protected void sendConnectivityReport(ITOpsNotification notification){
+    protected void sendConnectivityReport(PetasosComponentITOpsNotification notification){
         getLogger().debug(".sendConnectivityReport(): Entry, notification->{}", notification);
         try {
             String roomAlias = getRoomIdentityFactory().buildProcessingPlantRoomPseudoAlias(notification.getParticipantName(),OAMRoomTypeEnum.OAM_ROOM_TYPE_SUBSYSTEM_CONSOLE);

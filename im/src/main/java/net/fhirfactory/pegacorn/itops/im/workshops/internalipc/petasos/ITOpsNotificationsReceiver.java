@@ -26,7 +26,7 @@ import net.fhirfactory.pegacorn.core.interfaces.oam.notifications.PetasosITOpsNo
 import net.fhirfactory.pegacorn.core.interfaces.oam.notifications.PetasosITOpsNotificationHandlerInterface;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
 import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsNotificationsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos.common.ITOpsReceiverBase;
 import org.slf4j.Logger;
@@ -51,7 +51,7 @@ public class ITOpsNotificationsReceiver extends ITOpsReceiverBase implements Pet
     //
 
     @Override
-    public void sendNotification(ITOpsNotification notification) {
+    public void sendNotification(PetasosComponentITOpsNotification notification) {
         getLogger().debug(".processNotification(): Entry, notification->{}", notification);
         //
         // We don't want to send notifications for the ITOps framework itself, it would create a cyclical event
@@ -61,7 +61,7 @@ public class ITOpsNotificationsReceiver extends ITOpsReceiverBase implements Pet
     }
 
     @Override
-    public void processNotification(ITOpsNotification notification) {
+    public void processNotification(PetasosComponentITOpsNotification notification) {
         getLogger().debug(".processNotification(): Entry, notification->{}", notification);
         notificationsDM.addNotification(notification);
         getLogger().debug(".processNotification(): Exit");

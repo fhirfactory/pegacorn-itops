@@ -21,9 +21,11 @@
  */
 package net.fhirfactory.pegacorn.itops.im.processingplant;
 
-import net.fhirfactory.pegacorn.core.model.topology.valuesets.ProcessingPlantProviderRoleEnum;
-import net.fhirfactory.pegacorn.core.model.topology.valuesets.ProcessingPlantTypeEnum;
+import net.fhirfactory.pegacorn.core.model.topology.role.ProcessingPlantRoleEnum;
+import net.fhirfactory.pegacorn.petasos.oam.common.ITOpsReplicaLocalServerName;
 import net.fhirfactory.pegacorn.processingplant.ProcessingPlant;
+
+import javax.inject.Inject;
 
 public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingPlant {
 
@@ -46,12 +48,7 @@ public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingP
     }
 
     @Override
-    protected ProcessingPlantProviderRoleEnum specifyPlantProviderRole() {
-        return ProcessingPlantProviderRoleEnum.PETASOS_SERVICE_PROVIDER_ITOPS_MANAGEMENT;
-    }
-
-    @Override
-    protected ProcessingPlantTypeEnum specifyProcessingPlantType() {
-        return (ProcessingPlantTypeEnum.PROCESSING_PLANT_TYPE_INFORMATION_MANAGER);
+    public ProcessingPlantRoleEnum getProcessingPlantCapability() {
+        return (ProcessingPlantRoleEnum.PETASOS_SERVICE_PROVIDER_ITOPS_MANAGEMENT);
     }
 }

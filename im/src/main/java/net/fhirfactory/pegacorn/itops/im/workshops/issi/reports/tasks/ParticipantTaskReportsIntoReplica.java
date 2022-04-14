@@ -23,7 +23,7 @@ package net.fhirfactory.pegacorn.itops.im.workshops.issi.reports.tasks;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsTaskReportsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.common.OAMRoomMessageInjectorBase;
@@ -126,10 +126,10 @@ public class ParticipantTaskReportsIntoReplica extends OAMRoomMessageInjectorBas
     private void taskReportForward() {
         getLogger().debug(".taskReportForward(): Entry");
         stillRunning = true;
-        List<ITOpsNotification> failedToSendList = new ArrayList<>();
+        List<PetasosComponentITOpsNotification> failedToSendList = new ArrayList<>();
         while (taskReportsDM.hasMoreTaskReports()) {
             getLogger().trace(".taskReportForward(): Entry");
-            ITOpsNotification nextNotification = taskReportsDM.getNextTaskReport();
+            PetasosComponentITOpsNotification nextNotification = taskReportsDM.getNextTaskReport();
             boolean successfullySent = false;
             switch (nextNotification.getComponentType()) {
                 case PETASOS_MONITORED_COMPONENT_SUBSYSTEM:
@@ -159,7 +159,7 @@ public class ParticipantTaskReportsIntoReplica extends OAMRoomMessageInjectorBas
                 failedToSendList.add(nextNotification);
             }
         }
-        for(ITOpsNotification currentNotification: failedToSendList){
+        for(PetasosComponentITOpsNotification currentNotification: failedToSendList){
             taskReportsDM.addTaskReport(currentNotification);
         }
         stillRunning = false;
@@ -170,7 +170,7 @@ public class ParticipantTaskReportsIntoReplica extends OAMRoomMessageInjectorBas
     // Per Metric/Reporting Type Helpers
     //
 
-    private boolean forwardEndpointTaskReport(ITOpsNotification notification) {
+    private boolean forwardEndpointTaskReport(PetasosComponentITOpsNotification notification) {
         getLogger().debug(".forwardEndpointTaskReport(): Entry");
         getLogger().trace(".forwardEndpointTaskReport(): notification->{}", notification);
 
@@ -205,7 +205,7 @@ public class ParticipantTaskReportsIntoReplica extends OAMRoomMessageInjectorBas
         }
     }
 
-    private boolean forwardWUPTaskReport(ITOpsNotification notification) {
+    private boolean forwardWUPTaskReport(PetasosComponentITOpsNotification notification) {
         getLogger().debug(".forwardEndpointTaskReport(): notification->{}", notification);
 
         try {
@@ -239,7 +239,7 @@ public class ParticipantTaskReportsIntoReplica extends OAMRoomMessageInjectorBas
         }
     }
 
-    private boolean forwardProcessingPlantTaskReport(ITOpsNotification notification) {
+    private boolean forwardProcessingPlantTaskReport(PetasosComponentITOpsNotification notification) {
         getLogger().debug(".forwardProcessingPlantTaskReport(): Entry, notification->{}", notification);
 
         try {

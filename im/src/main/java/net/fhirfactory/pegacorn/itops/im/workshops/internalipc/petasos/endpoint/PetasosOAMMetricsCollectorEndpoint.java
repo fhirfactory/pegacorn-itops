@@ -28,7 +28,7 @@ import net.fhirfactory.pegacorn.core.interfaces.oam.tasks.PetasosITOpsTaskReport
 import net.fhirfactory.pegacorn.core.interfaces.oam.topology.PetasosTopologyReportingHandlerInterface;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetric;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosSubscriptionSummaryReport;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.reporting.PetasosMonitoredTopologyGraph;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.jgroups.JGroupsIntegrationPointSummary;
@@ -185,7 +185,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
     // Notification Receiver
     //
 
-    public void receiveNotification(ITOpsNotification notification, JGroupsIntegrationPointSummary integrationPoint){
+    public void receiveNotification(PetasosComponentITOpsNotification notification, JGroupsIntegrationPointSummary integrationPoint){
         getLogger().debug(".topologyGraphHandler(): Entry, topologyGraph->{}, integrationPoint->{}", notification, integrationPoint);
 
         if((notification != null) && (integrationPoint != null)) {
@@ -201,7 +201,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
     // Task Report Receiver
     //
 
-    public void processTaskReport(ITOpsNotification taskReportNotification, JGroupsIntegrationPointSummary integrationPoint) {
+    public void processTaskReport(PetasosComponentITOpsNotification taskReportNotification, JGroupsIntegrationPointSummary integrationPoint) {
         getLogger().debug(".processTaskReport(): Entry, taskReportNotification->{}", taskReportNotification);
 
         if((taskReportNotification != null) && (integrationPoint != null)) {

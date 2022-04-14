@@ -21,7 +21,8 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.datagrid;
 
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
+import net.fhirfactory.pegacorn.core.interfaces.oam.notifications.PetasosITOpsNotificationBrokerInterface;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Queue;
@@ -30,7 +31,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @ApplicationScoped
 public class ITOpsNotificationsDM {
 
-    Queue<ITOpsNotification> notificationQueue;
+    Queue<PetasosComponentITOpsNotification> notificationQueue;
 
     //
     // Constructor(s)
@@ -44,7 +45,7 @@ public class ITOpsNotificationsDM {
     // Getters and Setters
     //
 
-    public Queue<ITOpsNotification> getNotificationQueue() {
+    public Queue<PetasosComponentITOpsNotification> getNotificationQueue() {
         return notificationQueue;
     }
 
@@ -52,18 +53,18 @@ public class ITOpsNotificationsDM {
     // Helpers
     //
 
-    public void addNotification(ITOpsNotification notification){
+    public void addNotification(PetasosComponentITOpsNotification notification){
         if(notification == null){
             return;
         }
         getNotificationQueue().add(notification);
     }
 
-    public ITOpsNotification getNextNotification(){
+    public PetasosComponentITOpsNotification getNextNotification(){
         if(getNotificationQueue().isEmpty()){
             return(null);
         }
-        ITOpsNotification nextNotification = getNotificationQueue().poll();
+        PetasosComponentITOpsNotification nextNotification = getNotificationQueue().poll();
         return(nextNotification);
     }
 
