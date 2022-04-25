@@ -113,6 +113,8 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
 
     @Override
     public Instant replicateMetricToServerHandler(PetasosComponentMetric metric, JGroupsIntegrationPointSummary integrationPoint) {
+        PetasosComponentMetricSet componentMetricsSet = metricsDM.getComponentMetricsSet(metric.getMetricSource().getId());
+        componentMetricsSet.addMetric(metric);
         return(Instant.now());
     }
 

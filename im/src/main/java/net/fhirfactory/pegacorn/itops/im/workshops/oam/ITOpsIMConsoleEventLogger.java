@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.itops.im.workshops.issi;
+package net.fhirfactory.pegacorn.itops.im.workshops.oam;
 
 import net.fhirfactory.pegacorn.communicate.matrix.credentials.MatrixAccessToken;
 import net.fhirfactory.pegacorn.communicate.matrix.methods.MatrixInstantMessageMethods;
@@ -45,8 +45,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
-public class ITOpsConsoleEventLogger {
-    private static final Logger LOG = LoggerFactory.getLogger(ITOpsConsoleEventLogger.class);
+public class ITOpsIMConsoleEventLogger {
+    private static final Logger LOG = LoggerFactory.getLogger(ITOpsIMConsoleEventLogger.class);
 
     private DateTimeFormatter timeFormatter;
 
@@ -75,7 +75,7 @@ public class ITOpsConsoleEventLogger {
     // Constructor(s)
     //
 
-    public ITOpsConsoleEventLogger(){
+    public ITOpsIMConsoleEventLogger(){
         this.timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneId.of(PetasosPropertyConstants.DEFAULT_TIMEZONE));
     }
 

@@ -30,6 +30,7 @@ import net.fhirfactory.pegacorn.itops.im.workshops.workflow.beans.ITOpsNotificat
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
 import net.fhirfactory.pegacorn.workshops.WorkflowWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.StimuliTriggeredWorkflowWUP;
+import org.apache.camel.model.RouteDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,5 +108,22 @@ public class StatusMessageGenerationWUP extends StimuliTriggeredWorkflowWUP {
                 .bean(emailMessageGeneratorBean, "transformNotificationIntoCommunicateEmail(*, Exchange)")
                 .bean(smsMessageGeneratorBean,"transformNotificationIntoCommunicateSMS(*, Exchange)")
                 .to(egressFeed());
+    }
+
+    //
+    // Route Helper Functions
+    //
+
+    protected RouteDefinition fromIncludingPetasosServices(String uri) {
+        NodeDetailInjector nodeDetailInjector = new NodeDetailInjector();
+        AuditAgentInjector auditAgentInjector = new AuditAgentInjector();
+        TaskReportAgentInjector taskReportAgentInjector = new TaskReportAgentInjector();
+        RouteDefinition route = fromWithStandardExceptionHandling(uri);
+        route
+                .process(nodeDetailInjector)
+                .process(auditAgentInjector)
+                .process(taskReportAgentInjector)
+        ;
+        return route;
     }
 }
