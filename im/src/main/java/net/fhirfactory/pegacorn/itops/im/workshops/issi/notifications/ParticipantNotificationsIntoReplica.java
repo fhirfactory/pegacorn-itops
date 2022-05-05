@@ -23,7 +23,7 @@ package net.fhirfactory.pegacorn.itops.im.workshops.issi.notifications;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.ITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.valuesets.PetasosComponentITOpsNotificationTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
@@ -136,10 +136,10 @@ public class ParticipantNotificationsIntoReplica extends OAMRoomMessageInjectorB
     private void notificationForwarder(){
         getLogger().debug(".notificationForwarder(): Entry");
         stillRunning = true;
-        List<ITOpsNotification> failedToSend = new ArrayList<>();
+        List<PetasosComponentITOpsNotification> failedToSend = new ArrayList<>();
         while(notificationsDM.hasMoreNotifications()) {
             getLogger().trace(".notificationForwarder(): Entry");
-            ITOpsNotification nextNotification = notificationsDM.getNextNotification();
+            PetasosComponentITOpsNotification nextNotification = notificationsDM.getNextNotification();
             boolean successfullySent = false;
             switch (nextNotification.getComponentType()) {
                 case PETASOS_MONITORED_COMPONENT_SUBSYSTEM:
@@ -176,7 +176,7 @@ public class ParticipantNotificationsIntoReplica extends OAMRoomMessageInjectorB
                 failedToSend.add(nextNotification);
             }
         }
-        for(ITOpsNotification currentNotification: failedToSend){
+        for(PetasosComponentITOpsNotification currentNotification: failedToSend){
             notificationsDM.addNotification(currentNotification);
         }
         stillRunning = false;
@@ -187,7 +187,7 @@ public class ParticipantNotificationsIntoReplica extends OAMRoomMessageInjectorB
     // Per Metric/Reporting Type Helpers
     //
 
-    private boolean forwardWUPNotification(ITOpsNotification notification){
+    private boolean forwardWUPNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardWUPNotification(): Entry, notification->{}",notification);
         try {
             String roomAlias = getRoomIdentityFactory().buildWUPRoomPseudoAlias(
@@ -222,7 +222,7 @@ public class ParticipantNotificationsIntoReplica extends OAMRoomMessageInjectorB
         }
     }
 
-    private boolean forwardProcessingPlantNotification(ITOpsNotification notification){
+    private boolean forwardProcessingPlantNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardProcessingPlantNotification(): Entry, notification->{}", notification);
 
         try {
@@ -255,7 +255,7 @@ public class ParticipantNotificationsIntoReplica extends OAMRoomMessageInjectorB
         }
     }
 
-    private boolean forwardEndpointNotification(ITOpsNotification notification){
+    private boolean forwardEndpointNotification(PetasosComponentITOpsNotification notification){
         getLogger().debug(".forwardEndpointNotification(): Entry, notification->{}", notification);
 
         String roomAlias = null;

@@ -43,6 +43,7 @@ import net.fhirfactory.pegacorn.itops.im.workshops.oam.ITOpsIMConsoleEventLogger
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsSubsystemParticipantTasks;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsTopologySynchronisationTasks;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsUserTasks;
+import net.fhirfactory.pegacorn.itops.im.workshops.oam.ITOpsIMConsoleEventLogger;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -123,7 +124,7 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
     private ParticipantRoomIdentityFactory roomIdentityFactory;
 
     @Inject
-    private ITOpsConsoleEventLogger itopsConsoleLogger;
+    private ITOpsIMConsoleEventLogger itopsConsoleLogger;
 
     @Inject
     private ProcessingPlantParticipantReplicaFactory processingPlantReplicaServices;
