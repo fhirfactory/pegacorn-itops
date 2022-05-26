@@ -27,7 +27,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import net.fhirfactory.pegacorn.core.interfaces.oam.topology.PetasosTopologyReportingServiceProviderNameInterface;
 import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterface;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.reporting.PetasosMonitoredTopologyGraph;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
+import net.fhirfactory.pegacorn.core.model.internal.resources.summaries.ProcessingPlantSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
 import net.fhirfactory.pegacorn.petasos.oam.topology.PetasosMonitoredTopologyReportingAgent;
 import net.fhirfactory.pegacorn.petasos.oam.topology.cache.PetasosLocalTopologyReportingDM;

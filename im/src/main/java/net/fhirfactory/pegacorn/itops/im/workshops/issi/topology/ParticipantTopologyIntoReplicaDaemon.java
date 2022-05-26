@@ -29,7 +29,7 @@ import net.fhirfactory.pegacorn.communicate.synapse.credentials.SynapseAdminAcce
 import net.fhirfactory.pegacorn.communicate.synapse.methods.SynapseUserMethods;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseUser;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
+import net.fhirfactory.pegacorn.core.model.internal.resources.summaries.ProcessingPlantSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownParticipantMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownUserMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;

@@ -26,7 +26,7 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomCre
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomPresetEnum;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVisibilityEnum;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.EndpointSummary;
+import net.fhirfactory.pegacorn.core.model.internal.resources.summaries.EndpointSummary;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.common.BaseParticipantReplicaServices;

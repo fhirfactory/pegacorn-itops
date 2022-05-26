@@ -22,19 +22,12 @@
 package net.fhirfactory.pegacorn.itops.im.datatypes;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MCreationContent;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MInvite3PID;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MPowerLevelEventContent;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.datatypes.MStateEvent;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomPresetEnum;
-import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVisibilityEnum;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
+import net.fhirfactory.pegacorn.core.model.internal.resources.summaries.ProcessingPlantSummary;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.ArrayList;
 
 public class ProcessingPlantParticipantSpace implements Serializable {
     private ProcessingPlantSummary processingPlant;

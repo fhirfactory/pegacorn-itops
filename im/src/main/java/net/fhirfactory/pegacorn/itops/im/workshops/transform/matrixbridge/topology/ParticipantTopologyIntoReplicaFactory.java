@@ -33,9 +33,8 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVis
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.contenttypes.MRoomPowerLevelsContentType;
 import net.fhirfactory.pegacorn.core.model.componentid.ComponentIdType;
 import net.fhirfactory.pegacorn.core.model.petasos.participant.PetasosParticipantFulfillment;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.PetasosParticipantSummary;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
-import net.fhirfactory.pegacorn.petasos.oam.common.ITOpsReplicaLocalServerName;
+import net.fhirfactory.pegacorn.core.model.internal.resources.summaries.PetasosParticipantSummary;
+import net.fhirfactory.pegacorn.core.model.internal.resources.summaries.ProcessingPlantSummary;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
