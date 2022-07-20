@@ -3,9 +3,11 @@ package net.fhirfactory.pegacorn.itops.im.workshops.gatekeeper.beans;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelDirectionEnum;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.PolicyEnforcementPointApprovalStatusEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
@@ -38,9 +40,12 @@ public class MetricsCheckpointBean {
         if(!uow.hasIngresContent()){
             return(uow);
         }
-        UoWPayload ingresPayload = SerializationUtils.clone(uow.getIngresContent());
-        ingresPayload.getPayloadManifest().setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_POSITIVE);
-        uow.getEgressContent().addPayloadElement(ingresPayload);
+        UoWPayload egressPayload = SerializationUtils.clone(uow.getIngresContent());
+        egressPayload.getPayloadManifest().setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_POSITIVE);
+        egressPayload.getPayloadManifest().setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_INBOUND_DATA_PARCEL);
+        egressPayload.getPayloadManifest().setInterSubsystemDistributable(true);
+        uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
+        uow.getEgressContent().addPayloadElement(egressPayload);
         return(uow);
     }
 }

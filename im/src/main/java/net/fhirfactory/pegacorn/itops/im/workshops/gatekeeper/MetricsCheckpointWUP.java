@@ -28,6 +28,7 @@ import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelDirect
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelNormalisationStatusEnum;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelValidationStatusEnum;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.PolicyEnforcementPointApprovalStatusEnum;
+import net.fhirfactory.pegacorn.internals.communicate.entities.message.factories.CommunicateMessageTopicFactory;
 import net.fhirfactory.pegacorn.itops.im.workshops.gatekeeper.beans.MetricsCheckpointBean;
 import net.fhirfactory.pegacorn.workshops.PolicyEnforcementWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.MOAStandardWUP;
@@ -51,27 +52,54 @@ public class MetricsCheckpointWUP extends MOAStandardWUP {
     @Inject
     private MetricsCheckpointBean metricsCheckpoint;
 
+    @Inject
+    private CommunicateMessageTopicFactory messageTopicFactory;
+
+    //
+    // Getters (and Setters)
+    //
+
     @Override
     protected Logger specifyLogger() {
         return (LOG);
     }
 
+    protected CommunicateMessageTopicFactory getMessageTopicFactory(){
+        return(messageTopicFactory);
+    }
+
+
+    //
+    // Subscription Logic (NOT!)
+    //
+
     @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
         List<DataParcelManifest> subscribedTopics = new ArrayList<>();
 
-        DataParcelManifest manifest = new DataParcelManifest();
-        DataParcelTypeDescriptor descriptor = new DataParcelTypeDescriptor();
-        descriptor.setDataParcelDefiner("FHIRFactory");
-        descriptor.setDataParcelCategory("OAM");
-        descriptor.setDataParcelSubCategory("Reporting");
-        descriptor.setDataParcelResource("PetasosComponentMetric");
-        manifest.setContentDescriptor(descriptor);
-        manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
-        manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
-        manifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_INBOUND_DATA_PARCEL);
-        manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
-        subscribedTopics.add(manifest);
+        DataParcelManifest emailManifest = new DataParcelManifest();
+        DataParcelTypeDescriptor emailDescriptor = getMessageTopicFactory().createEmailTypeDescriptor();
+        emailManifest.setContentDescriptor(emailDescriptor);
+        emailManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
+        emailManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
+        emailManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);
+        emailManifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
+        emailManifest.setSourceSystem(DataParcelManifest.WILDCARD_CHARACTER);
+        emailManifest.setSourceProcessingPlantParticipantName(DataParcelManifest.WILDCARD_CHARACTER);
+        emailManifest.setInterSubsystemDistributable(false);
+        subscribedTopics.add(emailManifest);
+
+        DataParcelManifest smsManifest = new DataParcelManifest();
+        DataParcelTypeDescriptor smsDescriptor = getMessageTopicFactory().createSMSTypeDescriptor();
+        smsManifest.setContentDescriptor(smsDescriptor);
+        smsManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
+        smsManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
+        smsManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);
+        smsManifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
+        smsManifest.setSourceSystem(DataParcelManifest.WILDCARD_CHARACTER);
+        smsManifest.setSourceProcessingPlantParticipantName(DataParcelManifest.WILDCARD_CHARACTER);
+        emailManifest.setInterSubsystemDistributable(false);
+        subscribedTopics.add(smsManifest);
 
         return(subscribedTopics);
     }

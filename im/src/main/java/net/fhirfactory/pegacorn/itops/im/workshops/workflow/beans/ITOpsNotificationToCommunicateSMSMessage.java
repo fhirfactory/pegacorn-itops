@@ -117,8 +117,7 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
                 egressPayloadManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
                 egressPayloadManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
                 egressPayloadManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);
-                egressPayloadManifest.setInterSubsystemDistributable(true);
-                
+                egressPayloadManifest.setInterSubsystemDistributable(false);
                 String message;
                 if(StringUtils.isNotEmpty(notification.getContentHeading())) {
                     message =notification.getContentHeading();

@@ -157,7 +157,7 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
                     egressPayloadManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
                     egressPayloadManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
                     egressPayloadManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);
-                    egressPayloadManifest.setInterSubsystemDistributable(true);
+                    egressPayloadManifest.setInterSubsystemDistributable(false);
                     egressPayload.setPayloadManifest(egressPayloadManifest);
                     uow.getEgressContent().addPayloadElement(egressPayload);
                     uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
