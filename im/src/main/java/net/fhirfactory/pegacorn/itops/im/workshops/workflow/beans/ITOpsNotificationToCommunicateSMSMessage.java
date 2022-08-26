@@ -53,6 +53,7 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
     private List<String> targetPhoneNumbers = null;
 
     private static final String ITOPS_SMS_TARGET_PHONE_NUMBER = "ERROR_EVENT_SMS_TARGET_PHONE_NUMBER";
+    private static final String ITOPS_SMS_MESSAGE_PREFIX = "ERROR_EVENT_SMS_MESSAGE_PREFIX";
 
     //
     // Constructor(s)
@@ -119,11 +120,15 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
                 egressPayloadManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);
                 egressPayloadManifest.setInterSubsystemDistributable(true);
                 
-                String message;
+                String message = "";
+                String messagePrefix = getProcessingPlant().getMeAsASoftwareComponent().getOtherConfigurationParameter(ITOPS_SMS_MESSAGE_PREFIX);
+                if (StringUtils.isNotEmpty(messagePrefix)) {
+                    message += messagePrefix; // no space after
+                }
                 if(StringUtils.isNotEmpty(notification.getContentHeading())) {
-                    message =notification.getContentHeading();
+                    message += notification.getContentHeading();
                 } else {
-                    message = "Error ("+notification.getParticipantName()+")";
+                    message += "Error ("+notification.getParticipantName()+")";
                 }
                 String description = "CommunicateSMSMessage: From(" + getProcessingPlant().getSubsystemParticipantName() + "), on behalf of (" + notification.getParticipantName() + ")";
                 

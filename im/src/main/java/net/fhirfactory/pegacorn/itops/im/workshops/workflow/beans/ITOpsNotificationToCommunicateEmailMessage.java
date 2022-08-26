@@ -51,6 +51,7 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
 
     private static final String ITOPS_EMAIL_TARGET_ADDRESS = "ERROR_EVENT_EMAIL_TARGET_ADDRESS";
     private static final String ITOPS_EMAIL_SOURCE_ADDRESS = "ERROR_EVENT_EMAIL_SOURCE_ADDRESS";
+    private static final String ITOPS_EMAIL_SUBJECT_PREFIX = "ERROR_EVENT_EMAIL_SUBJECT_PREFIX";
 
     private static final String UNDEFINED_ADDRESS = "Undefined Address";
 
@@ -132,7 +133,13 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
                 CommunicateEmailMessage emailMessage = new CommunicateEmailMessage();
                 emailMessage.setFrom(getSourceEmailAddress());
                 emailMessage.getTo().add(getTargetEmailAddress());
-                emailMessage.setSubject("Component Error (" + notification.getParticipantName() + ")");
+                String subject = "";
+                String subjectPrefix = getProcessingPlant().getMeAsASoftwareComponent().getOtherConfigurationParameter(ITOPS_EMAIL_SUBJECT_PREFIX);
+                if (StringUtils.isNotEmpty(subjectPrefix)) {
+                    subject += subjectPrefix; // no space after
+                }
+                subject += "Component Error (" + notification.getParticipantName() + ")";
+                emailMessage.setSubject(subject);
                 StringBuilder emailMessageContentBuilder = new StringBuilder();
                 if (StringUtils.isNotEmpty(notification.getContentHeading())) {
                     emailMessageContentBuilder.append(notification.getContentHeading() + "\n");
