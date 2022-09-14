@@ -316,7 +316,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         notification.setParticipantName(nodeSubsystemName);
         notification.setNotificationType(PetasosComponentITOpsNotificationTypeEnum.NORMAL_NOTIFICATION_TYPE);
         notification.setComponentId(processingPlant.getMeAsASoftwareComponent().getComponentID());
-        notification.setContentHeading("Node: " + nodeSite + "." + nodeZone + "." + nodeSubsystemName + "." + nodeUniqueId + "  has " + status);
+        notification.setContentHeading("Node: " + nodeSite + "." + nodeZone + "." + nodeSubsystemName  + "  has " + status);
 
         try {
             camelRouteInjector.sendBody(itOpsIMNames.getITOpsNotificationToCommunicateMessageIngresFeed(), ExchangePattern.InOnly, notification);

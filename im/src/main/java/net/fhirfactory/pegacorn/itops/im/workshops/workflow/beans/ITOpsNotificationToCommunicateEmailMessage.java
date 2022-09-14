@@ -142,7 +142,13 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
                 if(notification.getNotificationType().equals(PetasosComponentITOpsNotificationTypeEnum.FAILURE_NOTIFICATION_TYPE)) {
                     subject += "Component Error (" + notification.getParticipantName() + ")";
                 } else {
-                    subject += "Component Status (" + notification.getParticipantName() + ")";
+                    if (StringUtils.isNotEmpty(notification.getContentHeading())) {
+                        subject += notification.getContentHeading();
+                    } else {
+                        subject += "Component Status (" + notification.getParticipantName() + ")";
+
+                    }
+                    
                 }
                 emailMessage.setSubject(subject);
                 StringBuilder emailMessageContentBuilder = new StringBuilder();
