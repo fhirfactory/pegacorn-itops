@@ -40,6 +40,7 @@ im/target/maven-archiver/pom.properties
 *.iml
 pegacorn-itops-pm/.env
 pegacorn-itops-pm/.project
+pegacorn-itops-pm/.classpath
 .project
 .settings/org.eclipse.core.resources.prefs
 im/.settings/
