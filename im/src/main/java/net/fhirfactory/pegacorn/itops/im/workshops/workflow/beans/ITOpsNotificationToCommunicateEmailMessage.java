@@ -27,6 +27,7 @@ import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelDirect
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelNormalisationStatusEnum;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelValidationStatusEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.valuesets.PetasosComponentITOpsNotificationTypeEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
@@ -138,7 +139,11 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
                 if (StringUtils.isNotEmpty(subjectPrefix)) {
                     subject += subjectPrefix; // no space after
                 }
-                subject += "Component Error (" + notification.getParticipantName() + ")";
+                if(notification.getNotificationType().equals(PetasosComponentITOpsNotificationTypeEnum.FAILURE_NOTIFICATION_TYPE)) {
+                    subject += "Component Error (" + notification.getParticipantName() + ")";
+                } else {
+                    subject += "Component Status (" + notification.getParticipantName() + ")";
+                }
                 emailMessage.setSubject(subject);
                 StringBuilder emailMessageContentBuilder = new StringBuilder();
                 if (StringUtils.isNotEmpty(notification.getContentHeading())) {
