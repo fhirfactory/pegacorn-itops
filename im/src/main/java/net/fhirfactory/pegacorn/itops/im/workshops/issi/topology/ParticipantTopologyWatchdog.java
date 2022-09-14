@@ -28,11 +28,14 @@ import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterfac
 import net.fhirfactory.pegacorn.core.model.petasos.endpoint.JGroupsIntegrationPointNamingUtilities;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.valuesets.PetasosComponentITOpsNotificationTypeEnum;
+import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.common.OAMRoomMessageInjectorBase;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.notifications.ParticipantNotificationEventFactory;
 import net.fhirfactory.pegacorn.petasos.endpoints.services.topology.PetasosDistributedSoftwareComponentMapDM;
 import net.fhirfactory.pegacorn.petasos.endpoints.services.topology.PetasosTopologyServicesEndpoint;
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +76,9 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
     private PetasosDistributedSoftwareComponentMapDM probedNodeMap;
 
     @Inject
+    private ITOpsIMNames itOpsIMNames;
+
+    @Inject
     private PetasosTopologyServicesEndpoint topologyServicesEndpoint;
 
     @Inject
@@ -83,6 +89,9 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
 
     @Inject
     private JGroupsIntegrationPointNamingUtilities jgroupsIPNamingUtilities;
+
+    @Inject
+    private ProducerTemplate camelRouteInjector;
 
     //
     // Constructor(s)
@@ -164,6 +173,8 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
                 } else {
                     if (someDeltaToReport(allClusterMembers)) {
                         connectivityNotification = buildDeltaConnectivityReport(allClusterMembers);
+                        sendSubsystemStatusCommunicateNotifications(allClusterMembers);
+                        resetLastSeenEndpoints(allClusterMembers);
                     }
                 }
                 if (connectivityNotification != null) {
@@ -242,9 +253,6 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
 
         formattedReportBuilder.append("</table>");
 
-        getLastSeenEndpoints().clear();
-        getLastSeenEndpoints().addAll(allClusterMembers);
-
         String report = reportBuilder.toString();
         String formattedReport = formattedReportBuilder.toString();
 
@@ -258,6 +266,65 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
 
         getLogger().debug(".buildConnectivityReport(): Exit");
         return(notification);
+    }
+
+    protected void resetLastSeenEndpoints(List<String> allClusterMembers){
+        getLogger().debug(".resetLastSeenEndpoints(): Entry");
+        getLastSeenEndpoints().clear();
+        getLastSeenEndpoints().addAll(allClusterMembers);
+        getLogger().debug(".resetLastSeenEndpoints(): Exit");
+    }
+
+    protected void sendSubsystemStatusCommunicateNotifications(List<String> allClusterMembers){
+        getLogger().debug(".sendSubsystemStatusCommunicateNotifications(): Entry");
+        for(String currentNode: allClusterMembers) {
+            if(!getLastSeenEndpoints().contains(currentNode)) {
+                sendCommunicateNotification(currentNode, "Started");
+            }
+        }
+
+        for(String currentKnownNode: getLastSeenEndpoints()) {
+            if(!allClusterMembers.contains(currentKnownNode)) {
+                sendCommunicateNotification(currentKnownNode, "Stopped");
+            }
+        }
+        getLogger().debug(".sendSubsystemStatusCommunicateNotifications(): Exit");
+    }
+
+    protected void sendCommunicateNotification(String subsystemNode, String status){
+        getLogger().debug(".sendCommunicateNotification(): Entry");
+        PetasosComponentITOpsNotification notification = new PetasosComponentITOpsNotification();
+
+        String nodeSite = getJGroupsIPNamingUtilities().getEndpointSiteFromChannelName(subsystemNode);
+        String nodeZone = getJGroupsIPNamingUtilities().getEndpointZoneFromChannelName(subsystemNode);
+        String nodeSubsystemName = getJGroupsIPNamingUtilities().getEndpointSubsystemNameFromChannelName(subsystemNode);
+        String nodeUniqueId = getJGroupsIPNamingUtilities().getEndpointUniqueIDFromChannelName(subsystemNode);
+
+        StringBuilder formattedReportBuilder = new StringBuilder();
+        formattedReportBuilder.append("<table>");
+        formattedReportBuilder.append("<tr>");
+        formattedReportBuilder.append("<th>Event</th><th>Site</th><th>Zone</th><th>Subsystem</th><th>UUID</th>");
+        formattedReportBuilder.append("</tr>");
+        formattedReportBuilder.append("<tr>");
+        formattedReportBuilder.append("<th>"+ status + "</th><th>" + nodeSite + "</th><th>" + nodeZone + "</th><th>" + nodeSubsystemName + "</th><th>" + nodeUniqueId + "</th>");
+        formattedReportBuilder.append("</tr>");
+        formattedReportBuilder.append("</table>");
+        String formattedReport = formattedReportBuilder.toString();
+
+        notification.setContent("Node: " + nodeSite + "." + nodeZone + "." + nodeSubsystemName + "." + nodeUniqueId + "  has " + status);
+        notification.setFormattedContent(formattedReport);
+        notification.setParticipantName(nodeSubsystemName);
+        notification.setNotificationType(PetasosComponentITOpsNotificationTypeEnum.NORMAL_NOTIFICATION_TYPE);
+        notification.setComponentId(processingPlant.getMeAsASoftwareComponent().getComponentID());
+        notification.setContentHeading("Node: " + nodeSite + "." + nodeZone + "." + nodeSubsystemName  + "  has " + status);
+
+        try {
+            camelRouteInjector.sendBody(itOpsIMNames.getITOpsNotificationToCommunicateMessageIngresFeed(), ExchangePattern.InOnly, notification);
+        } catch (Exception ex){
+            getLogger().warn(".sendConnectivityReport(): Failed to send CommunicateMessage, message->{}, stackTrace{}", ExceptionUtils.getMessage(ex), ExceptionUtils.getStackTrace(ex));
+        }
+
+        getLogger().debug(".sendCommunicateNotification(): Exit");
     }
 
     protected PetasosComponentITOpsNotification buildFullConnectivityReport(List<String> allClusterMembers){

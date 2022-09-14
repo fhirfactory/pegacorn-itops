@@ -7,6 +7,8 @@ itops/.project
 
 itops/itops.client/.settings/
 
+.settings/
+
 # Compiled class file
 *.class
 
@@ -33,23 +35,21 @@ hs_err_pid*
 
 pegacorn-itops-pm/target/
 pegacorn-itops-pm/node_modules/
-
-pegacorn-itops-im/target/maven-archiver/pom.properties
-
+im/target/maven-archiver/pom.properties
 *.lst
-
 *.iml
-
 pegacorn-itops-pm/.env
-
 pegacorn-itops-pm/.project
-
+pegacorn-itops-pm/.classpath
 .project
-
 .settings/org.eclipse.core.resources.prefs
-
-pegacorn-itops-im/.classpath
-
-pegacorn-itops-im/.settings/org.eclipse.core.resources.prefs
-
-pegacorn-itops-im/.settings/org.eclipse.jdt.core.prefs
+im/.settings/
+im/target/
+im/.classpath
+im/.project
+replica/.project
+replica/.settings/
+replica/server/.settings/
+replica/server/target/
+replica/server/.classpath
+replica/server/.project
