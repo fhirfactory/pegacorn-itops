@@ -130,6 +130,7 @@ public class ParticipantSubscriptionReportsIntoReplica extends OAMRoomMessageInj
         getLogger().debug(".subscriptionReportForwarder(): Entry");
         stillRunning = true;
         if(subscriptionMapDM.isUpdated()) {
+            subscriptionMapDM.setUpdated(false);
         	getLogger().trace(".subscriptionReportForwarder(): is updating subscriptions");
 	        List<PetasosProcessingPlantSubscriptionSummary> processingPlantSubscriptionSummaries = subscriptionMapDM.getProcessingPlantSubscriptionSummaries();
 	        for (PetasosProcessingPlantSubscriptionSummary currentReport: processingPlantSubscriptionSummaries) {
@@ -141,7 +142,6 @@ public class ParticipantSubscriptionReportsIntoReplica extends OAMRoomMessageInj
 	            getLogger().trace(".subscriptionReportForwarder(): Entry");
 	            forwardWorkUnitProcessorSubscriptionReport(currentReport);
 	        }
-	        subscriptionMapDM.setUpdated(false);
         }
         stillRunning = false;
         getLogger().debug(".notificationForwarder(): Exit");
