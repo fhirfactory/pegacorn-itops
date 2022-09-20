@@ -21,11 +21,11 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.transform.beans;
 
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.valuesets.DataParcelNormalisationStatusEnum;
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.valuesets.DataParcelValidationStatusEnum;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
+import net.fhirfactory.dricats.model.petasos.dataparcel.valuesets.DataParcelNormalisationStatusEnum;
+import net.fhirfactory.dricats.model.petasos.dataparcel.valuesets.DataParcelValidationStatusEnum;
+import net.fhirfactory.dricats.model.petasos.uow.UoW;
+import net.fhirfactory.dricats.model.petasos.uow.UoWPayload;
+import net.fhirfactory.dricats.model.petasos.uow.UoWProcessingOutcomeEnum;
 import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

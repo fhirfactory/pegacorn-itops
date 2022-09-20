@@ -21,7 +21,7 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps;
 
-import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.valuesets.PetasosMonitoredComponentTypeEnum;
+import net.fhirfactory.dricats.model.petasos.oam.topology.valuesets.PetasosMonitoredComponentTypeEnum;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.PetasosParticipantSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
 import org.apache.commons.lang3.StringUtils;

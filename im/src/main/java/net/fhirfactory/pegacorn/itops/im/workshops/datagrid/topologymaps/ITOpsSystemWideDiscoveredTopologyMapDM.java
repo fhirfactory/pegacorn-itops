@@ -22,7 +22,7 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps;
 
 import net.fhirfactory.pegacorn.core.model.component.SoftwareComponent;
-import net.fhirfactory.pegacorn.petasos.endpoints.services.topology.PetasosDistributedSoftwareComponentMapDM;
+import net.fhirfactory.pegacorn.petasos.ipc.endpoints.topology.PetasosDistributedSoftwareComponentMapDM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

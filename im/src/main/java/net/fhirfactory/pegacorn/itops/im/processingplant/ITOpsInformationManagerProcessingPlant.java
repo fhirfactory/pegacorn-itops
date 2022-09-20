@@ -22,12 +22,9 @@
 package net.fhirfactory.pegacorn.itops.im.processingplant;
 
 import net.fhirfactory.pegacorn.core.model.topology.role.ProcessingPlantRoleEnum;
-import net.fhirfactory.pegacorn.petasos.oam.common.ITOpsReplicaLocalServerName;
-import net.fhirfactory.pegacorn.processingplant.ProcessingPlant;
+import net.fhirfactory.dricats.petasos.participant.processingplant.PetasosEnabledProcessingPlant;
 
-import javax.inject.Inject;
-
-public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingPlant {
+public abstract class ITOpsInformationManagerProcessingPlant extends PetasosEnabledProcessingPlant {
 
 
     //

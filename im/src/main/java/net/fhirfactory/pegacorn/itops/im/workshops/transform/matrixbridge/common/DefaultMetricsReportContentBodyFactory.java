@@ -21,10 +21,10 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common;
 
-import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetric;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.datatypes.PetasosComponentMetricValue;
+import net.fhirfactory.dricats.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.dricats.model.petasos.oam.metrics.reporting.PetasosComponentMetric;
+import net.fhirfactory.dricats.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
+import net.fhirfactory.dricats.model.petasos.oam.metrics.reporting.datatypes.PetasosComponentMetricValue;
 import net.fhirfactory.pegacorn.itops.im.datatypes.MetricsReportContentBase;
 import org.slf4j.Logger;
 

@@ -21,18 +21,18 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos.endpoint;
 
-import net.fhirfactory.pegacorn.core.interfaces.oam.metrics.PetasosMetricsHandlerInterface;
-import net.fhirfactory.pegacorn.core.interfaces.oam.notifications.PetasosITOpsNotificationHandlerInterface;
-import net.fhirfactory.pegacorn.core.interfaces.oam.subscriptions.PetasosSubscriptionReportHandlerInterface;
-import net.fhirfactory.pegacorn.core.interfaces.oam.tasks.PetasosITOpsTaskReportingHandlerInterface;
-import net.fhirfactory.pegacorn.core.interfaces.oam.topology.PetasosTopologyReportingHandlerInterface;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetric;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosSubscriptionSummaryReport;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.reporting.PetasosMonitoredTopologyGraph;
+import net.fhirfactory.dricats.interfaces.observations.metrics.PetasosMetricsHandlerInterface;
+import net.fhirfactory.dricats.interfaces.observations.notifications.PetasosITOpsNotificationHandlerInterface;
+import net.fhirfactory.dricats.interfaces.observations.subscriptions.PetasosSubscriptionReportHandlerInterface;
+import net.fhirfactory.dricats.interfaces.observations.tasks.PetasosITOpsTaskReportingHandlerInterface;
+import net.fhirfactory.dricats.interfaces.observations.topology.PetasosTopologyReportingHandlerInterface;
+import net.fhirfactory.dricats.model.petasos.oam.metrics.reporting.PetasosComponentMetric;
+import net.fhirfactory.dricats.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
+import net.fhirfactory.dricats.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosSubscriptionSummaryReport;
+import net.fhirfactory.dricats.model.petasos.oam.topology.reporting.PetasosMonitoredTopologyGraph;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.jgroups.JGroupsIntegrationPointSummary;
-import net.fhirfactory.pegacorn.petasos.endpoints.services.metrics.PetasosOAMMetricsEndpointBase;
+import net.fhirfactory.pegacorn.petasos.ipc.endpoints.metrics.PetasosOAMMetricsEndpointBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +112,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
     }
 
 
-    public Instant captureMetric(PetasosComponentMetric metric, JGroupsIntegrationPointSummary integrationPoint) {
+    public Instant captureMetric(PetasosComponentMetric metric, JGroupsChannelConnectorSummary integrationPoint) {
 
         Instant captureInstance = metricsHandler.replicateMetricToServerHandler(metric, integrationPoint);
 
@@ -121,7 +121,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
         return (captureInstance);
     }
 
-    public Instant captureMetrics(PetasosComponentMetricSet metricSet, JGroupsIntegrationPointSummary integrationPoint) {
+    public Instant captureMetrics(PetasosComponentMetricSet metricSet, JGroupsChannelConnectorSummary integrationPoint) {
 
         Instant captureInstance = metricsHandler.replicateMetricSetToServerHandler(metricSet, integrationPoint);
 
@@ -144,7 +144,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
         return(instant);
     }
 
-    public Instant shareSubscriptionSummaryReport(PetasosSubscriptionSummaryReport summaryReport, JGroupsIntegrationPointSummary integrationPoint) {
+    public Instant shareSubscriptionSummaryReport(PetasosSubscriptionSummaryReport summaryReport, JGroupsChannelConnectorSummary integrationPoint) {
         getLogger().debug(".shareSubscriptionSummaryReport(): Entry, summaryReport->{}", summaryReport);
 
         Instant instant = subscriptionHandler.replicateSubscriptionSummaryReportHandler(summaryReport, integrationPoint);
@@ -154,7 +154,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
         return(instant);
     }
 
-    public Instant replicateSubscriptionSummaryReportHandler(PetasosSubscriptionSummaryReport summaryReport, JGroupsIntegrationPointSummary integrationPoint){
+    public Instant replicateSubscriptionSummaryReportHandler(PetasosSubscriptionSummaryReport summaryReport, JGroupsChannelConnectorSummary integrationPoint){
         getLogger().debug(".shareSubscriptionSummaryReport(): Entry, summaryReport->{}", summaryReport);
 
         Instant instant = subscriptionHandler.replicateSubscriptionSummaryReportHandler(summaryReport, integrationPoint);
@@ -168,7 +168,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
     // Topology Reporting
     //
 
-    public Instant topologyGraphHandler(PetasosMonitoredTopologyGraph topologyGraph, JGroupsIntegrationPointSummary integrationPoint){
+    public Instant topologyGraphHandler(PetasosMonitoredTopologyGraph topologyGraph, JGroupsChannelConnectorSummary integrationPoint){
         getLogger().trace(".topologyGraphHandler(): Entry, topologyGraph->{}, integrationPoint->{}", topologyGraph, integrationPoint);
 
         Instant outcomeInstant = null;
@@ -185,7 +185,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
     // Notification Receiver
     //
 
-    public void receiveNotification(PetasosComponentITOpsNotification notification, JGroupsIntegrationPointSummary integrationPoint){
+    public void receiveNotification(PetasosComponentITOpsNotification notification, JGroupsChannelConnectorSummary integrationPoint){
         getLogger().debug(".topologyGraphHandler(): Entry, topologyGraph->{}, integrationPoint->{}", notification, integrationPoint);
 
         if((notification != null) && (integrationPoint != null)) {
@@ -201,7 +201,7 @@ public class PetasosOAMMetricsCollectorEndpoint extends PetasosOAMMetricsEndpoin
     // Task Report Receiver
     //
 
-    public void processTaskReport(PetasosComponentITOpsNotification taskReportNotification, JGroupsIntegrationPointSummary integrationPoint) {
+    public void processTaskReport(PetasosComponentITOpsNotification taskReportNotification, JGroupsChannelConnectorSummary integrationPoint) {
         getLogger().debug(".processTaskReport(): Entry, taskReportNotification->{}", taskReportNotification);
 
         if((taskReportNotification != null) && (integrationPoint != null)) {

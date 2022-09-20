@@ -23,16 +23,16 @@ package net.fhirfactory.pegacorn.itops.im.workshops.issi.topology;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
-import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
-import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterface;
-import net.fhirfactory.pegacorn.core.model.petasos.endpoint.JGroupsIntegrationPointNamingUtilities;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.valuesets.PetasosComponentITOpsNotificationTypeEnum;
+import net.fhirfactory.dricats.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.dricats.interfaces.topology.ProcessingPlantInterface;
+import net.fhirfactory.dricats.model.petasos.endpoint.JGroupsIntegrationPointNamingUtilities;
+import net.fhirfactory.dricats.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.dricats.model.petasos.oam.notifications.valuesets.PetasosComponentITOpsNotificationTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.common.OAMRoomMessageInjectorBase;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.notifications.ParticipantNotificationEventFactory;
-import net.fhirfactory.pegacorn.petasos.endpoints.services.topology.PetasosDistributedSoftwareComponentMapDM;
-import net.fhirfactory.pegacorn.petasos.endpoints.services.topology.PetasosTopologyServicesEndpoint;
+import net.fhirfactory.pegacorn.petasos.ipc.endpoints.topology.PetasosDistributedSoftwareComponentMapDM;
+import net.fhirfactory.pegacorn.petasos.ipc.endpoints.topology.PetasosTopologyServicesEndpoint;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +73,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
     private PetasosDistributedSoftwareComponentMapDM probedNodeMap;
 
     @Inject
-    private PetasosTopologyServicesEndpoint topologyServicesEndpoint;
+    private PetasosTopologyClusterConnection topologyServicesEndpoint;
 
     @Inject
     private ProcessingPlantInterface processingPlant;
@@ -82,7 +82,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
     private ParticipantNotificationEventFactory notificationEventFactory;
 
     @Inject
-    private JGroupsIntegrationPointNamingUtilities jgroupsIPNamingUtilities;
+    private JGroupsChannelNamingUtilities jgroupsIPNamingUtilities;
 
     //
     // Constructor(s)
@@ -391,7 +391,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         this.topologyConnectivityFullReportInstant = instant;
     }
 
-    protected JGroupsIntegrationPointNamingUtilities getJGroupsIPNamingUtilities(){
+    protected JGroupsChannelNamingUtilities getJGroupsIPNamingUtilities(){
         return(this.jgroupsIPNamingUtilities);
     }
 }

@@ -21,8 +21,7 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.datagrid;
 
-import net.fhirfactory.pegacorn.core.interfaces.oam.notifications.PetasosITOpsNotificationBrokerInterface;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.dricats.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Queue;

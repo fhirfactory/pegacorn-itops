@@ -21,8 +21,7 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.datagrid;
 
-import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
-import org.apache.commons.lang3.SerializationUtils;
+import net.fhirfactory.dricats.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

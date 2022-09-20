@@ -22,11 +22,11 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import net.fhirfactory.pegacorn.core.interfaces.oam.topology.PetasosTopologyReportingHandlerInterface;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.WorkUnitProcessorCapabilityEnum;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.reporting.PetasosMonitoredTopologyGraph;
+import net.fhirfactory.dricats.interfaces.observations.topology.PetasosTopologyReportingHandlerInterface;
+import net.fhirfactory.dricats.model.capabilities.base.CapabilityUtilisationRequest;
+import net.fhirfactory.dricats.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.dricats.model.capabilities.valuesets.WorkUnitProcessorCapabilityEnum;
+import net.fhirfactory.dricats.model.petasos.oam.topology.reporting.PetasosMonitoredTopologyGraph;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.jgroups.JGroupsIntegrationPointSummary;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
@@ -88,7 +88,7 @@ public class ITOpsTopologyReportReceiver extends ITOpsReceiverBase implements Pe
     }
 
     @Override
-    public Instant mergeTopologyGraph(JGroupsIntegrationPointSummary integrationPoint, PetasosMonitoredTopologyGraph topologyGraph) {
+    public Instant mergeTopologyGraph(JGroupsChannelConnectorSummary integrationPoint, PetasosMonitoredTopologyGraph topologyGraph) {
         getLogger().debug(".mergeTopologyGraph(): Entry, topologyGraph->{}", topologyGraph);
         if(topologyGraph != null) {
             for (ProcessingPlantSummary currentProcessingPlant : topologyGraph.getProcessingPlants().values()) {

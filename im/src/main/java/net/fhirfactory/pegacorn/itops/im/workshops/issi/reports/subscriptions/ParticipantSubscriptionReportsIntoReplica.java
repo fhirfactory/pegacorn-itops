@@ -23,10 +23,10 @@ package net.fhirfactory.pegacorn.itops.im.workshops.issi.reports.subscriptions;
 
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.common.MAPIResponse;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.MRoomTextMessageEvent;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosProcessingPlantSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosPublisherSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosSubscriberSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosProcessingPlantSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosPublisherSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosSubscriberSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideSubscriptionMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.common.OAMRoomMessageInjectorBase;

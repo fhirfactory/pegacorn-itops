@@ -27,7 +27,6 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomPre
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVisibilityEnum;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.WorkshopSummary;
-import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.common.BaseParticipantReplicaServices;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -35,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
-import java.util.Locale;
 
 @ApplicationScoped
 public class WorkshopParticipantReplicaTasks extends BaseParticipantReplicaServices {

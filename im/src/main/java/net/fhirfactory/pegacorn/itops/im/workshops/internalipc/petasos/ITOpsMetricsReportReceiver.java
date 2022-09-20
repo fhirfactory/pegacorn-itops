@@ -22,29 +22,29 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
-import net.fhirfactory.pegacorn.core.interfaces.oam.metrics.PetasosMetricsBrokerInterface;
-import net.fhirfactory.pegacorn.core.interfaces.oam.metrics.PetasosMetricsHandlerInterface;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.WorkUnitProcessorCapabilityEnum;
+import net.fhirfactory.dricats.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.dricats.interfaces.observations.metrics.PetasosMetricsBrokerInterface;
+import net.fhirfactory.dricats.interfaces.observations.metrics.PetasosMetricsHandlerInterface;
+import net.fhirfactory.dricats.model.capabilities.base.CapabilityUtilisationRequest;
+import net.fhirfactory.dricats.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.dricats.model.capabilities.valuesets.WorkUnitProcessorCapabilityEnum;
 import net.fhirfactory.pegacorn.core.model.componentid.ComponentIdType;
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.DataParcelManifest;
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.DataParcelTypeDescriptor;
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.valuesets.DataParcelDirectionEnum;
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.valuesets.DataParcelNormalisationStatusEnum;
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.valuesets.DataParcelValidationStatusEnum;
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.valuesets.PolicyEnforcementPointApprovalStatusEnum;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetric;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
-import net.fhirfactory.pegacorn.core.model.petasos.task.PetasosActionableTask;
-import net.fhirfactory.pegacorn.core.model.petasos.task.datatypes.work.datatypes.ParcelOfWorkType;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
+import net.fhirfactory.dricats.model.petasos.dataparcel.DataParcelManifest;
+import net.fhirfactory.dricats.model.petasos.dataparcel.DataParcelTypeDescriptor;
+import net.fhirfactory.dricats.model.petasos.dataparcel.valuesets.DataParcelDirectionEnum;
+import net.fhirfactory.dricats.model.petasos.dataparcel.valuesets.DataParcelNormalisationStatusEnum;
+import net.fhirfactory.dricats.model.petasos.dataparcel.valuesets.DataParcelValidationStatusEnum;
+import net.fhirfactory.dricats.model.petasos.dataparcel.valuesets.PolicyEnforcementPointApprovalStatusEnum;
+import net.fhirfactory.dricats.model.petasos.oam.metrics.reporting.PetasosComponentMetric;
+import net.fhirfactory.dricats.model.petasos.oam.metrics.reporting.PetasosComponentMetricSet;
+import net.fhirfactory.dricats.model.petasos.task.PetasosActionableTask;
+import net.fhirfactory.dricats.model.petasos.task.datatypes.work.datatypes.ParcelOfWorkType;
+import net.fhirfactory.dricats.model.petasos.uow.UoWPayload;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.jgroups.JGroupsIntegrationPointSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideMetricsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos.common.ITOpsReceiverBase;
-import net.fhirfactory.pegacorn.petasos.core.tasks.factories.PetasosActionableTaskFactory;
-import net.fhirfactory.pegacorn.petasos.endpoints.services.common.ProcessingPlantJGroupsIntegrationPointSet;
+import net.fhirfactory.pegacorn.petasos.tasking.factories.PetasosActionableTaskFactory;
+import net.fhirfactory.pegacorn.petasos.ipc.endpoints.common.ProcessingPlantJGroupsIntegrationPointSet;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -71,7 +71,7 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
     ProducerTemplate template;
 
     @Inject
-    private ProcessingPlantJGroupsIntegrationPointSet integrationPointSet;
+    private JGroupsClusterConnectionSet integrationPointSet;
 
 
     @Override
@@ -112,14 +112,14 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
     }
 
     @Override
-    public Instant replicateMetricToServerHandler(PetasosComponentMetric metric, JGroupsIntegrationPointSummary integrationPoint) {
+    public Instant replicateMetricToServerHandler(PetasosComponentMetric metric, JGroupsChannelConnectorSummary integrationPoint) {
         PetasosComponentMetricSet componentMetricsSet = metricsDM.getComponentMetricsSet(metric.getMetricSource().getId());
         componentMetricsSet.addMetric(metric);
         return(Instant.now());
     }
 
     @Override
-    public Instant replicateMetricSetToServerHandler(PetasosComponentMetricSet metricSet, JGroupsIntegrationPointSummary integrationPoint) {
+    public Instant replicateMetricSetToServerHandler(PetasosComponentMetricSet metricSet, JGroupsChannelConnectorSummary integrationPoint) {
         getLogger().debug(".replicateMetricSetToServerHandler(): Entry, metricSet->{}, integrationPoint->{}", metricSet, integrationPoint);
         if(metricSet != null){
             metricsDM.addComponentMetricSet(integrationPoint.getComponentId().getId(), metricSet);
@@ -165,7 +165,7 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
         getLogger().debug(".cacheMonitorProcess(): Entry");
         List<PetasosComponentMetricSet> updatedMetricSets = metricsDM.getUpdatedMetricSets();
         for(PetasosComponentMetricSet currentMetricSet: updatedMetricSets){
-            ParcelOfWorkType taskWorkItem = new ParcelOfWorkType();
+            TaskWorkItem taskWorkItem = new TaskWorkItem();
             String workItemPayload = null;
             try {
                 workItemPayload= getJsonMapper().writeValueAsString(currentMetricSet);

@@ -24,7 +24,7 @@ package net.fhirfactory.pegacorn.itops.im.workshops.workflow.beans;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterface;
+import net.fhirfactory.dricats.interfaces.topology.ProcessingPlantInterface;
 import net.fhirfactory.pegacorn.internals.communicate.entities.message.factories.CommunicateMessageTopicFactory;
 import org.slf4j.Logger;
 

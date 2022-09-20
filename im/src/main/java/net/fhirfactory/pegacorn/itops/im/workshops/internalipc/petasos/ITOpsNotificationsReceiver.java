@@ -21,12 +21,12 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos;
 
-import net.fhirfactory.pegacorn.core.interfaces.oam.notifications.PetasosITOpsNotificationAgentInterface;
-import net.fhirfactory.pegacorn.core.interfaces.oam.notifications.PetasosITOpsNotificationBrokerInterface;
-import net.fhirfactory.pegacorn.core.interfaces.oam.notifications.PetasosITOpsNotificationHandlerInterface;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.dricats.interfaces.observations.notifications.PetasosITOpsNotificationAgentInterface;
+import net.fhirfactory.dricats.interfaces.observations.notifications.PetasosITOpsNotificationBrokerInterface;
+import net.fhirfactory.dricats.interfaces.observations.notifications.PetasosITOpsNotificationHandlerInterface;
+import net.fhirfactory.dricats.model.capabilities.base.CapabilityUtilisationRequest;
+import net.fhirfactory.dricats.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.dricats.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsNotificationsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos.common.ITOpsReceiverBase;
 import org.slf4j.Logger;

@@ -22,7 +22,6 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps;
 
 import net.fhirfactory.pegacorn.core.model.componentid.ComponentIdType;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

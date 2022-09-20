@@ -21,14 +21,14 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos;
 
-import net.fhirfactory.pegacorn.core.interfaces.oam.subscriptions.PetasosSubscriptionReportHandlerInterface;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.WorkUnitProcessorCapabilityEnum;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosProcessingPlantSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosPublisherSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosSubscriptionSummaryReport;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
+import net.fhirfactory.dricats.interfaces.observations.subscriptions.PetasosSubscriptionReportHandlerInterface;
+import net.fhirfactory.dricats.model.capabilities.base.CapabilityUtilisationRequest;
+import net.fhirfactory.dricats.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.dricats.model.capabilities.valuesets.WorkUnitProcessorCapabilityEnum;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosProcessingPlantSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosPublisherSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosSubscriptionSummaryReport;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.jgroups.JGroupsIntegrationPointSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsSystemWideSubscriptionMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos.common.ITOpsReceiverBase;
@@ -100,7 +100,7 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase implements Peta
      */
 
     @Override
-    public Instant replicateSubscriptionSummaryReportHandler(PetasosSubscriptionSummaryReport summaryReport, JGroupsIntegrationPointSummary integrationPoint) {
+    public Instant replicateSubscriptionSummaryReportHandler(PetasosSubscriptionSummaryReport summaryReport, JGroupsChannelConnectorSummary integrationPoint) {
         getLogger().debug(".replicateSubscriptionSummaryReportHandler(): Entry");
         if(summaryReport != null){
             for(PetasosWorkUnitProcessorSubscriptionSummary wupSummary: summaryReport.getWupSubscriptionSummarySet().values()){

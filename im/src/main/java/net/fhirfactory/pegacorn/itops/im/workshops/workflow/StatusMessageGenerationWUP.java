@@ -21,15 +21,15 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.workflow;
 
-import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.DataParcelManifest;
+import net.fhirfactory.dricats.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.dricats.model.petasos.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.itops.im.workshops.workflow.beans.ITOpsNotificationCapture;
 import net.fhirfactory.pegacorn.itops.im.workshops.workflow.beans.ITOpsNotificationToCommunicateEmailMessage;
 import net.fhirfactory.pegacorn.itops.im.workshops.workflow.beans.ITOpsNotificationToCommunicateSMSMessage;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
-import net.fhirfactory.pegacorn.workshops.WorkflowWorkshop;
-import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.StimuliTriggeredWorkflowWUP;
+import net.fhirfactory.dricats.petasos.participant.workshops.WorkflowWorkshop;
+import net.fhirfactory.dricats.petasos.participant.wup.messagebased.StimuliTriggeredWorkflowWUP;
 import org.apache.camel.model.RouteDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

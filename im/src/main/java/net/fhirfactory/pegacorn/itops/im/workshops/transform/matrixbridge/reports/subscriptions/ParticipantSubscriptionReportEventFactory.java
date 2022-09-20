@@ -26,11 +26,11 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.messag
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.contenttypes.MRoomMessageTypeEnum;
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.events.room.message.contenttypes.MTextContentType;
 import net.fhirfactory.pegacorn.communicate.matrixbridge.workshops.matrixbridge.common.RoomServerTransactionIDProvider;
-import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosPublisherSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosSubscriberSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.petasos.subscription.datatypes.DataParcelManifestSubscriptionMaskType;
+import net.fhirfactory.dricats.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosPublisherSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosSubscriberSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.subscription.datatypes.DataParcelManifestSubscriptionMaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

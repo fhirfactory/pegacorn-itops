@@ -21,8 +21,8 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.datagrid;
 
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosProcessingPlantSubscriptionSummary;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosProcessingPlantSubscriptionSummary;
+import net.fhirfactory.dricats.model.petasos.oam.subscriptions.reporting.PetasosWorkUnitProcessorSubscriptionSummary;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -21,12 +21,12 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos;
 
-import net.fhirfactory.pegacorn.core.interfaces.oam.tasks.PetasosITOpsTaskReportingAgentInterface;
-import net.fhirfactory.pegacorn.core.interfaces.oam.tasks.PetasosITOpsTaskReportingBrokerInterface;
-import net.fhirfactory.pegacorn.core.interfaces.oam.tasks.PetasosITOpsTaskReportingHandlerInterface;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
-import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.dricats.interfaces.observations.tasks.PetasosITOpsTaskReportingAgentInterface;
+import net.fhirfactory.dricats.interfaces.observations.tasks.PetasosITOpsTaskReportingBrokerInterface;
+import net.fhirfactory.dricats.interfaces.observations.tasks.PetasosITOpsTaskReportingHandlerInterface;
+import net.fhirfactory.dricats.model.capabilities.base.CapabilityUtilisationRequest;
+import net.fhirfactory.dricats.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.dricats.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.ITOpsTaskReportsDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos.common.ITOpsReceiverBase;
 import org.slf4j.Logger;

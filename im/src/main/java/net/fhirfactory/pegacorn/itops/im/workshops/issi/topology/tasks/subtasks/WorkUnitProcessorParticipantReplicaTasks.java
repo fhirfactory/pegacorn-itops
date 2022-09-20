@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
-import java.util.Locale;
 
 @ApplicationScoped
 public class WorkUnitProcessorParticipantReplicaTasks extends BaseParticipantReplicaServices {
