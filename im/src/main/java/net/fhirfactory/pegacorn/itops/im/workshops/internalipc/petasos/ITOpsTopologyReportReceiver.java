@@ -23,8 +23,8 @@ package net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.fhirfactory.pegacorn.core.interfaces.oam.topology.PetasosTopologyReportingHandlerInterface;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.pegacorn.core.model.capabilities.use.CapabilityUtilisationRequest;
+import net.fhirfactory.pegacorn.core.model.capabilities.use.CapabilityUtilisationResponse;
 import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.WorkUnitProcessorCapabilityEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.topology.reporting.PetasosMonitoredTopologyGraph;
 import net.fhirfactory.pegacorn.core.model.topology.endpoints.edge.jgroups.JGroupsIntegrationPointSummary;

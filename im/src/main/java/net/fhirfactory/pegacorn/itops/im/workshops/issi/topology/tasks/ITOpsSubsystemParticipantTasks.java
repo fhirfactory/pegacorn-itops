@@ -22,7 +22,8 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks;
 
 import net.fhirfactory.pegacorn.core.model.petasos.participant.PetasosParticipantFulfillmentStatusEnum;
-import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.*;
+import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.PetasosParticipantSummary;
+import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownParticipantMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.topology.ParticipantTopologyIntoReplicaFactory;
@@ -73,7 +74,7 @@ public class ITOpsSubsystemParticipantTasks {
                 getLogger().trace(".injectSubsystemParticipantRoomSet(): [Synchronise Participant List] Processing ->{}", currentProcessingPlant);
                 //
                 // Check to see if entry exists... we don't automatically delete, merely update
-                PetasosParticipantSummary participantSummary = participantCache.getParticipant(currentProcessingPlant.getParticipantName());
+                PetasosParticipantSummary participantSummary = participantCache.getParticipant(currentProcessingPlant.getParticipantId().getName());
                 if (participantSummary == null) {
                     getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Synchronise Participant List] Participant Does Not Exit, Adding");
                     PetasosParticipantSummary newParticipantSummary = matrixBridgeFactories.newPetasosParticipantSummary(currentProcessingPlant);

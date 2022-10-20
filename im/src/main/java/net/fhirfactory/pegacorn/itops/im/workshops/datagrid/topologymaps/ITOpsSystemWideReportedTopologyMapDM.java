@@ -198,13 +198,13 @@ public class ITOpsSystemWideReportedTopologyMapDM {
         synchronized (graphLock){
             reportedSoftwareComponentMap.clear();
             for(ProcessingPlantSummary currentProcessingPlant: reportedProcessingPlantMap.values()){
-                LOG.trace(".printMap(): ProcessingPlant->{}/{}", currentProcessingPlant.getComponentID(), currentProcessingPlant.getTopologyNodeFDN().getLeafRDN());
+                LOG.trace(".printMap(): ProcessingPlant->{}/{}", currentProcessingPlant.getComponentID().getDisplayName(), currentProcessingPlant.getParticipantId().getDisplayName());
                 for(WorkshopSummary currentWorkshop: currentProcessingPlant.getWorkshops().values()){
-                    LOG.trace(".printMap(): Workshop->{}/{}", currentWorkshop.getComponentID(), currentWorkshop.getTopologyNodeFDN().getLeafRDN());
+                    LOG.trace(".printMap(): Workshop->{}/{}", currentWorkshop.getComponentID().getDisplayName(), currentWorkshop.getParticipantId().getDisplayName());
                     for(WorkUnitProcessorSummary currentWUP: currentWorkshop.getWorkUnitProcessors().values()){
-                        LOG.trace(".printMap(): WorkUnitProcessor->{}/{}", currentWUP.getComponentID(), currentWUP.getTopologyNodeFDN().getLeafRDN());
+                        LOG.trace(".printMap(): WorkUnitProcessor->{}/{}", currentWUP.getComponentID().getDisplayName(), currentWUP.getParticipantId().getDisplayName());
                         for(EndpointSummary currentEndpoint: currentWUP.getEndpoints().values()){
-                            LOG.trace(".printMap(): Endpoint->{}/{}", currentEndpoint.getComponentID(), currentEndpoint.getTopologyNodeFDN().getLeafRDN());
+                            LOG.trace(".printMap(): Endpoint->{}/{}", currentEndpoint.getComponentID().getDisplayName(), currentEndpoint.getParticipantId().getDisplayName());
                         }
                     }
                 }

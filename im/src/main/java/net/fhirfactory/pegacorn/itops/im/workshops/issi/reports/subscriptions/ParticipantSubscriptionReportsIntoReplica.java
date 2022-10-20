@@ -185,7 +185,7 @@ public class ParticipantSubscriptionReportsIntoReplica extends OAMRoomMessageInj
                 }
 
             } else {
-                getLogger().warn(".forwardWUPTaskReport(): No room to forward work unit processor task reports into (WorkUnitProcessor->{})!", subscriptionSummary.getParticipantName());
+                getLogger().warn(".forwardWUPTaskReport(): No room to forward work unit processor task reports into (ProcessingPlant->{})!", subscriptionSummary.getParticipantName());
                 // TODO either re-queue or send to DeadLetter
             }
         }

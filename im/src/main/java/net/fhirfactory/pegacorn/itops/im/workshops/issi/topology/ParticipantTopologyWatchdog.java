@@ -135,7 +135,8 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
     protected void scheduleConnectivityCheckDaemon(){
         getLogger().debug(".scheduleConnectivityCheckDaemon");
         TimerTask connectivityCheckDaemonTimerTask = new TimerTask() {
-            public void run() {
+            @Override
+			public void run() {
                 getLogger().debug(".connectivityCheckDaemonTimerTask(): Entry");
                 if (!isTopologyConnectivityCheckDaemonIsStillRunning()) {
                     connectivityCheckDaemon();
@@ -259,9 +260,9 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         PetasosComponentITOpsNotification notification = new PetasosComponentITOpsNotification();
         notification.setContent(report);
         notification.setFormattedContent(formattedReport);
-        notification.setParticipantName(processingPlant.getSubsystemParticipantName());
+        notification.setParticipantName(processingPlant.getTopologyNode().getParticipant().getParticipantId().getSubsystemName());
         notification.setNotificationType(PetasosComponentITOpsNotificationTypeEnum.SUCCESS_NOTIFICATION_TYPE);
-        notification.setComponentId(processingPlant.getMeAsASoftwareComponent().getComponentID());
+        notification.setComponentId(processingPlant.getTopologyNode().getComponentId());
         notification.setContentHeading("Node Visibility Report");
 
         getLogger().debug(".buildConnectivityReport(): Exit");
@@ -315,7 +316,7 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         notification.setFormattedContent(formattedReport);
         notification.setParticipantName(nodeSubsystemName);
         notification.setNotificationType(PetasosComponentITOpsNotificationTypeEnum.NORMAL_NOTIFICATION_TYPE);
-        notification.setComponentId(processingPlant.getMeAsASoftwareComponent().getComponentID());
+        notification.setComponentId(processingPlant.getTopologyNode().getComponentId());
         notification.setContentHeading("Node: " + nodeSite + "." + nodeZone + "." + nodeSubsystemName  + "  has " + status);
 
         try {
@@ -359,9 +360,9 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
         PetasosComponentITOpsNotification notification = new PetasosComponentITOpsNotification();
         notification.setContent(report);
         notification.setFormattedContent(formattedReport);
-        notification.setParticipantName(processingPlant.getSubsystemParticipantName());
+        notification.setParticipantName(processingPlant.getTopologyNode().getParticipant().getParticipantId().getSubsystemName());
         notification.setNotificationType(PetasosComponentITOpsNotificationTypeEnum.SUCCESS_NOTIFICATION_TYPE);
-        notification.setComponentId(processingPlant.getMeAsASoftwareComponent().getComponentID());
+        notification.setComponentId(processingPlant.getTopologyNode().getComponentId());
         notification.setContentHeading("Node Visibility Report");
 
         getLogger().debug(".buildConnectivityReport(): Exit");
@@ -407,7 +408,8 @@ public class ParticipantTopologyWatchdog extends OAMRoomMessageInjectorBase {
     // Getters (and Setters)
     //
 
-    protected Logger getLogger(){
+    @Override
+	protected Logger getLogger(){
         return(LOG);
     }
 

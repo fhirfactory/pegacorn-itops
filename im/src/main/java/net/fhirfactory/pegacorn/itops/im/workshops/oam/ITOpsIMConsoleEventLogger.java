@@ -133,9 +133,9 @@ public class ITOpsIMConsoleEventLogger {
 
         PetasosComponentITOpsNotification notification = new PetasosComponentITOpsNotification();
         notification.setContent(message);
-        notification.setParticipantName(processingPlant.getSubsystemParticipantName());
+        notification.setParticipantName(processingPlant.getTopologyNode().getParticipant().getParticipantId().getSubsystemName());
         notification.setNotificationType(PetasosComponentITOpsNotificationTypeEnum.SUCCESS_NOTIFICATION_TYPE);
-        notification.setComponentId(processingPlant.getMeAsASoftwareComponent().getComponentID());
+        notification.setComponentId(processingPlant.getTopologyNode().getComponentId());
 
         logConsoleEvent(notification);
     }

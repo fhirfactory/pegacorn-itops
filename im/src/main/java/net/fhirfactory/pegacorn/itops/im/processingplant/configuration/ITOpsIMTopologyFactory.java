@@ -1,9 +1,9 @@
 package net.fhirfactory.pegacorn.itops.im.processingplant.configuration;
 
-import net.fhirfactory.pegacorn.core.model.topology.nodes.*;
-import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.segments.ports.http.ClusteredHTTPServerPortSegment;
-import net.fhirfactory.pegacorn.core.model.topology.nodes.common.EndpointProviderInterface;
 import net.fhirfactory.pegacorn.communicate.matrixbridge.processingplant.configuration.MatrixBridgeTopologyFactory;
+import net.fhirfactory.pegacorn.core.model.topology.nodes.*;
+import net.fhirfactory.pegacorn.core.model.topology.nodes.common.EndpointProviderInterface;
+import net.fhirfactory.pegacorn.deployment.properties.configurationfilebased.common.segments.ports.http.ClusteredHTTPServerPortSegment;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.util.PegacornEnvironmentProperties;
 import org.slf4j.Logger;
@@ -34,13 +34,13 @@ public class ITOpsIMTopologyFactory extends MatrixBridgeTopologyFactory {
 
     @Override
     protected ProcessingPlantSoftwareComponent buildSubsystemTopology() {
-        SubsystemTopologyNode subsystemTopologyNode = addSubsystemNode(getTopologyIM().getSolutionTopology());
-        BusinessServiceTopologyNode businessServiceTopologyNode = addBusinessServiceNode(subsystemTopologyNode);
-        DeploymentSiteTopologyNode deploymentSiteTopologyNode = addDeploymentSiteNode(businessServiceTopologyNode);
-        ClusterServiceTopologyNode clusterServiceTopologyNode = addClusterServiceNode(deploymentSiteTopologyNode);
+        SubsystemTopologyNode subsystemTopologyNode = buildSubsystemNodeFromConfigurationFile();
+        BusinessServiceTopologyNode businessServiceTopologyNode = buildBusinessServiceNode(subsystemTopologyNode);
+        DeploymentSiteTopologyNode deploymentSiteTopologyNode = buildDeploymentSiteNode(businessServiceTopologyNode);
+        ClusterServiceTopologyNode clusterServiceTopologyNode = buildClusterServiceNode(deploymentSiteTopologyNode, businessServiceTopologyNode);
 
-        PlatformTopologyNode platformTopologyNode = addPlatformNode(clusterServiceTopologyNode);
-        ProcessingPlantSoftwareComponent processingPlantSoftwareComponent = addPegacornProcessingPlant(platformTopologyNode);
+        PlatformTopologyNode platformTopologyNode = buildPlatformNode(clusterServiceTopologyNode);
+        ProcessingPlantSoftwareComponent processingPlantSoftwareComponent = buildProcessingPlant(platformTopologyNode, clusterServiceTopologyNode);
         addPrometheusPort(processingPlantSoftwareComponent);
         addJolokiaPort(processingPlantSoftwareComponent);
         addKubeLivelinessPort(processingPlantSoftwareComponent);

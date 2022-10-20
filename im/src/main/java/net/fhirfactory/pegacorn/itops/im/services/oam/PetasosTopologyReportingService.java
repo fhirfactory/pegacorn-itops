@@ -99,14 +99,14 @@ public class PetasosTopologyReportingService extends RouteBuilder {
         //
         LOG.trace(".forwardTopologyDetails(): [Grab Current Topology Graph] Start");
         PetasosMonitoredTopologyGraph currentState = itOpsTopologyDM.getCurrentState();
-        currentState.setDeploymentName(getProcessingPlant().getSolutionNode().getComponentRDN().getNodeName());
+        currentState.setDeploymentName(getProcessingPlant().getSolutionNode().getComponentId().getName());
         LOG.trace(".forwardTopologyDetails(): [Grab Current Topology Graph] Finish");
         //
         // Send Update
         //
         if(currentState != null) {
             for (ProcessingPlantSummary currentProcessingPlant : currentState.getProcessingPlants().values()) {
-                systemWideTopologyMapDM.addProcessingPlant(getProcessingPlant().getMeAsASoftwareComponent().getComponentID().getId(), currentProcessingPlant);
+                systemWideTopologyMapDM.addProcessingPlant(getProcessingPlant().getTopologyNode().getComponentId().getId(), currentProcessingPlant);
             }
         }
         //

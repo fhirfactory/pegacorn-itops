@@ -35,7 +35,6 @@ import net.fhirfactory.pegacorn.core.model.componentid.ComponentIdType;
 import net.fhirfactory.pegacorn.core.model.petasos.participant.PetasosParticipantFulfillment;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.PetasosParticipantSummary;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
-import net.fhirfactory.pegacorn.petasos.oam.common.ITOpsReplicaLocalServerName;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -43,7 +42,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @ApplicationScoped
 public class ParticipantTopologyIntoReplicaFactory {
@@ -215,8 +217,7 @@ public class ParticipantTopologyIntoReplicaFactory {
         PetasosParticipantSummary newParticipantSummary = new PetasosParticipantSummary();
         newParticipantSummary.setNodeType(processingPlantSummary.getNodeType());
         newParticipantSummary.setNodeVersion(processingPlantSummary.getNodeVersion());
-        newParticipantSummary.setParticipantName(processingPlantSummary.getParticipantName());
-        newParticipantSummary.setTopologyNodeFunctionFDN(processingPlantSummary.getTopologyNodeFunctionFDN());
+        newParticipantSummary.setParticipantId(processingPlantSummary.getParticipantId());
         newParticipantSummary.setLastSynchronisationInstant(processingPlantSummary.getLastSynchronisationInstant());
         newParticipantSummary.setLastActivityInstant(processingPlantSummary.getLastActivityInstant());
 

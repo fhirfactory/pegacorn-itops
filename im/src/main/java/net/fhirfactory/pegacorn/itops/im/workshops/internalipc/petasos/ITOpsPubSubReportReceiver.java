@@ -22,8 +22,8 @@
 package net.fhirfactory.pegacorn.itops.im.workshops.internalipc.petasos;
 
 import net.fhirfactory.pegacorn.core.interfaces.oam.subscriptions.PetasosSubscriptionReportHandlerInterface;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.pegacorn.core.model.capabilities.use.CapabilityUtilisationRequest;
+import net.fhirfactory.pegacorn.core.model.capabilities.use.CapabilityUtilisationResponse;
 import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.WorkUnitProcessorCapabilityEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosProcessingPlantSubscriptionSummary;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.subscriptions.reporting.PetasosPublisherSubscriptionSummary;

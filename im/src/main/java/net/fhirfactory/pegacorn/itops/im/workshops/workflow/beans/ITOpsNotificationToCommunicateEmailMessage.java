@@ -81,7 +81,7 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
 
     private String getSourceEmailAddress(){
         if(!this.resolvedSourceEmailAddress){
-            sourceEmailAddress = getProcessingPlant().getMeAsASoftwareComponent().getOtherConfigurationParameter(ITOPS_EMAIL_SOURCE_ADDRESS);
+            sourceEmailAddress = getProcessingPlant().getTopologyNode().getOtherConfigurationParameter(ITOPS_EMAIL_SOURCE_ADDRESS);
             if (StringUtils.isEmpty(sourceEmailAddress)) {
                 getLogger().error(".getSourceEmailAddress(): Cannot Resolve Source Address for ITOps Email Notifications");
                 this.sourceEmailAddress = UNDEFINED_ADDRESS;
@@ -94,7 +94,7 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
 
     private String getTargetEmailAddress(){
         if(!this.resolvedTargetEmailAddress){
-            targetEmailAddress = getProcessingPlant().getMeAsASoftwareComponent().getOtherConfigurationParameter(ITOPS_EMAIL_TARGET_ADDRESS);
+            targetEmailAddress = getProcessingPlant().getTopologyNode().getOtherConfigurationParameter(ITOPS_EMAIL_TARGET_ADDRESS);
             if (StringUtils.isEmpty(targetEmailAddress)) {
                 getLogger().error(".getSourceEmailAddress(): Cannot Resolve Source Address for ITOps Email Notifications");
                 this.targetEmailAddress = UNDEFINED_ADDRESS;
@@ -135,7 +135,7 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
                 emailMessage.setFrom(getSourceEmailAddress());
                 emailMessage.getTo().add(getTargetEmailAddress());
                 String subject = "";
-                String subjectPrefix = getProcessingPlant().getMeAsASoftwareComponent().getOtherConfigurationParameter(ITOPS_EMAIL_SUBJECT_PREFIX);
+                String subjectPrefix = getProcessingPlant().getTopologyNode().getOtherConfigurationParameter(ITOPS_EMAIL_SUBJECT_PREFIX);
                 if (StringUtils.isNotEmpty(subjectPrefix)) {
                     subject += subjectPrefix; // no space after
                 }
@@ -160,8 +160,8 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
                 }
                 emailMessage.setContent(emailMessageContentBuilder.toString());
                 emailMessage.setSimplifiedID("CommunicateEmailMessage:" + UUID.randomUUID().toString());
-                emailMessage.setDescription("CommunicateEmailMessage: From(" + getProcessingPlant().getSubsystemParticipantName() + "), on behalf of (" + notification.getParticipantName() + ")");
-                emailMessage.setDisplayName(getProcessingPlant().getSubsystemParticipantName() + "(" + emailMessage.getSimplifiedID() + ")");
+                emailMessage.setDescription("CommunicateEmailMessage: From(" + getProcessingPlant().getTopologyNode().getParticipant().getParticipantId().getSubsystemName() + "), on behalf of (" + notification.getParticipantName() + ")");
+                emailMessage.setDisplayName(getProcessingPlant().getTopologyNode().getParticipant().getParticipantId().getSubsystemName() + "(" + emailMessage.getSimplifiedID() + ")");
                 emailMessage.setContent(emailMessageContentBuilder.toString());
 
                 UoWPayload egressPayload = new UoWPayload();
@@ -171,7 +171,7 @@ public class ITOpsNotificationToCommunicateEmailMessage extends ITOpsNotificatio
                     DataParcelManifest egressPayloadManifest = new DataParcelManifest();
                     DataParcelTypeDescriptor emailMessageDescriptor = getMessageTopicFactory().createEmailTypeDescriptor();
                     egressPayloadManifest.setContentDescriptor(emailMessageDescriptor);
-                    egressPayloadManifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getSubsystemParticipantName());
+                    egressPayloadManifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getTopologyNode().getParticipant().getParticipantId().getSubsystemName());
                     egressPayloadManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
                     egressPayloadManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
                     egressPayloadManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);

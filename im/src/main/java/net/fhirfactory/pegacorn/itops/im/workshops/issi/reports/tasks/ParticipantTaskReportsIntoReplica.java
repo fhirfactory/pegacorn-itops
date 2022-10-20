@@ -151,7 +151,7 @@ public class ParticipantTaskReportsIntoReplica extends OAMRoomMessageInjectorBas
                 case PETASOS_MONITORED_COMPONENT_WORK_UNIT_PROCESSOR_COMPONENT:
                     break;
                 case PETASOS_MONITORED_COMPONENT_ENDPOINT:
-                    getLogger().trace(".taskReportForward(): Processing WorkUnitProcessor Metrics");
+                    getLogger().trace(".taskReportForward(): Processing Endpoint Metrics");
                     successfullySent = forwardEndpointTaskReport(nextNotification);
                     break;
             }
@@ -196,7 +196,7 @@ public class ParticipantTaskReportsIntoReplica extends OAMRoomMessageInjectorBas
                     return(false);
                 }
             } else {
-                getLogger().warn(".forwardEndpointTaskReport(): No room to forward endpoint task reports into (WorkUnitProcessor->{})!", notification.getParticipantName());
+                getLogger().warn(".forwardEndpointTaskReport(): No room to forward endpoint task reports into (Endpoint->{})!", notification.getParticipantName());
                 return(false);
             }
         } catch (Exception ex) {

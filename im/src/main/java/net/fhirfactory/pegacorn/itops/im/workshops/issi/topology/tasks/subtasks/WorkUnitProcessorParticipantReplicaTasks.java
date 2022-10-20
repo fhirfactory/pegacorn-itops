@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
-import java.util.Locale;
 
 @ApplicationScoped
 public class WorkUnitProcessorParticipantReplicaTasks extends BaseParticipantReplicaServices {
@@ -63,8 +62,8 @@ public class WorkUnitProcessorParticipantReplicaTasks extends BaseParticipantRep
         getLogger().debug(".createWorkUnitProcessorSpace(): Entry, workshopId->{}, wupMatrixRoom->{}, wup->{}", workshopId, wupMatrixRoom, wupSummary);
 
         try {
-            String wupParticipantName = wupSummary.getParticipantName();
-            String wupParticipantDisplayName = wupSummary.getParticipantDisplayName();
+            String wupParticipantName = wupSummary.getParticipantId().getName();
+            String wupParticipantDisplayName = wupSummary.getParticipantId().getDisplayName();
             String wupAlias = getRoomIdentityFactory().buildWorkUnitProcessorSpacePseudoAlias(wupParticipantName);
             MatrixRoom wupRoom = null;
             String wupRoomId= null;

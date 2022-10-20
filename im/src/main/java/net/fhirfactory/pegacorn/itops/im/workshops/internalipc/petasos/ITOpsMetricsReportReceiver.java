@@ -25,8 +25,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
 import net.fhirfactory.pegacorn.core.interfaces.oam.metrics.PetasosMetricsBrokerInterface;
 import net.fhirfactory.pegacorn.core.interfaces.oam.metrics.PetasosMetricsHandlerInterface;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationRequest;
-import net.fhirfactory.pegacorn.core.model.capabilities.base.CapabilityUtilisationResponse;
+import net.fhirfactory.pegacorn.core.model.capabilities.use.CapabilityUtilisationRequest;
+import net.fhirfactory.pegacorn.core.model.capabilities.use.CapabilityUtilisationResponse;
 import net.fhirfactory.pegacorn.core.model.capabilities.valuesets.WorkUnitProcessorCapabilityEnum;
 import net.fhirfactory.pegacorn.core.model.componentid.ComponentIdType;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
@@ -134,7 +134,7 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
         if(metric == null){
             return(Instant.now());
         }
-        ComponentIdType MyComponentId = getProcessingPlant().getMeAsASoftwareComponent().getComponentID();
+        ComponentIdType MyComponentId = getProcessingPlant().getTopologyNode().getComponentId();
         PetasosComponentMetricSet componentMetricsSet = metricsDM.getComponentMetricsSet(metric.getMetricSource().getId());
         componentMetricsSet.addMetric(metric);
         getLogger().debug(".replicateMetricSetToServerHandler(): Exit");
@@ -147,7 +147,7 @@ public class ITOpsMetricsReportReceiver extends ITOpsReceiverBase implements Pet
         if(metricSet == null){
             return(Instant.now());
         }
-        ComponentIdType MyComponentId = getProcessingPlant().getMeAsASoftwareComponent().getComponentID();
+        ComponentIdType MyComponentId = getProcessingPlant().getTopologyNode().getComponentId();
         PetasosComponentMetricSet componentMetricsSet = metricsDM.getComponentMetricsSet(metricSet.getMetricSourceComponentId().getId());
         for(PetasosComponentMetric currentMetric: metricSet.getMetrics().values()) {
             componentMetricsSet.addMetric(currentMetric);

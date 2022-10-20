@@ -38,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +78,7 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
     private Iterator<String> getTargetPhoneNumbers() {
         if (targetPhoneNumbers == null){
             targetPhoneNumbers = new ArrayList<>();
-            String targetPhoneNumbersStr = getProcessingPlant().getMeAsASoftwareComponent().getOtherConfigurationParameter(ITOPS_SMS_TARGET_PHONE_NUMBER);
+            String targetPhoneNumbersStr = getProcessingPlant().getTopologyNode().getOtherConfigurationParameter(ITOPS_SMS_TARGET_PHONE_NUMBER);
             if (targetPhoneNumbersStr != null) {
                 for (String phoneNumber : targetPhoneNumbersStr.split(",")) {
                     if (!StringUtils.isEmpty(phoneNumber)) {
@@ -114,14 +113,14 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
                 DataParcelManifest egressPayloadManifest = new DataParcelManifest();
                 DataParcelTypeDescriptor smsMessageDescriptor = getMessageTopicFactory().createSMSTypeDescriptor();
                 egressPayloadManifest.setContentDescriptor(smsMessageDescriptor);
-                egressPayloadManifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getSubsystemParticipantName());
+                egressPayloadManifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getTopologyNode().getParticipant().getParticipantId().getSubsystemName());
                 egressPayloadManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
                 egressPayloadManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
                 egressPayloadManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);
                 egressPayloadManifest.setInterSubsystemDistributable(true);
                 
                 String message = "";
-                String messagePrefix = getProcessingPlant().getMeAsASoftwareComponent().getOtherConfigurationParameter(ITOPS_SMS_MESSAGE_PREFIX);
+                String messagePrefix = getProcessingPlant().getTopologyNode().getOtherConfigurationParameter(ITOPS_SMS_MESSAGE_PREFIX);
                 if (StringUtils.isNotEmpty(messagePrefix)) {
                     message += messagePrefix; // no space after
                 }
@@ -130,7 +129,7 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
                 } else {
                     message += "Error ("+notification.getParticipantName()+")";
                 }
-                String description = "CommunicateSMSMessage: From(" + getProcessingPlant().getSubsystemParticipantName() + "), on behalf of (" + notification.getParticipantName() + ")";
+                String description = "CommunicateSMSMessage: From(" + getProcessingPlant().getTopologyNode().getParticipant().getParticipantId().getSubsystemName() + "), on behalf of (" + notification.getParticipantName() + ")";
                 
                 do {
                     CommunicateSMSMessage smsMessage = new CommunicateSMSMessage();
@@ -139,7 +138,7 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
                     smsMessage.setMessage(message);
                     smsMessage.setSimplifiedID("CommunicateSMSMessage:" + UUID.randomUUID().toString());  // use a new ID for each SMS
                     smsMessage.setDescription(description);
-                    smsMessage.setDisplayName(getProcessingPlant().getSubsystemParticipantName() + "(" + smsMessage.getSimplifiedID() + ")");
+                    smsMessage.setDisplayName(getProcessingPlant().getTopologyNode().getParticipant().getParticipantId().getSubsystemName() + "(" + smsMessage.getSimplifiedID() + ")");
                     
                     String egressPayloadString;
                     try {

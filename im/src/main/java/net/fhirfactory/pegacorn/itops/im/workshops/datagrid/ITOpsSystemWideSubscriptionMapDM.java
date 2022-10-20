@@ -36,9 +36,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ITOpsSystemWideSubscriptionMapDM {
     private static final Logger LOG = LoggerFactory.getLogger(ITOpsSystemWideSubscriptionMapDM.class);
 
-    // ConcurrentHashMap<componentID, ProcessingPlantSubscriptionSummary>
+    // ConcurrentHashMap<componentID.id, ProcessingPlantSubscriptionSummary>
     private ConcurrentHashMap<String, PetasosProcessingPlantSubscriptionSummary> processingPlantSubscriptionSummarySet;
-    // ConcurrentHashMap<componentID, WorkUnitProcessorSubscriptionSummary>
+    // ConcurrentHashMap<componentID.id, WorkUnitProcessorSubscriptionSummary>
     private ConcurrentHashMap<String, PetasosWorkUnitProcessorSubscriptionSummary> workUnitProcessorSubscriptionSummarySet;
     private Object publisherSubscriptionMapLock;
     private boolean updated;
@@ -58,7 +58,14 @@ public class ITOpsSystemWideSubscriptionMapDM {
         synchronized (publisherSubscriptionMapLock) {
 			if (processingPlantSubscriptionSummarySet.containsKey(summary.getComponentID().getId())) {
 				LOG.debug(".addProcessingPlantSubscriptionSummary(): Summary is NOT unique, summary->{}", summary);
+                if(summary.getAsSubscriber().size() != processingPlantSubscriptionSummarySet.get(summary.getComponentID().getId()).getAsSubscriber().size()){
+                    updated = true;
+                }
+                if(summary.getAsPublisher().size() != processingPlantSubscriptionSummarySet.get(summary.getComponentID().getId()).getAsPublisher().size()){
+                    updated = true;
+                }
 				processingPlantSubscriptionSummarySet.remove(summary.getComponentID().getId());
+
 			} else {
             	 LOG.debug(".addProcessingPlantSubscriptionSummary(): Summary is unique, summary->{}", summary);
             	updated = true;
@@ -73,6 +80,9 @@ public class ITOpsSystemWideSubscriptionMapDM {
         synchronized (publisherSubscriptionMapLock) {
             if (workUnitProcessorSubscriptionSummarySet.containsKey(summary.getComponentID().getId())) {
            	 	LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Summary is NOT unique, summary->{}", summary);
+                if(summary.getSubscribedTaskWorkItems().size() != workUnitProcessorSubscriptionSummarySet.get(summary.getComponentID().getId()).getSubscribedTaskWorkItems().size()){
+                    updated = true;
+                }
                 workUnitProcessorSubscriptionSummarySet.remove(summary.getComponentID().getId());
             } else {
            	 	LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Summary is unique, summary->{}", summary);

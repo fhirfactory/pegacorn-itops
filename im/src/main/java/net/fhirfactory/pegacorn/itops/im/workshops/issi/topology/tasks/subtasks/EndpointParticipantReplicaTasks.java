@@ -28,8 +28,8 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVis
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.EndpointSummary;
 import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
-import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.common.BaseParticipantReplicaServices;
+import net.fhirfactory.pegacorn.itops.im.workshops.transform.matrixbridge.common.ParticipantRoomIdentityFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -66,8 +66,8 @@ public class EndpointParticipantReplicaTasks extends BaseParticipantReplicaServi
     public MatrixRoom createEndpointSpaceIfRequired(String parentParticipantName, String parentSpaceId, MatrixRoom endpointSpace, EndpointSummary endpointSummary) {
         getLogger().debug(".createEndpointSpaceIfRequired(): Entry, parentSpaceId->{}, endpoint->{}", parentSpaceId, endpointSummary);
         try {
-            String endpointParticipantDisplayName = endpointSummary.getParticipantDisplayName();
-            String endpointParticipantName = endpointSummary.getParticipantName();
+            String endpointParticipantDisplayName = endpointSummary.getParticipantId().getDisplayName();
+            String endpointParticipantName = endpointSummary.getParticipantId().getName();
             String endpointParticipantAlias = identityFactory.buildEndpointSpacePseudoAlias(endpointParticipantName);
             String endpointSpaceId = null;
             MatrixRoom endpointRoom = null;

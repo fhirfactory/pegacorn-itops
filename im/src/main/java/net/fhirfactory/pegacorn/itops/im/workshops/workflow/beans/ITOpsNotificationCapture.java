@@ -87,7 +87,7 @@ public class ITOpsNotificationCapture extends ITOpsNotificationToCommunicateMess
         descriptor.setDataParcelSubCategory("Operations, Administration and Maintenance");
         descriptor.setDataParcelResource("PetasosComponentITOpsNotification");
         manifest.setContentDescriptor(descriptor);
-        manifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getSubsystemParticipantName());
+        manifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getTopologyNode().getParticipant().getParticipantId().getSubsystemName());
         ingresPayload.setPayloadManifest(manifest);
         UoW uow = new UoW(ingresPayload);
 

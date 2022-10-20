@@ -167,7 +167,7 @@ public class ITOpsIMMetricsProcessor{
         boolean metricsUpdateFailed = false;
         for(PetasosComponentMetricSet currentMetric: updatedMetrics){
             LOG.debug(".forwardLocalMetricsToServer(): Sending metrics for component->{}", currentMetric.getMetricSourceComponentId());
-            systemWideMetricsDM.addComponentMetricSet(processingPlant.getSubsystemParticipantName(), currentMetric);
+            systemWideMetricsDM.addComponentMetricSet(processingPlant.getTopologyNode().getParticipant().getParticipantId().getSubsystemName(), currentMetric);
             synchronized (metricQueueLock){
                 if(!metricsQueue.containsKey(currentMetric.getMetricSourceComponentId())) {
                     metricsQueue.put(currentMetric.getMetricSourceComponentId(), currentMetric);

@@ -31,9 +31,9 @@ import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseUser;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.ProcessingPlantSummary;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownParticipantMapDM;
+import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownUserMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsSystemWideReportedTopologyMapDM;
-import net.fhirfactory.pegacorn.itops.im.workshops.datagrid.topologymaps.ITOpsKnownRoomAndSpaceMapDM;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsSubsystemParticipantTasks;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsTopologySynchronisationTasks;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.tasks.ITOpsUserTasks;
@@ -435,9 +435,9 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             try {
                 List<ProcessingPlantSummary> processingPlants = getSystemWideTopologyMap().getProcessingPlants();
                 for (ProcessingPlantSummary currentProcessingPlant : processingPlants) {
-                    getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Build SpaceTrees and Synchronise with Known Rooms] Processing ->{}", currentProcessingPlant.getParticipantName());
+                    getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Build SpaceTrees and Synchronise with Known Rooms] Processing ->{}", currentProcessingPlant.getParticipantId().getName());
                     getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Build SpaceTrees and Synchronise with Known Rooms] Getting Space Tree!");
-                    MatrixRoom subsystemParticipantSpace = matrixCacheSynchronisationTasks.getSpaceTreeForSubsystemParticipant(currentProcessingPlant.getParticipantName());
+                    MatrixRoom subsystemParticipantSpace = matrixCacheSynchronisationTasks.getSpaceTreeForSubsystemParticipant(currentProcessingPlant.getParticipantId().getName());
                     getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Build SpaceTrees and Synchronise with Known Rooms] Syncing Space Tree with Room Cache!");
                     synchroniseSpaceTreeRoomsWithCache(subsystemParticipantSpace);
                     getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Build SpaceTrees and Synchronise with Known Rooms] Synchronised, subsystemParticipantSpace->{}", subsystemParticipantSpace);
@@ -455,8 +455,8 @@ public class ParticipantTopologyIntoReplicaDaemon extends RouteBuilder {
             try {
                 List<ProcessingPlantSummary> processingPlants = getSystemWideTopologyMap().getProcessingPlants();
                 for (ProcessingPlantSummary currentProcessingPlant : processingPlants) {
-                    getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] Processing ->{}", currentProcessingPlant.getParticipantName());
-                    String participantName = currentProcessingPlant.getParticipantName();
+                    getLogger().trace(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] Processing ->{}", currentProcessingPlant.getParticipantId().getName());
+                    String participantName = currentProcessingPlant.getParticipantId().getName();
                     String pseudoAlias = roomIdentityFactory.buildProcessingPlantSpacePseudoAlias(participantName);
                     MatrixRoom subsystemParticipantSpace = getRoomCache().getRoomFromPseudoAlias(pseudoAlias);
                     getLogger().debug(".topologyReplicationSynchronisationDaemon(): [Add Space(s) & Rooms As Required] subsystemParticipantSpace ->{}", subsystemParticipantSpace);

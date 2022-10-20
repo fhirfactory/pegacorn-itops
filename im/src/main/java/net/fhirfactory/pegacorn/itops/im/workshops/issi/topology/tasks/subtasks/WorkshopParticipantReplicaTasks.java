@@ -27,7 +27,6 @@ import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomPre
 import net.fhirfactory.pegacorn.communicate.matrix.model.r110.api.rooms.MRoomVisibilityEnum;
 import net.fhirfactory.pegacorn.communicate.synapse.model.SynapseRoom;
 import net.fhirfactory.pegacorn.core.model.ui.resources.summaries.WorkshopSummary;
-import net.fhirfactory.pegacorn.itops.im.valuesets.OAMRoomTypeEnum;
 import net.fhirfactory.pegacorn.itops.im.workshops.issi.topology.common.BaseParticipantReplicaServices;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -35,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
-import java.util.Locale;
 
 @ApplicationScoped
 public class WorkshopParticipantReplicaTasks extends BaseParticipantReplicaServices {
@@ -59,10 +57,10 @@ public class WorkshopParticipantReplicaTasks extends BaseParticipantReplicaServi
     //
 
     public MatrixRoom createSubSpaceIfNotThere(String processingPlantSpaceId, MatrixRoom existingKnownSpace, WorkshopSummary workshopSummary) {
-        getLogger().debug(".createSubSpaceIfNotThere(): Entry, processingPlantSpaceId->{}, roomList,  workshop->{}", processingPlantSpaceId,  workshopSummary.getTopologyNodeFDN());
+        getLogger().debug(".createSubSpaceIfNotThere(): Entry, processingPlantSpaceId->{}, roomList,  workshop->{}", processingPlantSpaceId,  workshopSummary.getComponentID().getName());
         try {
-            String participantName = workshopSummary.getParticipantName();
-            String participantDisplayName = workshopSummary.getParticipantDisplayName();
+            String participantName = workshopSummary.getParticipantId().getName();
+            String participantDisplayName = workshopSummary.getParticipantId().getDisplayName();
             String participantPseudoAlias = getRoomIdentityFactory().buildWorkshopSpacePseudoAlias(participantName);
             MatrixRoom newSpace = null;
             if (existingKnownSpace != null) {

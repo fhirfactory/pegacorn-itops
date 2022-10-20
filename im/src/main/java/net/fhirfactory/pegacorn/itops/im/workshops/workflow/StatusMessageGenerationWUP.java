@@ -96,8 +96,8 @@ public class StatusMessageGenerationWUP extends StimuliTriggeredWorkflowWUP {
 
     @Override
     public void configure() throws Exception {
-        getLogger().info("{}({})->{}", getMeAsAPetasosParticipant().getParticipantName(), getClass().getSimpleName(), ingresFeed());
-        getLogger().info("{}({})->{}", getMeAsAPetasosParticipant().getParticipantName(), getClass().getSimpleName(), egressFeed());
+        getLogger().info("{}({})->{}", getTopologyNode().getParticipant(), getClass().getSimpleName(), ingresFeed());
+        getLogger().info("{}({})->{}", getTopologyNode().getParticipant(), getClass().getSimpleName(), egressFeed());
 
         fromIncludingPetasosServices(ingresFeed())
                 .to(itopsNames.getITOpsNotificationToCommunicateMessageIngresFeed());
