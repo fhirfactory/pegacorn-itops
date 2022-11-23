@@ -21,15 +21,18 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.workflow.beans;
 
+import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelTypeDescriptor;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelDirectionEnum;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelNormalisationStatusEnum;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelValidationStatusEnum;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.participant.id.PetasosParticipantId;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
+import net.fhirfactory.pegacorn.core.model.topology.nodes.WorkUnitProcessorSoftwareComponent;
 import net.fhirfactory.pegacorn.internals.communicate.entities.message.CommunicateSMSMessage;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
@@ -114,7 +117,19 @@ public class ITOpsNotificationToCommunicateSMSMessage extends ITOpsNotificationT
                 DataParcelManifest egressPayloadManifest = new DataParcelManifest();
                 DataParcelTypeDescriptor smsMessageDescriptor = getMessageTopicFactory().createSMSTypeDescriptor();
                 egressPayloadManifest.setContentDescriptor(smsMessageDescriptor);
-                egressPayloadManifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getSubsystemParticipantName());
+                WorkUnitProcessorSoftwareComponent wup = camelExchange.getProperty(PetasosPropertyConstants.WUP_TOPOLOGY_NODE_EXCHANGE_PROPERTY_NAME, WorkUnitProcessorSoftwareComponent.class);
+                PetasosParticipantId participantId = new PetasosParticipantId();
+                if(wup == null){
+                    participantId.setSubsystemName(getProcessingPlant().getSubsystemParticipantName());
+                } else {
+                    participantId.setSubsystemName(getProcessingPlant().getSubsystemParticipantName());
+                    participantId.setDisplayName(wup.getParticipantDisplayName());
+                    participantId.setName(wup.getParticipantName());
+                }
+                egressPayloadManifest.setPreviousParticipant(participantId);
+                if(uow.getIngresContent().getPayloadManifest().hasOriginParticipant()) {
+                    egressPayloadManifest.setOriginParticipant(uow.getIngresContent().getPayloadManifest().getOriginParticipant());
+                }
                 egressPayloadManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
                 egressPayloadManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
                 egressPayloadManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);

@@ -24,6 +24,7 @@ package net.fhirfactory.pegacorn.itops.im.workshops.workflow.beans;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelTypeDescriptor;
 import net.fhirfactory.pegacorn.core.model.petasos.oam.notifications.PetasosComponentITOpsNotification;
+import net.fhirfactory.pegacorn.core.model.petasos.participant.id.PetasosParticipantId;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
@@ -87,7 +88,9 @@ public class ITOpsNotificationCapture extends ITOpsNotificationToCommunicateMess
         descriptor.setDataParcelSubCategory("Operations, Administration and Maintenance");
         descriptor.setDataParcelResource("PetasosComponentITOpsNotification");
         manifest.setContentDescriptor(descriptor);
-        manifest.setSourceProcessingPlantParticipantName(getProcessingPlant().getSubsystemParticipantName());
+        PetasosParticipantId participantId = new PetasosParticipantId();
+        participantId.setSubsystemName(getProcessingPlant().getSubsystemParticipantName());
+        manifest.setOriginParticipant(participantId);
         ingresPayload.setPayloadManifest(manifest);
         UoW uow = new UoW(ingresPayload);
 
